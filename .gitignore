@@ -1,0 +1,18 @@
+# Python bytecode and interpreter caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local virtual environments
+.venv/
+venv/
+
+# Editor and OS noise
+.DS_Store
+Thumbs.db
+
+# Temporary files written by the producers and verifiers
+*.tmp
+
+# NOTE: the checkpoint directories gd_rigorous_ckpt_*/ and ckpt_*/ are
+# published artifacts: do not ignore them.
