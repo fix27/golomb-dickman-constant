@@ -7,6 +7,18 @@ $$\lambda=\int_0^\infty F(u)\,du,\qquad F(u)=e^{-u-E_1(u)}
 вычисления этой константы в интервальной арифметике с явным сертификатом
 точности: 30 000 знаков (первая версия) и **40 000 знаков** (текущий результат).
 
+## Автор
+
+**Поздняков Константин Николаевич** — расчёты, код, сертификаты и подготовка
+пакета. Сургут, ХМАО — Югра, Россия. Почта:
+[fix@inbox.ru](mailto:fix@inbox.ru).
+
+В англоязычных метаданных и в препринте используется форма
+**Konstantin N. Pozdnyakov**, Surgut, Khanty-Mansi Autonomous Okrug — Yugra,
+Russia. Машиночитаемая цитата — [`CITATION.cff`](CITATION.cff), метаданные
+Zenodo — [`.zenodo.json`](.zenodo.json), препринт — [`paper/`](paper/),
+готовые письма для OEIS/SeqFan/MathWorld — [`submission/`](submission/).
+
 ## Текущий результат: 40 000 знаков
 
 Сертификат
@@ -70,6 +82,10 @@ OK: 40000 digits certified
 | Путь | Назначение |
 |---|---|
 | [`40000/`](40000/) | Текущий результат: 40 000 знаков, b-file, проверки, документация |
+| [`paper/`](paper/) | Препринт для arXiv (`main.tex`) и метаданные отправки |
+| [`submission/`](submission/) | Готовые письма: OEIS, SeqFan, MathWorld; куда и как отправлять |
+| [`CITATION.cff`](CITATION.cff) | Машиночитаемая цитата (CFF 1.2.0) |
+| [`.zenodo.json`](.zenodo.json) | Метаданные релиза Zenodo (DOI) |
 | [`30000/`](30000/) | Первый сертифицированный результат: 30 000 знаков |
 | [`30000-v2/`](30000-v2/) | Вторая итерация пайплайна для 30 000 знаков (v23); сертификаты на 2 000 и 30 000 |
 | [`alt2-50000/`](alt2-50000/) | Незавершённая попытка на 50 000 знаков: чекпоинты и текущий CLI; сертификата пока нет |
@@ -184,7 +200,7 @@ python golomb_dickman.py
 (он синтезирован из записи), поэтому новый файл его заменяет. Текст ссылки:
 
 ```text
-YOUR NAME, <a href="b084945.txt">Table of n, a(n) for n=0..39999</a>
+Konstantin Pozdnyakov, <a href="b084945.txt">Table of n, a(n) for n=0..39999</a>
 ```
 
 Пошаговая инструкция и письмо для редакторов — в
@@ -200,7 +216,30 @@ Zenodo/arXiv и анонс в SeqFan — в
 | [`40000/VERIFICATION.md`](40000/VERIFICATION.md) | Что и как проверяется, найденные дефекты, база доверия |
 | [`40000/OEIS_SUBMISSION.md`](40000/OEIS_SUBMISSION.md) | Отправка b-file в OEIS |
 | [`40000/PUBLICATION_CHECKLIST.md`](40000/PUBLICATION_CHECKLIST.md) | Zenodo, arXiv, SeqFan |
+| [`paper/README.md`](paper/README.md) | Препринт: сборка, содержание, ограничения |
+| [`paper/ARXIV_SUBMISSION.md`](paper/ARXIV_SUBMISSION.md) | Заголовок, abstract, категории и MSC для arXiv |
+| [`submission/EMAILS.md`](submission/EMAILS.md) | Куда отправлять и в каком порядке |
 | [`30000/README.md`](30000/README.md) | Детали результата на 30 000 знаков |
+
+## Публикация
+
+Результат подготовлен к публикации в четырёх местах:
+
+1. **GitHub** — исходный репозиторий
+   <https://github.com/fix27/golomb-dickman-constant>;
+2. **Zenodo** — релиз `v40000` с version DOI; метаданные уже лежат в
+   [`.zenodo.json`](.zenodo.json), порядок действий — в
+   [`40000/PUBLICATION_CHECKLIST.md`](40000/PUBLICATION_CHECKLIST.md);
+3. **arXiv** — препринт [`paper/main.tex`](paper/main.tex), раздел math.NA,
+   cross-list cs.MS; поля формы — в
+   [`paper/ARXIV_SUBMISSION.md`](paper/ARXIV_SUBMISSION.md);
+4. **OEIS** — b-file для A084945, `n = 0..39999`; готовое письмо и текст
+   ссылки — в [`submission/oeis-bfile.eml`](submission/oeis-bfile.eml) и
+   [`40000/OEIS_SUBMISSION.md`](40000/OEIS_SUBMISSION.md).
+
+Анонс в SeqFan и обновление страницы MathWorld — необязательные, но полезные
+шаги; тексты лежат в [`submission/`](submission/).
+
 
 ## Цитирование
 

@@ -1,0 +1,58 @@
+To: seqfan@googlegroups.com
+Subject: 40,000 certified digits of the Golomb-Dickman constant (A084945)
+Date: Sun, 15 Nov 2026 12:05:00 +0500
+From: Konstantin N. Pozdnyakov <fix@inbox.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Dear SeqFans,
+
+I have computed and certified the first 40,000 decimal digits of the
+Golomb-Dickman constant
+
+  lambda = integral_0^infinity exp(-u - E_1(u)) du
+         = 0.624329988543550870992936383100837244...
+
+The certificate consists of integers Lambda_- < Lambda_+ and a scale
+S = 133074 such that lambda lies in [Lambda_-/2^S, Lambda_+/2^S] and
+
+  floor(10^40000 Lambda_- / 2^S) = floor(10^40000 Lambda_+ / 2^S).
+
+The interval therefore does not cross a decimal cell, and the 40,000
+digits are proved by truncation rather than merely computed in floating
+point. Its width is about 10^-40042.26, leaving roughly 42 guard digits.
+
+Method: the trapezoidal rule after the Takahashi-Mori substitution, with
+explicit tail and discretisation bounds (Trefethen-Weideman), Stieltjes
+continued fractions for E_1, and Arb balls for every node. The trust base
+is Arb plus the cited theorems; this is not a proof-assistant
+formalisation.
+
+I have prepared a b-file for A084945 with terms n = 0..39999, extending
+the current n = 0..101:
+
+  https://github.com/fix27/golomb-dickman-constant/tree/main/40000
+
+  SHA-256 c73af643198da299d2e624e3c2f69d05439efcddbbefa7cec176ac63f993bed3
+
+The verifier uses only the Python standard library:
+
+  python verify_40000.py
+  OK: 40000 digits certified
+
+Two small extensions of A225242 follow from the certified string: the
+blocks 55555 and 666666 do not occur among the 40,000 digits, so
+a(5), a(6) > 40000 (the entry recorded a(5) > 15000).
+
+I have submitted the b-file to the OEIS editors. If an editor can help
+with the upload, or advise on the preferred size (10,000 / 20,000 /
+40,000 terms), I would be grateful.
+
+Comments, corrections and independent checks are very welcome.
+
+Best regards,
+Konstantin N. Pozdnyakov
+Surgut, Khanty-Mansi Autonomous Okrug - Yugra, Russia
+fix@inbox.ru
+https://github.com/fix27/golomb-dickman-constant

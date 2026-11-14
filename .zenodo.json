@@ -1,0 +1,44 @@
+{
+  "title": "Golomb-Dickman constant: 40,000 certified decimal digits",
+  "description": "<p>Rigorous interval-arithmetic certificate for the first <b>40,000 decimal digits</b> of the Golomb&ndash;Dickman constant</p><p style=\"text-align:center\">λ = ∫<sub>0</sub><sup>∞</sup> exp(−u − E<sub>1</sub>(u)) du = 0.624329988543550870992936383100837244…</p><p>The certificate consists of integers Λ<sub>−</sub> &lt; Λ<sub>+</sub> and a scale S = 133074 such that λ ∈ [Λ<sub>−</sub>/2<sup>S</sup>, Λ<sub>+</sub>/2<sup>S</sup>] and floor(10<sup>40000</sup>Λ<sub>−</sub>/2<sup>S</sup>) = floor(10<sup>40000</sup>Λ<sub>+</sub>/2<sup>S</sup>). The first 40,000 digits are therefore <i>proved by truncation</i>, not merely computed in floating point. The interval width is about 10<sup>−40042.26</sup>, leaving roughly 42 guard digits.</p><p>The computation uses the trapezoidal rule after the Takahashi–Mori substitution, explicit tail and discretisation bounds (Trefethen–Weideman), Stieltjes continued fractions for E<sub>1</sub>, and Arb balls via python-flint. The trust base is the correctness of Arb together with the cited theorems and the elementary lemmas stated in the source; this is not a formalisation in a proof assistant.</p><p>The package contains the certificate, a 40,000-digit file, a b-file for OEIS A084945 with terms n = 0..39999, the producing code, the published checkpoints, and a checker that uses only the Python standard library and exact integer arithmetic. Running <code>python verify_40000.py</code> verifies the certificate, the digits file, the b-file and the agreement of the first 102 digits with OEIS A084945.</p><p>Related: OEIS A084945 (decimal expansion), OEIS A225242 (Earls's sequence), MathWorld <i>Golomb-Dickman Constant Digits</i>.</p>",
+  "creators": [
+    {
+      "name": "Pozdnyakov, Konstantin Nikolaevich",
+      "affiliation": "Surgut, Khanty-Mansi Autonomous Okrug - Yugra, Russia"
+    }
+  ],
+  "upload_type": "software",
+  "license": "MIT",
+  "access_right": "open",
+  "publication_date": "2026-11-15",
+  "version": "40000",
+  "language": "eng",
+  "keywords": [
+    "Golomb-Dickman constant",
+    "interval arithmetic",
+    "Arb",
+    "certified computation",
+    "trapezoidal rule",
+    "Stieltjes continued fraction",
+    "OEIS A084945",
+    "OEIS A225242"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://oeis.org/A084945",
+      "relation": "isSupplementTo",
+      "resource_type": "dataset"
+    },
+    {
+      "identifier": "https://oeis.org/A225242",
+      "relation": "isSupplementTo",
+      "resource_type": "dataset"
+    },
+    {
+      "identifier": "https://github.com/fix27/golomb-dickman-constant",
+      "relation": "isSupplementedBy",
+      "resource_type": "software"
+    }
+  ],
+  "notes": "Computed by Konstantin Nikolaevich Pozdnyakov (Surgut, KhMAO - Yugra, Russia), fix@inbox.ru. The producing pipeline is 40000/golomb_dickman.py; the current CLI is golomb_dickman_26.py."
+}
