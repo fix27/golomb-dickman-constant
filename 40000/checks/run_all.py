@@ -35,6 +35,8 @@ FAST = [
      "12 spread-out chunks recomputed at 100 decimals"),
     ("mathworld", ["verify_mathworld.py", "--prime-limit", "60"],
      "every statement of the MathWorld page (fast prime scan)"),
+    ("sequences", ["verify_sequences.py"],
+     "runs, repeated blocks, palindromes, prime substrings, sampled truncations"),
 ]
 
 FULL = [
