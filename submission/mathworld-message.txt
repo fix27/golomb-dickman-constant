@@ -1,0 +1,55 @@
+Message for the MathWorld contact form
+https://mathworld.wolfram.com/contact/
+
+There is no public e-mail address for MathWorld; use the form above and
+paste the text below. Choose the subject suggested by the form (for
+example "Correction / update") and include your name and e-mail in the
+appropriate fields.
+
+----------------------------------------------------------------------
+
+Subject: Update for "Golomb-Dickman Constant Digits": 40,000 certified digits
+
+Dear Dr. Weisstein,
+
+The MathWorld page "Golomb-Dickman Constant Digits"
+
+  https://mathworld.wolfram.com/Golomb-DickmanConstantDigits.html
+
+states that 15,000 digits have been computed. I would like to report
+40,000 digits, certified by interval arithmetic rather than computed in
+floating point.
+
+The certificate gives integers Lambda_- < Lambda_+ and a scale
+S = 133074 with
+
+  floor(10^40000 Lambda_- / 2^S) = floor(10^40000 Lambda_+ / 2^S),
+
+so the interval [Lambda_-/2^S, Lambda_+/2^S] containing lambda does not
+cross a decimal boundary and the truncation is proved. Its width is
+about 10^-40042.26, i.e. 42 guard digits beyond the 40,000 published
+ones. The computation uses the trapezoidal rule after the Takahashi-Mori
+substitution, explicit tail and discretisation bounds, Stieltjes
+continued fractions, and Arb balls.
+
+Certificate, digits, code and a dependency-free verifier:
+
+  https://github.com/fix27/golomb-dickman-constant/tree/main/40000
+
+The package also extends the OEIS b-file for A084945 from 101 to 40,000
+terms, and extends A225242: the blocks 55555 and 666666 do not occur in
+the 40,000 digits, so a(5), a(6) > 40000.
+
+All statements on the page that can be checked against digits were
+reproduced: the digit tables for 10, 100, 1,000 and 10,000 digits, the
+first-occurrence positions, the Earls sequence values 28, 256, 1967, 387,
+the six prime truncations at 6, 27, 57, 60, 1659 and 2508 digits, and the
+absence of 0123456789 and 9876543210. No discrepancy was found.
+
+I would be glad to provide the certificate in another format, or the
+first N digits for any N <= 40,000.
+
+With best regards,
+Konstantin N. Pozdnyakov
+Surgut, Khanty-Mansi Autonomous Okrug - Yugra, Russia
+fix@inbox.ru

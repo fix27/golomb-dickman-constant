@@ -1,0 +1,45 @@
+cff-version: 1.2.0
+message: >-
+  If you use these data, code or the certified digits, please cite this
+  repository and, when a DOI is available, the archived Zenodo release.
+title: "Golomb-Dickman constant: 40,000 certified decimal digits"
+type: software
+authors:
+  - family-names: Pozdnyakov
+    given-names: Konstantin Nikolaevich
+    affiliation: "Surgut, Khanty-Mansi Autonomous Okrug - Yugra, Russia"
+    email: fix@inbox.ru
+    alias: fix27
+version: "40000"
+date-released: 2026-11-15
+license: MIT
+repository-code: "https://github.com/fix27/golomb-dickman-constant"
+url: "https://github.com/fix27/golomb-dickman-constant/tree/main/40000"
+keywords:
+  - Golomb-Dickman constant
+  - interval arithmetic
+  - Arb
+  - certified computation
+  - trapezoidal rule
+  - Stieltjes continued fraction
+  - OEIS A084945
+abstract: >-
+  Rigorous interval-arithmetic certificate for the first 40,000 decimal
+  digits of the Golomb-Dickman constant
+  lambda = integral_0^infinity exp(-u - E_1(u)) du. The certificate gives
+  integers Lambda_- < Lambda_+ and a scale S = 133074 such that
+  lambda lies in [Lambda_-/2^S, Lambda_+/2^S] and
+  floor(10^40000 Lambda_-/2^S) = floor(10^40000 Lambda_+/2^S); the digits
+  are therefore proved by truncation. The interval width is about
+  10^-40042.26, leaving roughly 42 guard digits. The package also contains
+  a dependency-free checker, the producing code, the published checkpoints,
+  and an OEIS b-file for A084945 with terms n = 0..39999.
+references:
+  - type: software
+    title: "Golomb-Dickman constant: 30,000 certified decimal digits"
+    authors:
+      - family-names: Pozdnyakov
+        given-names: Konstantin Nikolaevich
+    repository-code: "https://github.com/fix27/golomb_dickman_30000"
+    version: "30000"
+    date-released: 2026-11-15
