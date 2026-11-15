@@ -212,6 +212,24 @@ python checks/verify_sequences.py --json seq.json
 | `verify_mathworld.py` | все утверждения MathWorld |
 | `verify_sequences.py` | серии, повторы, палиндромы, простые подстроки, выборочные усечения |
 
+## Три уровня проверки
+
+Каталог [`verification/`](verification/) — отдельный набор для внешнего
+проверяющего: он не импортирует вычислитель, не читает чекпоинты и не
+использует плавающую точку в решающих проверках.
+
+| Уровень | Команда | Что даёт | Чего не даёт |
+|---|---|---|---|
+| A | `python verification/verify_40000.py` | SHA-256, ширина интервала, цифры, b-file, префикс OEIS; секунды | не доказывает, что $\lambda$ лежит в интервале |
+| B | `python verification/level_b.py` | параметры, $B_{\rm disc}$, хвосты, формулы и 12 чанков, пересчитанных заново | не пересчитывает enclosure в Arb |
+| C | `python verification/independent_quadrature.py --digits 1000` | независимое воспроизведение цифр: другая библиотека и другая квадратура | не строго: mpmath работает в плавающей точке |
+
+Уровень B на машине сборки сообщает, что аудит в Arb не запускался
+(`python-flint` не загружается из-за Application Control), и это указано в
+отчёте, а не замалчивается.
+
+Готовый архив для отправки — `golomb_dickman_40000_verification.zip`.
+
 ## Как проверять
 
 Быстрая проверка — нужен только Python 3.11+, сторонних пакетов нет:
@@ -223,7 +241,7 @@ python verify_40000.py
 ```text
 OK: 40000 digits certified
   interval: lam_lo/2^133074 .. lam_hi/2^133074
-  interval width ~ 10^-40042.3
+  width: 5.492 x 10^-40043  (< 10^-40042), 42 guard digits beyond the 40000th place
   b-file: 40000 terms, indices 0..39999
   first 102 digits match OEIS A084945
   SHA-256:

@@ -46,6 +46,23 @@ first-occurrence positions, the Earls sequence values 28, 256, 1967, 387,
 the six prime truncations at 6, 27, 57, 60, 1659 and 2508 digits, and the
 absence of 0123456789 and 9876543210. No discrepancy was found.
 
+For verification I have prepared a small archive that separates three
+levels: a dependency-free check of the certificate and the digits (seconds),
+an audit of the bounds with a sample of nodes recomputed from the formulas,
+and an independent recomputation of the leading digits with a different
+quadrature rule and a different library. The archive is
+
+  golomb_dickman_40000_verification.zip
+
+in the repository above. The independent recomputation is numerical rather
+than rigorous, and the rigorous enclosure still needs an Arb re-audit, which
+I could not run on my machine because of a local security policy.
+
+If it is appropriate, could you tell me what level of independent
+confirmation would be enough for the "not independently confirmed" note to
+be revised? I would rather aim at the right target than at a larger number
+of digits.
+
 I would be glad to provide the certificate in another format, or the
 first N digits for any N <= 40,000.
 

@@ -9,6 +9,7 @@
 | MathWorld | веб-форма https://mathworld.wolfram.com/contact/ (публичного e-mail нет) | `mathworld-message.txt` | нет |
 | Zenodo | веб-интерфейс, DOI выдаётся по GitHub release | `../.zenodo.json` | да (GitHub) |
 | arXiv | веб-форма submission | `../paper/ARXIV_SUBMISSION.md` | да (нужен endorsement для math.NA) |
+| Проверяющий | архив `golomb_dickman_40000_verification.zip` (уровни A и C) | `../golomb_dickman_40000_verification.zip` | нет |
 
 ## Важно про отправку
 
@@ -21,6 +22,27 @@ Thunderbird, Outlook) как готовый черновик — останет�
 Если почтовый клиент не открывает `.eml`, скопируйте текст из раздела
 «Тело письма» в `EMAILS.md` или в `*.eml` (всё до первой пустой строки —
 заголовки, дальше тело).
+
+## Что приложить проверяющему
+
+Архив `golomb_dickman_40000_verification.zip` собран так, чтобы человеку не
+пришлось разбираться в истории программы. В нём три команды:
+
+```bash
+python fast_verifier/verify_40000.py              # секунды, только stdlib
+python independent_check/independent_quadrature.py --digits 1000
+python independent_check/independent_quadrature.py --digits 40000 --jobs 12
+```
+
+Первая проверяет сертификат, файл цифр и b-file и завершается с ненулевым
+кодом при любом расхождении. Вторая считает константу независимо (mpmath,
+другая квадратура) и сравнивает префикс; это численная проверка, а не
+доказательство. Уровень B (аудит формул, хвостов и выборочный пересчёт
+узлов) требует чекпоинтов и запускается из полного репозитория:
+
+```bash
+python verification/level_b.py
+```
 
 ## Порядок, который имеет смысл
 

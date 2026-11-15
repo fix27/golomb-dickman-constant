@@ -1,0 +1,37 @@
+Level C: independent recomputation of the Golomb-Dickman constant
+==================================================================
+
+command : python verification/independent_quadrature.py --digits 1000
+date    : 2026-11-15
+python  : 3.12.10
+library : mpmath 1.4.1
+formula : lambda = integral_0^inf exp(-u - E1(u)) du
+truncation: U = (1000 + 60) ln 10, tail < exp(-U) < 1e-1060
+
+tanh-sinh: 3816.9 s at 1060 working digits, tail < 1e-1060
+  62432998854355087099293638310083724417964262018052928697355190249563808885511325...
+gauss-legendre: 3080.7 s at 1060 working digits, tail < 1e-1060
+  62432998854355087099293638310083724417964262018052928697355190249563808885511325...
+
+agreement between tanh-sinh and gauss-legendre: 1020 leading digits
+agreement with golomb_dickman_40000_digits.txt: 1020 leading digits
+  certified: 62432998854355087099293638310083724417964262018052928697355190249563808885511325...
+
+OK: 1000 digits reproduced independently (Level C, numerical)
+
+Notes
+-----
+* The two rules were evaluated to 1060 working digits and agree for 1020
+  leading digits, i.e. 20 digits beyond the requested 1000.  Both agree
+  with the certified file for the same 1020 digits.
+* This is numerical evidence, not a proof: mpmath does not propagate
+  rounding errors, and a systematic error common to both rules would not
+  be visible.  The rigorous enclosure is the Arb certificate.
+* The process exited with code 1 after printing OK, only because the
+  optional --json report could not be written into the workspace: Windows
+  "controlled folder access" denies python.exe write permission under
+  Documents.  The JSON writer was given a %TEMP% fallback afterwards; the
+  computation above was not affected.
+* Full length is supported by the same script:
+  python independent_quadrature.py --digits 40000 --jobs 12
+  Measured cost on this machine is in COSTS.md.

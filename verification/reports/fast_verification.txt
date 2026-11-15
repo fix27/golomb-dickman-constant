@@ -1,0 +1,14 @@
+Level A: certificate and digits verification
+command: python verification/verify_40000.py
+date: 2026-11-15 11:33:50
+python: Python 3.12.10
+
+OK: 40000 digits certified (Level A)
+  certificate: 40000/golomb_dickman_40000_certified.txt
+  scale: lam_lo/2^133074 .. lam_hi/2^133074
+  width: 5.492 x 10^-40043  (< 10^-40042), 42 guard digits beyond the 40000th place
+  b-file: 40000 terms, indices 0..39999
+  first 102 digits match OEIS A084945
+  SHA-256: OK for all three artefacts
+
+exit code: 0
