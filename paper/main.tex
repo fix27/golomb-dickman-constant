@@ -396,6 +396,19 @@ conditional on the producing program having computed every ball
 correctly, on Arb being correct, and on the elementary lemmas of
 Section~3 and Section~4. It is not a formally verified proof.
 
+The repository organises the checks in three levels, so that a reader can
+pay exactly as much as the question they care about costs
+(\texttt{verification/}). Level~A verifies the certificate and the digit
+strings with exact integer arithmetic and no external dependency
+(\texttt{verify\_40000.py}). Level~B audits the parameters, the
+discretisation bound and the two tails, and recomputes a sample of chunks
+from the formulas (\texttt{level\_b.py}); saved checkpoints are treated as a
+cache, never as evidence. Level~C recomputes the leading digits with a
+different representation of the integral, a different quadrature rule and a
+different library (\texttt{independent\_quadrature.py}, \texttt{mpmath}).
+Level~C is floating point, hence numerical evidence rather than a proof; it
+reproduces the first $1\,000$ digits in our runs.
+
 \section{The digit string}
 
 Table~\ref{tab:digits} collects measurements on the certified string of

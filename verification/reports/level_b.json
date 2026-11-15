@@ -1,0 +1,98 @@
+{
+  "level": "B",
+  "checks_directory": "C:\\Users\\\u041a\u043e\u0441\u0442\u044f\\Documents\\GitHub\\golomb_dickman_30000\\40000\\checks",
+  "checkpoint_policy": "recompute; saved intervals are a cache, not proof",
+  "steps": [
+    {
+      "step": "checklist",
+      "command": "verify_checkpoints.py",
+      "exit_code": 0,
+      "seconds": 0.46,
+      "output_tail": [
+        "  meta: D=40000 G=30 Ebits=133010 S=133074 K_L=117064 K_R=124623 chunk=200",
+        "  h = 100859575 / 1099511627776",
+        "  chunks: 1209 (expected 1209)",
+        "  nodes covered: 241688",
+        "  Lsum: 40064 digits; Hsum: 40064 digits",
+        "  lower correction B = 1",
+        "  upper correction C = TR + TL + B = 65673984721697",
+        "  chunk-sum width: 10^-40042.260531",
+        "  certificate width: 10^-40042.260249",
+        "  guard digits: 40042.26",
+        "  b-file terms: 40000",
+        "  first 102 digits match OEIS A084945",
+        "NOTE: this audit does not recompute the Arb node balls.",
+        "      Run verify_checkpoints_arb.py for the deep Arb verification."
+      ],
+      "ok": true
+    },
+    {
+      "step": "plan",
+      "command": "verify_nodes_decimal.py --plan",
+      "exit_code": 0,
+      "seconds": 0.42,
+      "output_tail": [
+        "  log10 M      = 360.3909",
+        "  log10 B_disc = -41285.4628   (requirement 10^-40036)",
+        "  log10 tau_R  = -40045.8435",
+        "  log10 tau_L  = -40045.6719",
+        "  B  = 1",
+        "  TR = 26431841856436",
+        "  TL = 39242142865260",
+        "  TR + TL + B = 65673984721697",
+        "  certificate implies B = 1, TR + TL + B = 65673984721697",
+        "OK: discretisation and tail bounds reproduce the certificate corrections"
+      ],
+      "ok": true
+    },
+    {
+      "step": "methods",
+      "command": "verify_nodes_decimal.py --methods",
+      "exit_code": 0,
+      "seconds": 6.95,
+      "output_tail": [
+        "  formula self-test (50 digits, series vs continued fraction):",
+        "    u=    0.1  G=4.01338306105582288509e-2  |cf-series|=0.00e-69  OK",
+        "    u= 0.3679  G=2.38332619057353097782e-1  |cf-series|=1.00e-70  OK",
+        "    u=      1  G=4.62953096865158650858e-1  |cf-series|=2.00e-70  OK",
+        "    u=      5  G=3.93352749130057225089e-2  |cf-series|=2.00e-71  OK",
+        "    u=     20  G=4.31882714757466726855e-8  |cf-series|=7.00e-77  OK",
+        "    u=     50  G=9.83287848958384838874e-21  |cf-series|=3.80e-89  OK",
+        "    u=    100  G=3.75691021099359245489e-42  |cf-series|=7.20e-110  OK",
+        "    u=    200  G=2.78156333830730134549e-85  |cf-series|=0.00e-152  OK",
+        "  formula self-test (continued fraction vs asymptotics):",
+        "    u=   2000  K=2000    relative difference=0.00e-30  OK",
+        "    u=   5000  K=5000    relative difference=0.00e-30  OK",
+        "    u=  20000  K=20000   relative difference=0.00e-30  OK",
+        "OK: formula self-test passed"
+      ],
+      "ok": true
+    },
+    {
+      "step": "nodes",
+      "command": "verify_nodes_decimal.py --chunks 12",
+      "exit_code": 0,
+      "seconds": 3.15,
+      "output_tail": [
+        "  OK   chunk [5736, 5936): nodes used 200, skipped 0; sum ~ 9.180031549748041e+1",
+        "         saved pins 100 digits; recomputed agrees",
+        "  OK   chunk [17336, 17536): nodes used 200, skipped 0; sum ~ 1.697476213578505e+1",
+        "         saved pins 100 digits; recomputed agrees",
+        "  OK   chunk [28936, 29136): nodes used 200, skipped 0; sum ~ 4.435133432760437e-3",
+        "         saved pins 100 digits; recomputed agrees",
+        "  OK   chunk [40536, 40736): nodes used 200, skipped 0; sum ~ 2.004305845847423e-14",
+        "         saved pins 100 digits; recomputed agrees",
+        "  OK   chunk [52136, 52336): nodes used 200, skipped 0; sum ~ 3.681704594400303e-48",
+        "         saved pins 100 digits; recomputed agrees",
+        "  OK   chunk [63736, 63936): nodes used 155, skipped 45; sum ~ 1.539591559582542e-146",
+        "         saved pins 100 digits; recomputed agrees",
+        "OK: recomputed chunk sums agree with the saved intervals",
+        "    (numerical consistency only; use verify_checkpoints_arb.py for the rigorous check)"
+      ],
+      "ok": true
+    }
+  ],
+  "arb_available": false,
+  "arb_audit_run": false,
+  "verdict": "PASS"
+}
