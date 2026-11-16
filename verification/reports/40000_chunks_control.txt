@@ -1,0 +1,14 @@
+Checkpoint audit for 40000 digits
+chunks: 1209
+nodes: 241688
+index range: -117064 .. 124624
+gaps/overlaps: 0
+step: 100859575 / 1099511627776 (from certificate (recovered from lam_lo))
+B: 1
+C: 65673984721697
+chunk-sum width: 5.488 x 10^-40043
+certificate width: 5.492 x 10^-40043
+meta.pkl present: True
+meta_v12.json present: False
+plan step confirmed: False
+verdict: PASS

@@ -1,0 +1,14 @@
+Checkpoint audit for 50000 digits
+chunks: 3076
+nodes: 307580
+index range: -149075 .. 158505
+gaps/overlaps: 0
+step: 80846368 / 1099511627776 (from meta_v12.json (planned h))
+B: 1
+C: 2427712667995762
+chunk-sum width: 4.230 x 10^-50043
+certificate width: 4.390 x 10^-50043
+meta.pkl present: False
+meta_v12.json present: True
+plan step confirmed: True
+verdict: PASS

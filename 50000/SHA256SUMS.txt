@@ -1,0 +1,8 @@
+# SHA-256 checksums for the 50000-digit Golomb-Dickman bundle.
+# Canonical form: ASCII text, LF line endings, no BOM.
+# Verify with:  sha256sum -c SHA256SUMS.txt
+1e3d23e9ac3ce51990d83decd395d6bde96027f43811b94cebd5a6a4b7c19c43  b084945.txt
+03c4ace9c3d7761b81f7681ea2710b854576643d0adf6c6213461b16d11c2f59  golomb_dickman_26.py
+76f4155981049003351409769505c3cec39e26dfc30624c46bd199e70ed6477a  golomb_dickman_50000_certified.txt
+8f017d45ee5108bb6b976882b079279f44f8a767ce62b44bd7c54e9167ad09a0  golomb_dickman_50000_digits.txt
+79e5ef0dd1bdf355f1b48cfb5fafaf71e23e25bb922c824002e0f49aaf084ab5  README.md

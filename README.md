@@ -5,7 +5,8 @@ $$\lambda=\int_0^\infty F(u)\,du,\qquad F(u)=e^{-u-E_1(u)}
 
 Здесь $E_1$ — интегральная показательная функция. В репозитории лежат
 вычисления этой константы в интервальной арифметике с явным сертификатом
-точности: 30 000 знаков (первая версия) и **40 000 знаков** (текущий результат).
+точности: 30 000 знаков (первая версия), 40 000 знаков (предыдущий
+результат) и **50 000 знаков** (текущий результат).
 
 ## Автор
 
@@ -19,7 +20,39 @@ Russia. Машиночитаемая цитата — [`CITATION.cff`](CITATION.
 Zenodo — [`.zenodo.json`](.zenodo.json), препринт — [`paper/`](paper/),
 готовые письма для OEIS/SeqFan/MathWorld — [`submission/`](submission/).
 
-## Текущий результат: 40 000 знаков
+## Текущий результат: 50 000 знаков
+
+Сертификат
+[`50000/golomb_dickman_50000_certified.txt`](50000/golomb_dickman_50000_certified.txt)
+задаёт интервал $[\Lambda_-,\Lambda_+]\ni\lambda$ с масштабом $S=166293$ и
+
+$$\left\lfloor 10^{50000}\Lambda_-/2^S\right\rfloor
+=\left\lfloor 10^{50000}\Lambda_+/2^S\right\rfloor,$$
+
+поэтому первые **50 000** знаков доказаны усечением. Ширина интервала —
+$4.390\times10^{-50043}$, то есть в запасе остаётся ещё 42 знака.
+
+| Артефакт | Файл |
+|---|---|
+| Сертификат: границы интервала и 50 000 знаков | [`50000/golomb_dickman_50000_certified.txt`](50000/golomb_dickman_50000_certified.txt) |
+| Только цифры, одной строкой | [`50000/golomb_dickman_50000_digits.txt`](50000/golomb_dickman_50000_digits.txt) |
+| b-file для OEIS A084945, термы `n = 0..49999` | [`50000/b084945.txt`](50000/b084945.txt) |
+| Чекпоинты: 3076 блоков по 100 узлов | [`50000/gd_rigorous_ckpt_50000/`](50000/gd_rigorous_ckpt_50000/) |
+
+```text
+76f4155981049003351409769505c3cec39e26dfc30624c46bd199e70ed6477a  golomb_dickman_50000_certified.txt
+8f017d45ee5108bb6b976882b079279f44f8a767ce62b44bd7c54e9167ad09a0  golomb_dickman_50000_digits.txt
+1e3d23e9ac3ce51990d83decd395d6bde96027f43811b94cebd5a6a4b7c19c43  b084945.txt
+```
+
+Первые 40 000 знаков нового сертификата совпадают с сертификатом на
+40 000 знаков (проверяется `verification/verify_certificate.py --compare`),
+а суммы 3076 блоков воспроизводят оба конца интервала с поправками
+$B=1$ и $C=2427712667995762$. Подробности и оговорки —
+[`50000/README.md`](50000/README.md) и
+[`verification/reports/50000_verification.txt`](verification/reports/50000_verification.txt).
+
+## Предыдущий результат: 40 000 знаков
 
 Сертификат
 [`40000/golomb_dickman_40000_certified.txt`](40000/golomb_dickman_40000_certified.txt)
@@ -55,27 +88,33 @@ c73af643198da299d2e624e3c2f69d05439efcddbbefa7cec176ac63f993bed3  b084945.txt
 
 ```bash
 git clone https://github.com/fix27/golomb-dickman-constant.git
-cd golomb-dickman-constant/40000
-python verify_40000.py
+cd golomb-dickman-constant
+python verification/verify_certificate.py \
+    --cert 50000/golomb_dickman_50000_certified.txt \
+    --compare 40000/golomb_dickman_40000_digits.txt
 ```
 
 Ожидаемый вывод:
 
 ```text
-OK: 40000 digits certified
-  interval: lam_lo/2^133074 .. lam_hi/2^133074
-  width: 5.492 x 10^-40043  (< 10^-40042), 42 guard digits beyond the 40000th place
-  b-file: 40000 terms, indices 0..39999
-  first 102 digits match OEIS A084945
-  SHA-256:
-    ...
+OK: 50000 digits certified
+  scale: lam_lo/2^166293 .. lam_hi/2^166293
+  width: 4.390 x 10^-50043  (42 guard digits)
+  b-file: 50000 terms
+  OEIS prefix: checked
+  compared with 40000\golomb_dickman_40000_digits.txt: 40000 leading digits agree
+  SHA-256: OK
 ```
 
+Для 40 000 знаков — `--cert 40000/golomb_dickman_40000_certified.txt`
+(без `--compare`).
+
 Скрипт проверяет, что сертифицированный интервал не пересекает границу
-десятичной ячейки, что цифры равны $\lfloor 10^{40000}\lambda\rfloor$, что
+десятичной ячейки, что цифры равны $\lfloor 10^{D}\lambda\rfloor$, что
 файл цифр и b-file согласованы с сертификатом и что первые 102 цифры
-совпадают с OEIS A084945. Более глубокий аудит чекпоинтов описан в
-[`40000/VERIFICATION.md`](40000/VERIFICATION.md).
+совпадают с OEIS A084945. Более глубокий аудит чекпоинтов для 40 000
+знаков описан в [`40000/VERIFICATION.md`](40000/VERIFICATION.md), а для
+50 000 знаков суммы 3076 блоков проверяет `verification/audit_chunks.py`.
 
 ## Три уровня проверки
 
@@ -85,21 +124,26 @@ OK: 40000 digits certified
 
 | Уровень | Команда | Что даёт | Чего не даёт |
 |---|---|---|---|
-| A | `python verification/verify_40000.py` | SHA-256, ширина интервала, цифры, b-file, префикс OEIS; секунды | не доказывает, что $\lambda$ лежит в интервале |
+| A | `python verification/verify_certificate.py --cert 50000/...` | SHA-256, ширина интервала, цифры, b-file, префикс OEIS; секунды | не доказывает, что $\lambda$ лежит в интервале |
 | B | `python verification/level_b.py` | параметры, $B_{\rm disc}$, хвосты, формулы и 12 чанков, пересчитанных заново | не пересчитывает enclosure в Arb |
+| B′ | `python verification/audit_chunks.py --ckpt 50000/...` | непрерывность 3076 блоков и воспроизведение концов интервала из сумм | не заменяет пересчёт узлов в Arb |
 | C | `python verification/independent_quadrature.py --digits 1000` | независимое воспроизведение цифр: другая библиотека и другая квадратура | не строго: mpmath работает в плавающей точке |
 
 Уровень B на машине сборки сообщает, что аудит в Arb не запускался
 (`python-flint` не загружается из-за Application Control), и это указано в
 отчёте, а не замалчивается.
 
-Готовый архив для отправки — `golomb_dickman_40000_verification.zip`.
+Готовый архив для отправки по 40 000 знакам —
+`golomb_dickman_40000_verification.zip`. Пакет для 50 000 знаков — это
+каталог [`50000/`](50000/) (сертификат, цифры, b-file, чекпоинты) плюс
+отчёт [`verification/reports/50000_verification.txt`](verification/reports/50000_verification.txt).
 
 ## Структура репозитория
 
 | Путь | Назначение |
 |---|---|
-| [`40000/`](40000/) | Текущий результат: 40 000 знаков, b-file, проверки, документация |
+| [`50000/`](50000/) | **Текущий результат**: 50 000 знаков, сертификат, b-file, чекпоинты, проверки |
+| [`40000/`](40000/) | Предыдущий результат: 40 000 знаков, b-file, проверки, документация |
 | [`verification/`](verification/) | Трёхуровневая проверка для внешнего читателя: сертификат, аудит, независимый расчёт |
 | [`paper/`](paper/) | Препринт для arXiv (`main.tex`) и метаданные отправки |
 | [`submission/`](submission/) | Готовые письма: OEIS, SeqFan, MathWorld; куда и как отправлять |
@@ -107,18 +151,18 @@ OK: 40000 digits certified
 | [`.zenodo.json`](.zenodo.json) | Метаданные релиза Zenodo (DOI) |
 | [`30000/`](30000/) | Первый сертифицированный результат: 30 000 знаков |
 | [`30000-v2/`](30000-v2/) | Вторая итерация пайплайна для 30 000 знаков (v23); сертификаты на 2 000 и 30 000 |
-| [`alt2-50000/`](alt2-50000/) | Незавершённая попытка на 50 000 знаков: чекпоинты и текущий CLI; сертификата пока нет |
+| [`alt2-50000/`](alt2-50000/) | Ранняя незавершённая попытка на 50 000 знаков (сертификата нет); текущий результат — в [`50000/`](50000/) |
 | [`old_version/`](old_version/) | Архив ранних версий программы (v22–v25) и `archive/` |
 | [`coq/`](coq/), [`lean/`](lean/) | Экспериментальная формализация отдельных лемм (Coq/mathcomp, Lean/Mathlib) |
 | [`golomb_dickman_26.py`](golomb_dickman_26.py) | Текущий самодостаточный CLI (v26) |
 
-В корне также лежат копии трёх артефактов 40 000 знаков: `b084945.txt`,
-`golomb_dickman_40000_certified.txt`, `golomb_dickman_40000_digits.txt`.
-В git это точные дубликаты канонических файлов: они хранятся в LF и
-совпадают с файлами в `40000/` байт в байт. При `core.autocrlf=true`
-рабочая копия на Windows может получить CRLF, поэтому для OEIS и проверок
-берите файлы из `40000/` — **канонические файлы** там, и именно для них
-приведены SHA-256.
+В корне также лежат копии трёх артефактов 50 000 знаков: `b084945.txt`,
+`golomb_dickman_50000_certified.txt`, `golomb_dickman_50000_digits.txt`.
+Это точные дубликаты канонических файлов из `50000/`: они хранятся в LF и
+совпадают с ними байт в байт. При `core.autocrlf=true` рабочая копия на
+Windows может получить CRLF, поэтому для OEIS и проверок берите файлы из
+`50000/` (или из `40000/` для предыдущего результата) — **канонические
+файлы** там, и именно для них приведены SHA-256.
 
 ## Как воспроизвести
 

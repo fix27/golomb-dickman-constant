@@ -1,11 +1,14 @@
-# Verification package: 40,000 digits of the Golomb–Dickman constant
+# Verification package: certified digits of the Golomb–Dickman constant
 
 Author of the computation and of this package:
 **Поздняков Константин Николаевич** / **Konstantin N. Pozdnyakov**
 Surgut, Khanty-Mansi Autonomous Okrug — Yugra, Russia — fix@inbox.ru
 
     lambda = 0.6243299885435508709929363831008372441796426201805292869735519024...
-             (OEIS A084945, 40,000 decimals)
+             (OEIS A084945)
+
+Certified results in this repository: **50,000 digits** (current, `50000/`)
+and 40,000 digits (previous, `40000/`, the subject of the exported archive).
 
 The point of this directory is to make verification cheap and honest. Three
 levels answer three different questions, and none of them is allowed to
@@ -15,7 +18,10 @@ pretend to be a stronger one.
 
 ```sh
 # 1. Certificate and digits: seconds, standard library only.
-python verification/verify_40000.py
+python verification/verify_certificate.py \
+    --cert 50000/golomb_dickman_50000_certified.txt \
+    --compare 40000/golomb_dickman_40000_digits.txt
+python verification/verify_certificate.py --cert 40000/golomb_dickman_40000_certified.txt
 
 # 2. Mathematics audit: parameters, bounds, and 12 chunks recomputed.
 python verification/level_b.py
@@ -86,6 +92,13 @@ from the formula, and the comparison tolerance is printed. There is no
   Application Control). Consequently the enclosure of the constant by the
   published interval still rests on the original production run, and this
   package says so instead of implying otherwise.
+* The 50,000-digit certificate added on 2026-11-16 passes level A and the
+  checkpoint-sum audit (`reports/50000_verification.txt`): its first 40,000
+  digits agree with the older certificate, and its 3,076 checkpoint chunks
+  are contiguous and reproduce both endpoints with corrections `B = 1`,
+  `C = 2427712667995762`. Its `meta.pkl` is missing, so the dyadic step was
+  recovered from the certificate; the 40,000-digit control recovers exactly
+  the documented values, which validates the procedure.
 * Level C: 1,000 digits reproduced independently (see
   `reports/independent_1000.txt`): the two quadrature rules agree for 1,020
   leading digits and both agree with the certified file for the same 1,020.

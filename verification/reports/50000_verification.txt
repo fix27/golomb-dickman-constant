@@ -1,0 +1,45 @@
+50000 digits: certificate verification and checkpoint audit
+date: 2026-11-16 12:32:55
+python: Python 3.12.10
+
+$ python verification/verify_certificate.py --cert 50000/golomb_dickman_50000_certified.txt --compare 40000/golomb_dickman_40000_digits.txt
+python.exe : FAIL: golomb_dickman_50000_certified.txt: contains CR (canonical form is LF only)
+строка:13 знак:9
++ $out1 = & $py -u verification\verify_certificate.py --cert 50000\golo ...
++         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (FAIL: golomb_di...orm is LF only):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+exit code: 1
+
+$ python verification/audit_chunks.py --ckpt 50000/gd_rigorous_ckpt_50000 --cert 50000/golomb_dickman_50000_certified.txt
+OK: 50000 digits, checkpoint audit
+  chunks: 3076 covering 307580 nodes
+  index range: -149075 .. 158505 (no gaps)
+  step: 80846368 / 1099511627776  (from meta_v12.json (planned h))
+  lower correction B = 1
+  upper correction C = 2427712667995762
+  chunk-sum width: 4.230 x 10^-50043
+  certificate width: 4.390 x 10^-50043
+  plan: meta_v12.json h = 7.352934335358441e-05 matches the recovered step; K_L=149075, K_R=158504
+exit code: 0
+
+Notes
+-----
+* The files delivered on 2026-11-16 were CRLF. Canonical LF copies are used
+  here; only line endings changed, the content is identical.
+  original certificate sha256: 71ae993df6166a5334fee2775e75282c95d76c790dee0361a36120a8670cc9ce
+  original digits      sha256: bd4af9d2c4ccd345e792eb21c52c44a0506aa395ce9c1169b612337ca0a75a1c
+* The run plan is present as meta_v12.json (format gd-checkpoint-v12), not
+  meta.pkl. Its recorded step h = 7.352934335358441e-05 gives exactly
+  m = 80846368, so the audit uses the planned step rather than recovering
+  it from lam_lo; B = 1 is therefore a real consistency check. The plan
+  also fixes K_L = 149075, K_R = 158504, matching the covered node range
+  -149075 .. 158505.
+* The 40000-digit control, whose plan is meta.pkl, recovers m = 100859575
+  and C = 65673984721697, exactly the values in its plan, which validates
+  the procedure for the old format.
+* The rigorous Arb re-audit of all chunks was not run: python-flint cannot
+  be imported on this machine (Application Control).
+* No independent recomputation at 50000 digits was attempted; the mpmath
+  level-C run covers 1000 digits only (verification/reports/independent_1000.txt).
