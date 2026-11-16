@@ -37,6 +37,31 @@ Level B needs the 1,209 checkpoint pickles (~70 MB) and is therefore run from
 the full repository, not from this archive. The archive ships its report
 (`reports/level_b.txt`) instead.
 
+## MathWorld statement checks
+
+`mathworld_checks.py` checks every statement on
+[MathWorld's "Golomb-Dickman Constant Digits" page](https://mathworld.wolfram.com/Golomb-DickmanConstantDigits.html)
+against the 50,000-digit file: the opening digits, the Earls sequence
+(A225242), A229195, digit scanning, absence of `0123456789` and
+`9876543210`, the digit-count table, A174975/A174974, and the reported prime
+search through 15,000 digits.
+
+```sh
+python verification/mathworld_checks.py            # ~7 s
+python verification/mathworld_checks.py --primes   # + exhaustive 1..2508
+python verification/mathworld_checks.py --primes --deep-primes  # ~12 min (698 s)
+```
+
+Result: 8 PASS, two historical attributions NOT_VERIFIABLE (Mitchell 1968 and
+Weisstein's 2013 computation depth), normality OPEN, and the 15,000-digit
+prime search PARTIAL (140 sampled lengths). Extra checks cover runs,
+palindromes, repeated and tandem substrings, periodic runs, k-gram coverage,
+chi-square tests, and random prime substrings. See
+`reports/mathworld_50000.md` (Russian) and `reports/mathworld_50000.json`;
+reference b-files are in `reports/oeis/`. These are checks of the digit string
+and of the page's statements, not a proof of normality and not a world-record
+claim.
+
 In the exported bundle the layout is
 
 ```

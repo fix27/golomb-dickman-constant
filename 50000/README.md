@@ -40,6 +40,13 @@ $$\left\lfloor 10^{50000}\Lambda_-/2^S\right\rfloor
 | суммы блоков воспроизводят $\Lambda_-,\Lambda_+$ | там же | $B=1$, $C=2427712667995762$ |
 | ширина по блокам против ширины сертификата | там же | $4.230$ против $4.390\times10^{-50043}$ |
 
+Дополнительно проверены все утверждения страницы MathWorld
+«Golomb-Dickman Constant Digits»: отчёт
+[`../verification/reports/mathworld_50000.md`](../verification/reports/mathworld_50000.md),
+скрипт [`../verification/mathworld_checks.py`](../verification/mathworld_checks.py).
+Итог: 8 PASS, 2 исторические атрибуции NOT_VERIFIABLE, нормальность OPEN,
+заявленный поиск простых до 15 000 знаков PARTIAL (140 выборочных длин).
+
 Шаг сетки зафиксирован в плане `gd_rigorous_ckpt_50000/meta_v12.json`:
 $h=7.352934335358441\times10^{-5}$, что даёт ровно
 $m=80846368$, то есть $h=m/2^{40}$. Аудит берёт $m$ из плана, а не из

@@ -54,6 +54,40 @@ $B=1$ и $C=2427712667995762$. Шаг $h=80846368/2^{40}$ берётся из п
 [`50000/README.md`](50000/README.md) и
 [`verification/reports/50000_verification.txt`](verification/reports/50000_verification.txt).
 
+## Проверка утверждений MathWorld
+
+Отдельный отчёт проверяет **все** утверждения страницы
+[«Golomb-Dickman Constant Digits»](https://mathworld.wolfram.com/Golomb-DickmanConstantDigits.html)
+на 50 000 знаках: начало разложения, последовательность Эрлса, A229195,
+сканирование строк, отсутствие `0123456789`/`9876543210`, таблицу частот,
+A174975/A174974 и заявленный поиск простых до 15 000 знаков.
+
+| Что | Файл |
+|---|---|
+| Отчёт с разбором каждого пункта | [`verification/reports/mathworld_50000.md`](verification/reports/mathworld_50000.md) |
+| Воспроизводимый скрипт | [`verification/mathworld_checks.py`](verification/mathworld_checks.py) |
+| Машинный отчёт JSON | [`verification/reports/mathworld_50000.json`](verification/reports/mathworld_50000.json) |
+| Справочные b-файлы OEIS | [`verification/reports/oeis/`](verification/reports/oeis/) |
+
+Итог: 8 пунктов **PASS**, 2 исторические атрибуции **NOT_VERIFIABLE**
+(Митчелл 1968 и глубина расчёта Вебштейна 2013), нормальность — **OPEN**,
+заявленный исчерпывающий поиск простых до 15 000 знаков — **PARTIAL**
+(выборочно проверены 140 длин). Дополнительно найдены самые длинные серии,
+палиндром, повторы, тандемы, периодические участки, покрытие $k$-грамм и
+проведены $\chi^2$-тесты. Это проверка цифровой строки и утверждений
+страницы, а не доказательство нормальности и не заявка на рекорд.
+
+```bash
+# ~7 секунд: утверждения страницы и цифровые проверки.
+python verification/mathworld_checks.py
+
+# Полный отчёт: плюс исчерпывающий перебор длин 1..2508,
+# сильная проверка 1659/2508 и выборочный скан до 15 000
+# (около 12 минут, 698 с).
+python verification/mathworld_checks.py --primes --deep-primes \
+    --json verification/reports/mathworld_50000.json
+```
+
 ## Предыдущий результат: 40 000 знаков
 
 Сертификат
@@ -375,5 +409,11 @@ and `python verification/audit_chunks.py --ckpt 50000/gd_rigorous_ckpt_50000
 chunks against the certificate. The full Arb re-audit of all nodes was **not**
 run (python-flint does not load on the build machine), and no independent
 50,000-digit recomputation was attempted; level C covers 1,000 digits.
+
+`verification/reports/mathworld_50000.md` checks every statement on
+MathWorld's "Golomb-Dickman Constant Digits" page against the 50,000
+digits: 8 PASS, two historical attributions NOT_VERIFIABLE, normality
+OPEN, and the reported prime search to 15,000 digits PARTIAL (140 sampled
+lengths). The script is `verification/mathworld_checks.py`.
 
 </details>

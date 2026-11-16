@@ -1,0 +1,5 @@
+# A225242 (b-file synthesized from sequence entry)
+1 28
+2 256
+3 1967
+4 387
