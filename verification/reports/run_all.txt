@@ -1,0 +1,7 @@
+Golomb-Dickman constant: three-level verification
+verdict: PASS
+
+Level A (50,000): exit 0 in 0.2s
+Level A (40,000): exit 0 in 0.2s
+Level B' (chunks): exit 0 in 0.8s
+Level B: exit 0 in 11.3s

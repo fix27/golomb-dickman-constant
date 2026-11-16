@@ -1,0 +1,45 @@
+{
+  "verdict": "PASS",
+  "levels": [
+    {
+      "level": "A (50,000)",
+      "command": [
+        "verify_certificate.py",
+        "--cert",
+        "../50000/golomb_dickman_50000_certified.txt",
+        "--compare",
+        "../40000/golomb_dickman_40000_digits.txt"
+      ],
+      "exit_code": 0,
+      "seconds": 0.2
+    },
+    {
+      "level": "A (40,000)",
+      "command": [
+        "verify_40000.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.2
+    },
+    {
+      "level": "B' (chunks)",
+      "command": [
+        "audit_chunks.py",
+        "--ckpt",
+        "../50000/gd_rigorous_ckpt_50000",
+        "--cert",
+        "../50000/golomb_dickman_50000_certified.txt"
+      ],
+      "exit_code": 0,
+      "seconds": 0.8
+    },
+    {
+      "level": "B",
+      "command": [
+        "level_b.py"
+      ],
+      "exit_code": 0,
+      "seconds": 11.3
+    }
+  ]
+}

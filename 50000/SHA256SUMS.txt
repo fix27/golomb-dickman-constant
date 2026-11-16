@@ -2,6 +2,7 @@
 # Canonical form: ASCII text, LF line endings, no BOM.
 # Verify with:  sha256sum -c SHA256SUMS.txt
 1e3d23e9ac3ce51990d83decd395d6bde96027f43811b94cebd5a6a4b7c19c43  b084945.txt
+0da4cbe9587c2af5cd59e43829de8b8bf859ad2aeb59181d7032b0b3a8e2b80c  gd_rigorous_ckpt_50000/meta_v12.json
 03c4ace9c3d7761b81f7681ea2710b854576643d0adf6c6213461b16d11c2f59  golomb_dickman_26.py
 76f4155981049003351409769505c3cec39e26dfc30624c46bd199e70ed6477a  golomb_dickman_50000_certified.txt
 8f017d45ee5108bb6b976882b079279f44f8a767ce62b44bd7c54e9167ad09a0  golomb_dickman_50000_digits.txt
