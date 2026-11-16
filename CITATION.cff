@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: >-
   If you use these data, code or the certified digits, please cite this
   repository and, when a DOI is available, the archived Zenodo release.
-title: "Golomb-Dickman constant: 40,000 certified decimal digits"
+title: "Golomb-Dickman constant: 50,000 certified decimal digits"
 type: software
 authors:
   - family-names: Pozdnyakov
@@ -10,11 +10,11 @@ authors:
     affiliation: "Surgut, Khanty-Mansi Autonomous Okrug - Yugra, Russia"
     email: fix@inbox.ru
     alias: fix27
-version: "40000"
-date-released: 2026-11-15
+version: "50000"
+date-released: 2026-11-16
 license: MIT
 repository-code: "https://github.com/fix27/golomb-dickman-constant"
-url: "https://github.com/fix27/golomb-dickman-constant/tree/main/40000"
+url: "https://github.com/fix27/golomb-dickman-constant/tree/main/50000"
 keywords:
   - Golomb-Dickman constant
   - interval arithmetic
@@ -24,16 +24,17 @@ keywords:
   - Stieltjes continued fraction
   - OEIS A084945
 abstract: >-
-  Rigorous interval-arithmetic certificate for the first 40,000 decimal
+  Rigorous interval-arithmetic certificate for the first 50,000 decimal
   digits of the Golomb-Dickman constant
   lambda = integral_0^infinity exp(-u - E_1(u)) du. The certificate gives
-  integers Lambda_- < Lambda_+ and a scale S = 133074 such that
+  integers Lambda_- < Lambda_+ and a scale S = 166293 such that
   lambda lies in [Lambda_-/2^S, Lambda_+/2^S] and
-  floor(10^40000 Lambda_-/2^S) = floor(10^40000 Lambda_+/2^S); the digits
-  are therefore proved by truncation. The interval width is about
-  10^-40042.26, leaving roughly 42 guard digits. The package also contains
-  a dependency-free checker, the producing code, the published checkpoints,
-  and an OEIS b-file for A084945 with terms n = 0..39999.
+  floor(10^50000 Lambda_-/2^S) = floor(10^50000 Lambda_+/2^S); the digits
+  are therefore proved by truncation. The interval width is
+  4.390 x 10^-50043, leaving 42 guard digits. The package also contains
+  the producing code and checkpoints, and an OEIS b-file for A084945 with
+  terms n = 0..49999. The previous 40,000-digit certificate is kept in
+  the same repository under 40000/.
 references:
   - type: software
     title: "Golomb-Dickman constant: 30,000 certified decimal digits"

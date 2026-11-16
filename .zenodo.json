@@ -1,6 +1,6 @@
 {
-  "title": "Golomb-Dickman constant: 40,000 certified decimal digits",
-  "description": "<p>Rigorous interval-arithmetic certificate for the first <b>40,000 decimal digits</b> of the Golomb&ndash;Dickman constant</p><p style=\"text-align:center\">λ = ∫<sub>0</sub><sup>∞</sup> exp(−u − E<sub>1</sub>(u)) du = 0.624329988543550870992936383100837244…</p><p>The certificate consists of integers Λ<sub>−</sub> &lt; Λ<sub>+</sub> and a scale S = 133074 such that λ ∈ [Λ<sub>−</sub>/2<sup>S</sup>, Λ<sub>+</sub>/2<sup>S</sup>] and floor(10<sup>40000</sup>Λ<sub>−</sub>/2<sup>S</sup>) = floor(10<sup>40000</sup>Λ<sub>+</sub>/2<sup>S</sup>). The first 40,000 digits are therefore <i>proved by truncation</i>, not merely computed in floating point. The interval width is about 10<sup>−40042.26</sup>, leaving roughly 42 guard digits.</p><p>The computation uses the trapezoidal rule after the Takahashi–Mori substitution, explicit tail and discretisation bounds (Trefethen–Weideman), Stieltjes continued fractions for E<sub>1</sub>, and Arb balls via python-flint. The trust base is the correctness of Arb together with the cited theorems and the elementary lemmas stated in the source; this is not a formalisation in a proof assistant.</p><p>The package contains the certificate, a 40,000-digit file, a b-file for OEIS A084945 with terms n = 0..39999, the producing code, the published checkpoints, and a checker that uses only the Python standard library and exact integer arithmetic. Running <code>python verify_40000.py</code> verifies the certificate, the digits file, the b-file and the agreement of the first 102 digits with OEIS A084945.</p><p>Related: OEIS A084945 (decimal expansion), OEIS A225242 (Earls's sequence), MathWorld <i>Golomb-Dickman Constant Digits</i>.</p>",
+  "title": "Golomb-Dickman constant: 50,000 certified decimal digits",
+  "description": "<p>Rigorous interval-arithmetic certificate for the first <b>50,000 decimal digits</b> of the Golomb&ndash;Dickman constant</p><p style=\"text-align:center\">λ = ∫<sub>0</sub><sup>∞</sup> exp(−u − E<sub>1</sub>(u)) du = 0.624329988543550870992936383100837244…</p><p>The certificate consists of integers Λ<sub>−</sub> &lt; Λ<sub>+</sub> and a scale S = 166293 such that λ ∈ [Λ<sub>−</sub>/2<sup>S</sup>, Λ<sub>+</sub>/2<sup>S</sup>] and floor(10<sup>50000</sup>Λ<sub>−</sub>/2<sup>S</sup>) = floor(10<sup>50000</sup>Λ<sub>+</sub>/2<sup>S</sup>). The first 50,000 digits are therefore <i>proved by truncation</i>, not merely computed in floating point. The interval width is 4.390 &times; 10<sup>&minus;50043</sup>, leaving roughly 42 guard digits.</p><p>The computation uses the trapezoidal rule after the Takahashi–Mori substitution, explicit tail and discretisation bounds (Trefethen–Weideman), Stieltjes continued fractions for E<sub>1</sub>, and Arb balls via python-flint. The trust base is the correctness of Arb together with the cited theorems and the elementary lemmas stated in the source; this is not a formalisation in a proof assistant.</p><p>The package contains the certificate, a 50,000-digit file, a b-file for OEIS A084945 with terms n = 0..49999, the producing code, the published checkpoints, and checkers that use only the Python standard library and exact integer arithmetic. Running <code>python verification/verify_certificate.py --cert 50000/golomb_dickman_50000_certified.txt</code> verifies the certificate, the digits file, the b-file and the agreement of the first 102 digits with OEIS A084945; <code>verification/audit_chunks.py</code> audits the 3,076 checkpoint chunks. The first 40,000 digits agree with the previous certificate.</p><p>Related: OEIS A084945 (decimal expansion), OEIS A225242 (Earls's sequence), MathWorld <i>Golomb-Dickman Constant Digits</i>.</p>",
   "creators": [
     {
       "name": "Pozdnyakov, Konstantin Nikolaevich",
@@ -10,8 +10,8 @@
   "upload_type": "software",
   "license": "MIT",
   "access_right": "open",
-  "publication_date": "2026-11-15",
-  "version": "40000",
+  "publication_date": "2026-11-16",
+  "version": "50000",
   "language": "eng",
   "keywords": [
     "Golomb-Dickman constant",
@@ -40,5 +40,5 @@
       "resource_type": "software"
     }
   ],
-  "notes": "Computed by Konstantin Nikolaevich Pozdnyakov (Surgut, KhMAO - Yugra, Russia), fix@inbox.ru. The producing pipeline is 40000/golomb_dickman.py; the current CLI is golomb_dickman_26.py."
+  "notes": "Computed by Konstantin Nikolaevich Pozdnyakov (Surgut, KhMAO - Yugra, Russia), fix@inbox.ru. The 50,000-digit certificate was produced by golomb_dickman_26.py (checkpoint format v12, plan in 50000/gd_rigorous_ckpt_50000/meta_v12.json). The previous 40,000-digit certificate was produced by 40000/golomb_dickman.py. The full Arb re-audit of all nodes was not run on the author machine because python-flint cannot be imported there; this is stated in verification/reports/50000_verification.txt."
 }

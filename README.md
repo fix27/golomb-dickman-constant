@@ -48,7 +48,9 @@ $4.390\times10^{-50043}$, то есть в запасе остаётся ещё 
 Первые 40 000 знаков нового сертификата совпадают с сертификатом на
 40 000 знаков (проверяется `verification/verify_certificate.py --compare`),
 а суммы 3076 блоков воспроизводят оба конца интервала с поправками
-$B=1$ и $C=2427712667995762$. Подробности и оговорки —
+$B=1$ и $C=2427712667995762$. Шаг $h=80846368/2^{40}$ берётся из плана
+`50000/gd_rigorous_ckpt_50000/meta_v12.json`, поэтому $B=1$ — независимая
+проверка, а не следствие подгонки. Подробности и оговорки —
 [`50000/README.md`](50000/README.md) и
 [`verification/reports/50000_verification.txt`](verification/reports/50000_verification.txt).
 
@@ -182,40 +184,44 @@ python -m pip install python-flint mpmath
 ```bash
 python golomb_dickman_26.py test
 python golomb_dickman_26.py smoke
-python golomb_dickman_26.py certify --digits 40000
+python golomb_dickman_26.py certify --digits 50000
 python golomb_dickman_26.py crosscheck --digits 200
 python golomb_dickman_26.py boundary-test
 ```
 
 - `test` — самопроверка окружения и точные рациональные проверки леммы 7;
 - `smoke` — сквозной прогон на 60 знаках;
-- `certify --digits 40000` — полный сертификат (значение по умолчанию для
-  `--digits` — 40 000); пишет `golomb_dickman_40000_certified.txt` в текущий
-  каталог и сохраняет чекпоинты в `gd_rigorous_ckpt_40000/`;
+- `certify --digits 50000` — полный сертификат; значение по умолчанию для
+  `--digits` по-прежнему 40 000. Пишет `golomb_dickman_<D>_certified.txt`
+  в текущий каталог и сохраняет чекпоинты в `gd_rigorous_ckpt_<D>/`;
 - `crosscheck` — независимые сверки через `mpmath`/`mpmath.iv`, цепные дроби,
   форсированные ветви, альтернативный шаг и лестницу точности;
 - `boundary-test` — граничные тесты леммы 7.
 
-> **Не запускайте `certify` внутри `40000/` — потеряются опубликованные
-> чекпоинты.** Каталог по умолчанию — `gd_rigorous_ckpt_40000/` в текущем
-> каталоге, то есть тот же, где лежат 1 209 опубликованных кусков в формате
-> `meta.pkl` (`chunk=200`). v26 пишет свой `meta_v12.json` и чужой `meta.pkl`
-> не проверяет, поэтому часть файлов `c_*.pkl` будет перезаписана кусками
-> другого размера, а `verify_checkpoints.py` перестанет проходить. Исходный
-> набор восстанавливается только полным пересчётом. Для нового счёта
-> используйте пустой каталог или явный `--ckpt`, а
-> `40000/gd_rigorous_ckpt_40000/` считайте read-only артефактом.
+> **Не запускайте `certify` внутри `40000/` или `50000/` — потеряются
+> опубликованные чекпоинты.** Каталог по умолчанию —
+> `gd_rigorous_ckpt_<D>/` в текущем каталоге, то есть тот же, где лежат
+> опубликованные куски: 1 209 в `40000/` (формат `meta.pkl`, `chunk=200`)
+> и 3 076 в `50000/` (формат `meta_v12.json`, `chunk=100`). v26 пишет свой
+> `meta_v12.json` и чужой план не проверяет, поэтому часть файлов `c_*.pkl`
+> будет перезаписана кусками другого размера. Исходный набор
+> восстанавливается только полным пересчётом. Для нового счёта используйте
+> пустой каталог или явный `--ckpt`, а опубликованные каталоги считайте
+> read-only артефактами.
 
-Полный прогон на 40 000 знаков занимает **часы CPU**; его можно прерывать,
+Полный прогон занимает **часы CPU** (50 000 знаков — заметно дольше
+40 000); его можно прерывать,
 прогресс сохраняется в чекпоинтах. Режим `--resume` — только аудиторский:
 он доверяет готовым чекпоинтам, не пересчитывает их и **не выдаёт
 сертификат**. По умолчанию работает безопасный режим `--no-resume`:
 каждый кусок пересчитывается в Arb.
 
-Текущий CLI использует формат чекпоинтов v12 (`meta_v12.json`). Опубликованные
-чекпоинты `40000/gd_rigorous_ckpt_40000/` имеют старый формат `meta.pkl` и
-относятся к [`40000/golomb_dickman.py`](40000/golomb_dickman.py) — пайплайну,
-которым получен опубликованный сертификат. Его можно запустить так:
+Текущий CLI использует формат чекпоинтов v12 (`meta_v12.json`). Так получен
+результат на 50 000 знаков; его чекпоинты лежат в
+`50000/gd_rigorous_ckpt_50000/`. Чекпоинты `40000/gd_rigorous_ckpt_40000/`
+имеют старый формат `meta.pkl` и относятся к
+[`40000/golomb_dickman.py`](40000/golomb_dickman.py) — пайплайну, которым
+получен сертификат на 40 000 знаков. Его можно запустить так:
 
 ```bash
 cd 40000
@@ -250,20 +256,25 @@ python golomb_dickman.py
 
 ## B-file для OEIS
 
-Файл [`40000/b084945.txt`](40000/b084945.txt):
+Текущий файл — [`50000/b084945.txt`](50000/b084945.txt):
 
-- 40 000 термов, `n = 0..39999`;
+- 50 000 термов, `n = 0..49999`;
 - только данные, без комментариев;
 - ASCII, LF, без BOM и табов;
 - завершающая пустая строка;
-- 40 001 строка, 308 891 байт;
-- SHA-256: `c73af643198da299d2e624e3c2f69d05439efcddbbefa7cec176ac63f993bed3`.
+- 50 001 строка, 388 891 байт;
+- SHA-256: `1e3d23e9ac3ce51990d83decd395d6bde96027f43811b94cebd5a6a4b7c19c43`.
 
-На момент подготовки файла b-file в OEIS A084945 содержал только `n = 0..101`
-(он синтезирован из записи), поэтому новый файл его заменяет. Текст ссылки:
+Предыдущий файл — [`40000/b084945.txt`](40000/b084945.txt): 40 000 термов,
+`n = 0..39999`, 40 001 строка, 308 891 байт, SHA-256
+`c73af643198da299d2e624e3c2f69d05439efcddbbefa7cec176ac63f993bed3`.
+
+На момент подготовки первого файла b-file в OEIS A084945 содержал только
+`n = 0..101` (он синтезирован из записи), поэтому новый файл его заменяет.
+Текст ссылки для текущего файла:
 
 ```text
-Konstantin Pozdnyakov, <a href="b084945.txt">Table of n, a(n) for n=0..39999</a>
+Konstantin Pozdnyakov, <a href="b084945.txt">Table of n, a(n) for n=0..49999</a>
 ```
 
 Пошаговая инструкция и письмо для редакторов — в
@@ -275,6 +286,8 @@ Zenodo/arXiv и анонс в SeqFan — в
 
 | Документ | Содержание |
 |---|---|
+| [`50000/README.md`](50000/README.md) | Подробное описание текущего результата на 50 000 знаков |
+| [`50000/SHA256SUMS.txt`](50000/SHA256SUMS.txt) | Контрольные суммы текущего пакета |
 | [`40000/README.md`](40000/README.md) | Подробное описание результата на 40 000 знаков |
 | [`40000/VERIFICATION.md`](40000/VERIFICATION.md) | Что и как проверяется, найденные дефекты, база доверия |
 | [`40000/OEIS_SUBMISSION.md`](40000/OEIS_SUBMISSION.md) | Отправка b-file в OEIS |
@@ -290,15 +303,20 @@ Zenodo/arXiv и анонс в SeqFan — в
 
 1. **GitHub** — исходный репозиторий
    <https://github.com/fix27/golomb-dickman-constant>;
-2. **Zenodo** — релиз `v40000` с version DOI; метаданные уже лежат в
+2. **Zenodo** — релиз `v50000` с version DOI; метаданные обновлены в
    [`.zenodo.json`](.zenodo.json), порядок действий — в
-   [`40000/PUBLICATION_CHECKLIST.md`](40000/PUBLICATION_CHECKLIST.md);
+   [`40000/PUBLICATION_CHECKLIST.md`](40000/PUBLICATION_CHECKLIST.md)
+   (прошлый релиз — `v40000`);
 3. **arXiv** — препринт [`paper/main.tex`](paper/main.tex), раздел math.NA,
    cross-list cs.MS; поля формы — в
-   [`paper/ARXIV_SUBMISSION.md`](paper/ARXIV_SUBMISSION.md);
-4. **OEIS** — b-file для A084945, `n = 0..39999`; готовое письмо и текст
+   [`paper/ARXIV_SUBMISSION.md`](paper/ARXIV_SUBMISSION.md). **Текст
+   препринта пока описывает 40 000 знаков** и требует обновления перед
+   отправкой;
+4. **OEIS** — b-file для A084945, `n = 0..49999`; готовое письмо и текст
    ссылки — в [`submission/oeis-bfile.eml`](submission/oeis-bfile.eml) и
-   [`40000/OEIS_SUBMISSION.md`](40000/OEIS_SUBMISSION.md).
+   [`40000/OEIS_SUBMISSION.md`](40000/OEIS_SUBMISSION.md). Письмо и
+   инструкция пока ссылаются на 40 000 термов; перед отправкой замените
+   их на файл и ссылку из `50000/`.
 
 Анонс в SeqFan и обновление страницы MathWorld — необязательные, но полезные
 шаги; тексты лежат в [`submission/`](submission/).
@@ -308,12 +326,12 @@ Zenodo/arXiv и анонс в SeqFan — в
 
 ```bibtex
 @misc{pozdnyakov2026golombdickman,
-  title        = {Golomb--Dickman constant: 40{,}000 certified decimal digits},
+  title        = {Golomb--Dickman constant: 50{,}000 certified decimal digits},
   author       = {Pozdnyakov, Konstantin},
   year         = {2026},
-  howpublished = {\url{https://github.com/fix27/golomb-dickman-constant/tree/main/40000}},
+  howpublished = {\url{https://github.com/fix27/golomb-dickman-constant/tree/main/50000}},
   note         = {Rigorous interval-arithmetic certificate using Arb;
-                  OEIS A084945 b-file with 40{,}000 terms}
+                  OEIS A084945 b-file with 50{,}000 terms}
 }
 ```
 
@@ -329,24 +347,32 @@ Zenodo/arXiv и анонс в SeqFan — в
 This repository contains rigorous interval-arithmetic certificates for decimal
 digits of the Golomb–Dickman constant
 $\lambda = \int_0^\infty e^{-u-E_1(u)}\,du = 0.6243299885\ldots$.
-The current result is **40,000 certified decimal digits**; an earlier 30,000-digit
-result is kept in `30000/` and `30000-v2/`.
+The current result is **50,000 certified decimal digits** (`50000/`); the
+previous 40,000-digit package is kept in `40000/`, and a 30,000-digit result in
+`30000/` and `30000-v2/`.
 
-The certificate in `40000/golomb_dickman_40000_certified.txt` gives integer
-bounds $[\Lambda_-,\Lambda_+]\ni\lambda$ with
-$\lfloor 10^{40000}\Lambda_-\rfloor=\lfloor 10^{40000}\Lambda_+\rfloor$,
-so the digits are proven by truncation. The interval width is about
-$10^{-40042.26}$.
+The certificate in `50000/golomb_dickman_50000_certified.txt` gives integer
+bounds $[\Lambda_-,\Lambda_+]\ni\lambda$ with scale $S=166293$ and
+$\lfloor 10^{50000}\Lambda_-/2^S\rfloor
+=\lfloor 10^{50000}\Lambda_+/2^S\rfloor$,
+so the digits are proven by truncation. The interval width is
+$4.390\times10^{-50043}$ (about $10^{-50042.36}$), leaving 42 guard digits.
+Its first 40,000 digits agree with the older certificate.
 
 The computation uses the trapezoidal rule after the Takahashi–Mori substitution,
 explicit tail and discretization bounds (Trefethen–Weideman), Stieltjes continued
 fractions, and Arb balls via `python-flint`. Trust base: Arb correctness and the
 cited theorems. The current self-contained CLI is `golomb_dickman_26.py`;
-`40000/golomb_dickman.py` is the pipeline that produced the published certificate.
+`40000/golomb_dickman.py` produced the 40,000-digit certificate.
 
-`40000/b084945.txt` is a ready OEIS b-file for A084945 with terms
-$n=0\ldots39999$ (plain ASCII, LF, 40,001 lines). Run
-`python 40000/verify_40000.py` for a dependency-free check of the certificate,
-digits and b-file. See `40000/VERIFICATION.md` for the full checkpoint audit.
+`50000/b084945.txt` is a ready OEIS b-file for A084945 with terms
+$n=0\ldots49999$ (plain ASCII, LF, 50,001 lines). Run
+`python verification/verify_certificate.py --cert 50000/golomb_dickman_50000_certified.txt`
+for a dependency-free check of the certificate, digits, b-file and OEIS prefix,
+and `python verification/audit_chunks.py --ckpt 50000/gd_rigorous_ckpt_50000
+--cert 50000/golomb_dickman_50000_certified.txt` to audit the 3,076 checkpoint
+chunks against the certificate. The full Arb re-audit of all nodes was **not**
+run (python-flint does not load on the build machine), and no independent
+50,000-digit recomputation was attempted; level C covers 1,000 digits.
 
 </details>
