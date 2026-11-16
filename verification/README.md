@@ -60,8 +60,8 @@ repository, whose checkpoints are too large to ship here.
 
 | Level | Cost | Establishes | Does **not** establish |
 |-------|------|-------------|------------------------|
-| A | seconds | SHA-256 of all inputs; `0 < lam_lo < lam_hi`; `floor(10^D*lam_lo/2^S) = floor(10^D*lam_hi/2^S)`; the digits file equals that integer; the interval is narrower than one unit in the 40,000th place; the b-file matches digit by digit; the first 102 digits match OEIS A084945 | that the constant really lies in the published interval |
-| B | seconds | meta-parameters reproduce from the formulas; chunk coverage 1..1,209 is contiguous; the integer certificate arithmetic reproduces `lam_lo`, `lam_hi`; the discretisation bound and both tails reproduce the corrections `B`, `TR`, `TL`; nodes recomputed from scratch in `Decimal` agree with the saved balls | the Arb enclosure itself (that needs `verify_checkpoints_arb.py` and python-flint) |
+| A | seconds | SHA-256 of all inputs; `0 < lam_lo < lam_hi`; `floor(10^D*lam_lo/2^S) = floor(10^D*lam_hi/2^S)`; the digits file equals that integer; the interval is narrower than one unit in the D-th place; the b-file matches digit by digit; the first 102 digits match OEIS A084945 | that the constant really lies in the published interval |
+| B | seconds | meta-parameters reproduce from the formulas; chunk coverage 1..1,209 of the 40,000-digit run is contiguous; the integer certificate arithmetic reproduces `lam_lo`, `lam_hi`; the discretisation bound and both tails reproduce the corrections `B`, `TR`, `TL`; nodes recomputed from scratch in `Decimal` agree with the saved balls | the Arb enclosure itself (that needs `verify_checkpoints_arb.py` and python-flint) |
 | C | minutes–days | the leading digits reproduce from a different formula arrangement, a different quadrature rule, and a different library | rigour: mpmath is floating point, so this is numerical evidence |
 
 Levels A and B deliberately contain **no pickle loading, no import of the
@@ -72,15 +72,15 @@ from the formula, and the comparison tolerance is printed. There is no
 
 ## Certificate shape
 
-| quantity | value |
-|----------|-------|
-| decimal digits `D` | 40,000 |
-| guard digits `G` | 30 |
-| scale `S` | 133,074 bits |
-| nodes | 241,688 in 1,209 chunks of 200 |
-| interval | `[lam_lo, lam_hi] / 2^133074` |
-| width | `5.492 × 10^-40043` (below `10^-40042`) |
-| guard digits beyond the 40,000th place | 42 |
+| quantity | 50,000 (current) | 40,000 (previous) |
+|----------|------------------|-------------------|
+| decimal digits `D` | 50,000 | 40,000 |
+| working guard digits `G` in the plan | 30 | 30 |
+| scale `S` | 166,293 bits | 133,074 bits |
+| nodes | 307,580 in 3,076 chunks of 100 | 241,688 in 1,209 chunks of 200 |
+| interval | `[lam_lo, lam_hi] / 2^166293` | `[lam_lo, lam_hi] / 2^133074` |
+| width | `4.390 × 10^-50043` (below `10^-50042`) | `5.492 × 10^-40043` (below `10^-40042`) |
+| guard digits beyond the `D`-th place | 42 | 42 |
 
 ## Honest status on the packaging machine
 
@@ -96,9 +96,13 @@ from the formula, and the comparison tolerance is printed. There is no
   checkpoint-sum audit (`reports/50000_verification.txt`): its first 40,000
   digits agree with the older certificate, and its 3,076 checkpoint chunks
   are contiguous and reproduce both endpoints with corrections `B = 1`,
-  `C = 2427712667995762`. Its `meta.pkl` is missing, so the dyadic step was
-  recovered from the certificate; the 40,000-digit control recovers exactly
-  the documented values, which validates the procedure.
+  `C = 2427712667995762`. Its plan is `meta_v12.json` (not `meta.pkl`):
+  the recorded step `h = 7.352934335358441e-05` gives exactly
+  `m = 80846368`, and `K_L = 149075`, `K_R = 158504` match the covered
+  node range, so the audit uses the planned step and `B = 1` is a genuine
+  consistency check. The 40,000-digit control, whose plan is `meta.pkl`,
+  recovers exactly the documented values, which validates the old format
+  as well.
 * Level C: 1,000 digits reproduced independently (see
   `reports/independent_1000.txt`): the two quadrature rules agree for 1,020
   leading digits and both agree with the certified file for the same 1,020.
@@ -110,7 +114,7 @@ from the formula, and the comparison tolerance is printed. There is no
 
 * This is not claimed to be a world record, and the package makes no
   statement about the normality of `lambda`.
-* `lambda` is not known to be normal; 40,000 digits are far too few to say
+* `lambda` is not known to be normal; 50,000 digits are far too few to say
   anything statistical about it.
 * Matching prefixes from level C are evidence about the digits, not about the
   enclosure.

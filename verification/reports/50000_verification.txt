@@ -1,16 +1,17 @@
 50000 digits: certificate verification and checkpoint audit
-date: 2026-11-16 12:32:55
+date: 2026-11-16 12:35:28
 python: Python 3.12.10
 
 $ python verification/verify_certificate.py --cert 50000/golomb_dickman_50000_certified.txt --compare 40000/golomb_dickman_40000_digits.txt
-python.exe : FAIL: golomb_dickman_50000_certified.txt: contains CR (canonical form is LF only)
-строка:13 знак:9
-+ $out1 = & $py -u verification\verify_certificate.py --cert 50000\golo ...
-+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    + CategoryInfo          : NotSpecified: (FAIL: golomb_di...orm is LF only):String) [], RemoteException
-    + FullyQualifiedErrorId : NativeCommandError
- 
-exit code: 1
+OK: 50000 digits certified
+  certificate: 50000\golomb_dickman_50000_certified.txt
+  scale: lam_lo/2^166293 .. lam_hi/2^166293
+  width: 4.390 x 10^-50043  (42 guard digits)
+  b-file: 50000 terms
+  OEIS prefix: checked
+  compared with 40000\golomb_dickman_40000_digits.txt: 40000 leading digits agree
+  SHA-256: OK
+exit code: 0
 
 $ python verification/audit_chunks.py --ckpt 50000/gd_rigorous_ckpt_50000 --cert 50000/golomb_dickman_50000_certified.txt
 OK: 50000 digits, checkpoint audit

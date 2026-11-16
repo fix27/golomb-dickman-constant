@@ -5,9 +5,13 @@
     python run_all.py --digits 1000       # plus Level C at 1000 digits
     python run_all.py --digits 40000 --jobs 12
 
-Level A  certificate/digits consistency, exact integer arithmetic.
+Level A  certificate/digits consistency, exact integer arithmetic;
+         run for the current 50,000-digit certificate and the previous
+         40,000-digit one.
 Level B  mathematical audit: parameters, discretisation bound, tails,
          formula self-test, and a fresh recomputation of sample chunks.
+Level B' checkpoint-sum audit of the 50,000-digit run (only when the
+         checkpoints are present, i.e. in the full repository).
 Level C  independent recomputation of the digits with mpmath and two
          different quadrature rules (numerical evidence, not a proof).
 
@@ -71,9 +75,31 @@ def main(argv: list[str] | None = None) -> int:
 
     here = Path(__file__).resolve().parent
     levels: list[tuple[str, list[str]]] = [
-        ("A", ["verify_40000.py"]),
+        (
+            "A (50,000)",
+            [
+                "verify_certificate.py",
+                "--cert",
+                "../50000/golomb_dickman_50000_certified.txt",
+                "--compare",
+                "../40000/golomb_dickman_40000_digits.txt",
+            ],
+        ),
+        ("A (40,000)", ["verify_40000.py"]),
+        (
+            "B' (chunks)",
+            [
+                "audit_chunks.py",
+                "--ckpt",
+                "../50000/gd_rigorous_ckpt_50000",
+                "--cert",
+                "../50000/golomb_dickman_50000_certified.txt",
+            ],
+        ),
         ("B", ["level_b.py"]),
     ]
+    if not (here.parent / "50000" / "gd_rigorous_ckpt_50000").is_dir():
+        levels = [item for item in levels if not item[0].startswith("B'")]
     if args.digits > 0:
         levels.append(("C", ["independent_quadrature.py", "--digits", str(args.digits), "--jobs", str(args.jobs)]))
 
