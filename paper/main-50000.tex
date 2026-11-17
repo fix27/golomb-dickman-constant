@@ -1,0 +1,688 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage[margin=2.6cm]{geometry}
+\usepackage{microtype}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  frame=single,
+  framesep=3pt,
+  rulecolor=\color{gray!50},
+  backgroundcolor=\color{gray!5}
+}
+
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{Theorem}
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+\newcommand{\Eone}{E_1}
+\newcommand{\lam}{\lambda}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\floor}[1]{\left\lfloor #1 \right\rfloor}
+\DeclareMathOperator{\rad}{rad}
+
+\title{Fifty thousand certified decimal digits of\\ the Golomb--Dickman constant}
+
+\author{Konstantin N. Pozdnyakov\\
+\small Surgut, Khanty--Mansi Autonomous Okrug --- Yugra, Russia\\
+\small \texttt{fix@inbox.ru}}
+
+\date{17 November 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We describe a rigorous interval-arithmetic certificate for the first
+50\,000 decimal digits of the Golomb--Dickman constant
+\[
+  \lam=\int_0^\infty e^{-u-\Eone(u)}\,du
+      =0.624329988543550870992936383100837244\ldots,
+\]
+where $\Eone$ is the exponential integral. The certificate consists of
+integers $\Lambda_-<\Lambda_+$ and a scale $S=166\,293$ such that
+$\lam\in[\Lambda_-/2^S,\Lambda_+/2^S]$ and
+\[
+  \floor{10^{50000}\Lambda_-/2^S}
+  =\floor{10^{50000}\Lambda_+/2^S}.
+\]
+Consequently the digits are \emph{proved by truncation}, not merely
+computed in floating point. The interval width is
+$4.390\times10^{-50043}$, which leaves about $42.36$ guard digits. The
+computation evaluates
+$\lam=\int_{\R}G(t)\,dt$ by the trapezoidal rule after the
+Takahashi--Mori substitution, with explicit tail and discretisation
+bounds in the spirit of Trefethen--Weideman and with every node enclosed
+in an Arb ball. We give the error budget, the certificate format, a
+checker that uses only exact integer arithmetic, and a b-file for OEIS
+A084945 with terms $n=0,\ldots,49999$. We also report measurements on the
+resulting digit string, extend the published OEIS A225242 bound
+$a(5)>15\,000$ and our earlier bounds $a(5),a(6)>40\,000$ to
+$a(5),a(6)>50\,000$, and audit the statements of the MathWorld page.
+The trust base is the correctness of Arb together with the cited
+theorems; this is not a formalisation in a proof assistant. We make no
+claim of a world record and no claim about the normality of $\lam$.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}
+
+For $n\ge2$ let $P(n)$ be the largest prime factor of $n$. The
+Golomb--Dickman constant is the limit of the average of
+$\log P(n)/\log n$,
+\begin{equation}
+  \lam=\lim_{n\to\infty}\frac1n\sum_{k=2}^n
+       \frac{\log P(k)}{\log k}.
+  \label{eq:mean}
+\end{equation}
+Equivalently,
+\begin{equation}
+  \lam=\int_0^\infty F(u)\,du,\qquad F(u)=e^{-u-\Eone(u)} .
+  \label{eq:lambda}
+\end{equation}
+Dickman's function $\rho(u)$ gives the limiting density of integers whose
+largest prime factor is at most $n^{1/u}$ \cite{dickman1930}; the constant
+in \eqref{eq:mean} is the mean of $\log P(n)/\log n$, not the mean of
+$P(n)/n$. The asymptotic analysis of $\rho$ is classical
+\cite{debruijn1951}.
+
+Numerical values are collected in OEIS A084945 \cite{oeisA084945} and on
+the MathWorld page \emph{Golomb--Dickman Constant Digits}
+\cite{mathworld}. When this work began, the OEIS b-file contained the
+terms $n=0,\ldots,101$ (102 terms), synthesised from the entry itself.
+MathWorld reports $15\,000$ digits, attributed to Weisstein (2013); we
+treat that attribution as historical and have marked it
+\texttt{NOT\_VERIFIABLE} in our audit, while every checkable statement
+about those digits is consistent with the certified string. The present computation extends
+the verified decimal expansion to $50\,000$ digits and supplies a
+certificate that makes the verification independent of any particular
+floating-point implementation. A $40\,000$-digit certificate was
+assembled earlier; the present paper reports the $50\,000$-digit
+extension and its audit.
+
+The contribution is deliberately narrow. We do not claim a new
+algorithm: the method is the exponentially convergent trapezoidal rule
+\cite{TW2014} applied after a substitution that produces double
+exponential decay at both ends, with the exponential integral evaluated
+by a power series, a Stieltjes continued fraction \cite{stieltjes1894},
+or an asymptotic expansion, whichever is cheapest at the node. The
+contribution is (a) a complete error budget at $D=50\,000$ digits, (b) an
+integer certificate whose verification needs only exact arithmetic, and
+(c) a reproducible artefact set, including checkpoints and a
+dependency-free verifier. This is an extension of the certified
+expansion, not a world-record claim.
+
+\paragraph{Notation.}
+$\Eone(u)=\int_u^\infty e^{-s}s^{-1}ds$; $\gamma$ is Euler's constant;
+$D$ is the number of certified decimal digits, $G$ the number of guard
+digits, and $S$ the binary scale of the certificate.
+
+\section{The integral and the substitution}
+
+Set
+\begin{equation}
+  F(u)=e^{-u-\Eone(u)},\qquad \lam=\int_0^\infty F(u)\,du .
+\end{equation}
+For $u>0$ one has $0<F(u)<\min(e^\gamma u,\,e^{-u})$, and $F$ extends to
+an entire function of $u$ through
+\begin{equation}
+  F(u)=e^{\gamma}u\exp\!\Bigl(-2u+\sum_{k\ge2}\frac{(-u)^k}{k\,k!}\Bigr),
+  \label{eq:Fseries}
+\end{equation}
+which follows from the classical expansion of $\Eone$
+\cite[5.1.11]{AS1964}.
+
+The original integrand has a logarithmic singularity at $u=0$: it
+vanishes like $u$ on the left and decays like $e^{-u}$ on the right, so
+the trapezoidal rule on $(0,\infty)$ converges only algebraically. The
+Takahashi--Mori substitution
+\begin{equation}
+  u=u(t)=\exp\bigl(t-e^{-t}\bigr),\qquad t\in\R,
+  \label{eq:subst}
+\end{equation}
+is an increasing bijection $\R\to(0,\infty)$ with
+$du=u(t)(1+e^{-t})\,dt$. Hence
+\begin{equation}
+  \lam=\int_{\R}G(t)\,dt,\qquad
+  G(t)=F(u(t))\,u(t)\,(1+e^{-t}),
+  \label{eq:G}
+\end{equation}
+and $G$ is entire in $t$ and decays double exponentially at both ends:
+there is an absolute constant $c>0$ with
+\begin{equation}
+  G(t)=O\bigl(e^{-c\,e^{|t|}}\bigr).
+  \label{eq:decay}
+\end{equation}
+In particular, the substitution turns the algebraic behaviour at $u=0$
+into double exponential decay; the double exponential decay is produced
+by the substitution, not removed by it.
+
+Two elementary tail identities are used below. For every $t_0$,
+\begin{equation}
+  \int_{t_0}^{\infty}u\,e^{-u}(1+e^{-t})\,dt=e^{-u(t_0)},\qquad
+  \int_{-\infty}^{t_0}e^{\gamma}u^2(1+e^{-t})\,dt
+  =\tfrac12 e^{\gamma}u(t_0)^2 .
+  \label{eq:tails}
+\end{equation}
+They follow by the substitution $u=u(t)$ and the bounds of
+\eqref{eq:Fseries}.
+
+\section{Quadrature with explicit bounds}
+
+Fix a step $h>0$ and integers $K_L,K_R$ with $u(K_Rh)\ge1$. Write
+\begin{equation}
+  Q_h=h\sum_{k=-K_L}^{K_R}G(kh).
+\end{equation}
+
+\begin{lemma}[Truncation]
+\label{lem:tail}
+With $G$ as in \eqref{eq:G},
+\begin{equation}
+  0\le h\!\!\sum_{k>K_R}\!G(kh)\le e^{-u(K_Rh)},\qquad
+  0\le h\!\!\sum_{k<-K_L}\!G(kh)\le \tfrac12 e^{\gamma}u(-K_Lh)^2 .
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+By \eqref{eq:Fseries}, $0<G\le g_R:=ue^{-u}(1+e^{-t})$ and
+$0<G\le g_L:=e^\gamma u^2(1+e^{-t})$. The function $g_R$ decreases for
+$u\ge1$, so $hg_R(kh)\le\int_{(k-1)h}^{kh}g_R$ and the right tail is at
+most $\int_{K_Rh}^\infty g_R=e^{-u(K_Rh)}$ by \eqref{eq:tails}. For
+$g_L$ one has $\frac{d}{dt}\log g_L=2(1+e^{-t})-e^{-t}/(1+e^{-t})>0$, so
+$hg_L(kh)\le\int_{kh}^{(k+1)h}g_L$ and the left tail is at most
+$\frac12e^\gamma u(-K_Lh)^2$.
+\end{proof}
+
+\begin{lemma}[Discretisation]
+\label{lem:disc}
+Let $d=7/5$, $c=\cos d>0$, and suppose $G$ is analytic in the strip
+$|\operatorname{Im}z|<d$ with
+$\int_\R|G(x+iy)|\,dx\le M$ there. Then
+\begin{equation}
+  \Bigl|\lam-Q_h\Bigr|
+  \le B_{\mathrm{disc}}+\tau_R+\tau_L,
+  \qquad
+  B_{\mathrm{disc}}=\frac{2M}{e^{2\pi d/h}-1},
+\end{equation}
+where $\tau_R,\tau_L$ are the tail bounds of Lemma~\ref{lem:tail}.
+\end{lemma}
+
+\begin{proof}
+The quadrature error is bounded by the Trefethen--Weideman trapezoidal
+rule estimate \cite[Thm.~5.1]{TW2014}, and the two tails by
+Lemma~\ref{lem:tail}. The decay required in the strip follows from the
+estimates below.
+\end{proof}
+
+For $G$ one may take
+\begin{equation}
+  M=M_1+M_2+M_3,
+  \label{eq:M}
+\end{equation}
+with
+\begin{align}
+  M_1&=C_1e^{-2c}\Bigl(\frac1c+\frac1{4c^2}\Bigr),
+  &C_1&=e^{\gamma+2+(e-2)/2},\\
+  M_2&=4e^{\gamma}e^{4}\exp\!\Bigl(2e^2+\tfrac12e^{e^2}\Bigr),\\
+  M_3&=\frac{e^{\,e^{e^{-2}}-2}\,(1+e^{-2})\,e^{-\kappa'e^2}}{\kappa'},
+  &\kappa'&=\cos(\theta_{\max})\,e^{-e^{-2}},
+\end{align}
+and $\theta_{\max}=d+e^{-2}\sin d<\pi/2$. The three terms bound the
+strips $t\le0$, $0\le t\le2$ and $t\ge2$ respectively. The middle term
+is deliberately crude and gives $M\approx10^{360}$; this is harmless,
+because the discretisation error at
+$h=80\,846\,368/2^{40}\approx7.35\times10^{-5}$ is smaller than
+$10^{-51594}$.
+
+\section{Enclosing the nodes}
+
+Every value $G(kh)$ is enclosed in an Arb ball \cite{johansson2017}, and
+the radius of that ball is checked to be below $2^{-E_{\mathrm{bits}}}$;
+the check is part of the postcondition of the node routine, not an
+heuristic. Arb provides midpoint--radius interval arithmetic with
+directed rounding, so each elementary operation widens the enclosure in
+a certified way.
+
+Three independent representations of $\Eone$ are used, and the routine
+chooses the cheapest one that is guaranteed to reach the target radius.
+
+\begin{enumerate}[leftmargin=1.6em]
+\item \emph{Power series.} From \eqref{eq:Fseries} with
+  $a_j=(-u)^j/(j\,j!)$, the ratio test gives
+  $|a_{j+1}/a_j|=uj/(j+1)^2\le u/(j+1)$. If $K+1\ge2u$, the tail is at
+  most $2|a_{K+1}|$; the finite part is summed in Arb and the tail is
+  added as a symmetric interval.
+\item \emph{Stieltjes continued fraction.} For $z>0$,
+  \begin{equation}
+    e^z\Eone(z)=\frac1z\,g(1/z),\qquad
+    g(x)=\int_0^\infty\frac{e^{-s}}{1+sx}\,ds .
+  \end{equation}
+  The measure $e^{-s}ds$ has moments $m_j=j!$, and Carleman's condition
+  holds, so the Stieltjes transform is determined by its moments. The
+  J-fraction obtained from the Laguerre recurrence compresses to the
+  S-fraction with coefficients $\alpha_{2j-1}=\alpha_{2j}=j>0$. For a
+  positive Stieltjes fraction, consecutive convergents bracket the
+  value. If $f_n$ denotes the $n$-th convergent to $e^z\Eone(z)$ and
+  $D_n$ bounds $|f_n-f_{n-1}|$ in interval arithmetic, then
+  $f_n+[-D_n,D_n]$ contains $e^z\Eone(z)$ and hence the node ball.
+\item \emph{Asymptotic expansion.} From
+  $e^u\Eone(u)=\int_0^\infty e^{-s}/(u+s)\,ds$ and the finite geometric
+  identity,
+  \begin{equation}
+    e^u\Eone(u)=\sum_{j=0}^{K-1}\frac{(-1)^j j!}{u^{j+1}}+R_K,
+    \qquad |R_K|\le\frac{K!}{u^{K+1}} .
+  \end{equation}
+  This is used only where $u$ is large enough for the bound to be below
+  the target radius.
+\end{enumerate}
+
+A fourth branch handles nodes whose value is provably negligible: from
+$0<F(u)<\min(e^\gamma u,e^{-u})$ one gets
+$0<G(t)\le e^\gamma u^2(1+e^{-t})$ for $t<0$ and
+$0<G(t)\le ue^{-u}(1+e^{-t})$ for $t\ge0$. The branch returns $[0,U]$
+only after Arb has certified $U<\varepsilon$; otherwise the regular
+branch is used.
+
+\begin{remark}
+The choice of branch, the number of series terms and the number of
+continued-fraction levels are made using floating-point estimates.
+Those estimates only select resources. The enclosure and the radius
+check are always performed in Arb; if the requested accuracy is not
+reached, the precision is raised and the node is recomputed, or the
+program aborts. A node is never accepted on the strength of a
+floating-point estimate.
+\end{remark}
+
+\section{The certificate and its error budget}
+
+Let $S=E_{\mathrm{bits}}+64$. Each accepted node contributes an interval
+$[g_k^-,g_k^+]$ with $G(kh)\in[g_k^-,g_k^+]$ and
+$\rad<2^{-E_{\mathrm{bits}}}$, expressed in integer units of $2^{-S}$.
+The computation stores, for every chunk of nodes, the exact integer sums
+of the lower and upper endpoints. Summing the chunks gives integers
+$L_{\mathrm{sum}}$ and $H_{\mathrm{sum}}$ with
+\begin{equation}
+  h\,2^{-S}L_{\mathrm{sum}}\le Q_h\le h\,2^{-S}H_{\mathrm{sum}} .
+\end{equation}
+The certificate then records
+\begin{equation}
+  \Lambda_-=\floor{hL_{\mathrm{sum}}}-B,\qquad
+  \Lambda_+=\lceil hH_{\mathrm{sum}}\rceil+C,\qquad
+  C=T_R+T_L+B,
+  \label{eq:cert}
+\end{equation}
+where
+\begin{equation}
+  B=\floor{B_{\mathrm{disc}}\,2^S}+1,\qquad
+  T_R=\floor{\tau_R\,2^S}+1,\qquad
+  T_L=\floor{\tau_L\,2^S}+1 .
+\end{equation}
+Thus every quantity that enters $\Lambda_\pm$ is either an exact integer
+or an outward-rounded bound; no fitted constant is involved.
+
+Table~\ref{tab:params} lists the parameters of the published run and the
+resulting bounds. The corrections $B$ and $C$ are reproduced
+independently by \texttt{verification/audit\_chunks.py} from the chunk
+sums; the individual tail corrections follow from the formulas above.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}llr@{}}
+\toprule
+Quantity & Symbol & Value \\
+\midrule
+certified decimal digits        & $D$              & 50\,000 \\
+guard digits                    & $G$              & 30 \\
+node radius exponent            & $E_{\mathrm{bits}}$ & 166\,229 \\
+certificate scale               & $S$              & 166\,293 \\
+step                            & $h$              & $80\,846\,368/2^{40}$ \\
+left/right node counts          & $K_L,K_R$        & 149\,075,\ 158\,504 \\
+chunk size                      & ---              & 100 \\
+chunks / nodes                  & ---              & 3\,076 / 307\,580 \\
+\midrule
+strip half-width                & $d$              & $7/5$ \\
+bound $\log_{10}M$              & ---              & $360.3909$ \\
+discretisation bound            & $\log_{10}B_{\mathrm{disc}}$ & $-51594.8080$ \\
+right tail bound                & $\log_{10}\tau_R$ & $-50043.8007$ \\
+left tail bound                 & $\log_{10}\tau_L$ & $-50045.7499$ \\
+\midrule
+lower correction                & $B$              & 1 \\
+right tail correction           & $T_R$            & 2\,400\,727\,111\,627\,803 \\
+left tail correction            & $T_L$            & 26\,985\,556\,367\,958 \\
+upper correction                & $C=T_R+T_L+B$    & 2\,427\,712\,667\,995\,762 \\
+\midrule
+interval width                  & $\log_{10}(\Lambda_+-\Lambda_-)-S\log_{10}2$ & $-50042.3574387469$ \\
+guard digits beyond $10^{-D}$   & ---              & $42.3574$ \\
+\bottomrule
+\end{tabular}
+\caption{Parameters and error budget of the 50\,000-digit run. All
+integer quantities are exact.}
+\label{tab:params}
+\end{table}
+
+The discretisation bound is about $1595$ orders of magnitude below what
+is needed, and each tail is at least $43$ orders below the target
+$10^{-50000}$. The width is dominated by the accumulated widths of the
+saved node enclosures: the chunk-sum width is
+$4.230\times10^{-50043}$ ($2^{55.83}$ units of $2^{-S}$), while the
+certificate width is $4.390\times10^{-50043}$ ($2^{55.89}$ units). The
+correction $C=2.4277\times10^{15}\approx2^{51.1}$ units of $2^{-S}$ adds
+about $3.8\%$ to the chunk-sum width. The analytic error terms do not
+control the guard-digit count; the interval arithmetic does. The first
+$40\,000$ digits of the new certificate agree with the earlier
+$40\,000$-digit certificate.
+
+The certificate is a four-line text file: a comment line naming the
+constant and the method, a comment line with $S$ and $\Lambda_-$, a
+comment line with $\Lambda_+$, and a line containing
+$0.d_1d_2\cdots d_D$. Verification needs only exact integer arithmetic.
+
+\section{Verification}
+
+The verification consists of the following exact checks.
+
+\begin{enumerate}[leftmargin=1.6em]
+\item Parse $S,\Lambda_-,\Lambda_+$ and the digit string.
+\item Check $0<\Lambda_-<\Lambda_+$ and that $\Lambda_-/2^S$ is on the
+  expected scale.
+\item Check $\floor{10^D\Lambda_-/2^S}=\floor{10^D\Lambda_+/2^S}$;
+  this is the statement that the interval does not cross a decimal cell.
+\item Check that the common value, written with $D$ leading zeros if
+  necessary, equals the digit string.
+\item Check that the standalone digits file equals the certificate line.
+\item Check that the b-file has exactly $D$ terms, indexed
+  $0,\ldots,D-1$, each equal to the corresponding digit, in plain ASCII
+  with LF line endings.
+\item Check that the first 102 digits equal the published prefix of OEIS
+  A084945; optionally, with \texttt{--compare}, that the first
+  $40\,000$ digits equal the earlier certified string.
+\end{enumerate}
+
+Steps 1--7 are implemented in \texttt{verification/verify\_certificate.py}
+with the Python standard library only, and run in about $0.14$\,s. In the
+published run the optional comparison agreed for all $40\,000$ leading
+digits. The verifier also computes and prints the SHA-256 digest of each
+input; digests can be pinned with \texttt{--sha256}, and the canonical
+values are listed in Appendix~\ref{app:sums}. The repository contains a
+secondary audit that re-reads all $3\,076$ checkpoints, recomputes the
+exact integer sums, checks the covered node range and the planned step,
+re-derives $B$ and $C$, and compares the chunk-sum width with the
+certificate width (\texttt{verification/audit\_chunks.py}). In the
+published run this audit reports $3\,076$ chunks covering $307\,580$
+nodes, no gaps, planned step $80\,846\,368/2^{40}$, $B=1$,
+$C=2\,427\,712\,667\,995\,762$, chunk-sum width
+$4.230\times10^{-50043}$, and certificate width
+$4.390\times10^{-50043}$. The audit treats the saved intervals as a
+cache: it re-derives the integer sums from them but does not recompute
+the Arb balls. As a control, the same audit applied to the
+$40\,000$-digit run, whose plan is stored in the older \texttt{meta.pkl}
+format, recovers $m=100\,859\,575$ and $C=65\,673\,984\,721\,697$,
+exactly the documented values.
+
+The repository organises the checks in three levels, so that a reader
+can pay exactly as much as the question they care about costs
+(\texttt{verification/}). Level~A verifies the certificate and the digit
+strings with exact integer arithmetic and no external dependency
+(\texttt{verify\_certificate.py}). Level~B audits all chunks from the
+saved intervals, re-derives the integer corrections and checks the
+recorded plan (\texttt{audit\_chunks.py}); the
+$40\,000$-digit package additionally contains
+\texttt{checks/verify\_nodes\_decimal.py}, whose \texttt{--plan} mode
+reproduces the analytic bounds and corrections of the $40\,000$-digit
+run, and \texttt{checks/verify\_checkpoints\_arb.py}, which re-implements
+the three representations of $\Eone$ and can recompute all nodes in Arb.
+Level~C recomputes the leading digits with a different representation of
+the integral, a different quadrature rule and a different library
+(\texttt{independent\_quadrature.py}, \texttt{mpmath}). Level~C is
+floating point, hence numerical evidence rather than a proof; at present
+it covers $1\,000$ digits, for which the two quadrature rules agree with
+each other and with the certificate for the first $1\,020$ digits. It
+does not cover $50\,000$ digits. Likewise, the twelve-chunk
+recomputation in \texttt{Decimal} that accompanies the $40\,000$-digit
+package was not repeated at $50\,000$ digits; the $50\,000$-digit
+Level~B evidence is the chunk-sum audit described above.
+
+The Arb re-audit is the only check that re-does the Arb evaluation
+independently of the producing program. It was not executed on the
+machine used to assemble this package, because an Application Control
+policy blocked the Arb shared libraries; it is included for a host
+without that restriction. No analogous full Arb re-audit was run for the
+$50\,000$-digit run. Consequently the certificate presented here is
+conditional on the producing program having computed every ball
+correctly, on Arb being correct, and on the elementary lemmas of
+Sections~3 and~4. It is not a formally verified proof.
+
+\section{The digit string}
+
+Table~\ref{tab:digits} collects measurements on the certified string of
+$50\,000$ digits. The frequency, run and substring rows are reproducible
+with \texttt{verification/mathworld\_checks.py} (about $7$\,s); the prime
+rows require its \texttt{--primes --deep-primes} mode (about $698$\,s).
+The prime substring count was obtained by applying the
+\texttt{prime\_substring\_table} routine of
+\texttt{40000/checks/verify\_sequences.py} to the $50\,000$-digit file
+(about $10$\,s). None of these observations is used in the proof; they
+document the object and provide independent consistency checks against
+published statements.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}p{0.42\textwidth}p{0.5\textwidth}@{}}
+\toprule
+Quantity & Value \\
+\midrule
+digit frequencies $0,\ldots,9$ &
+  $4976,4956,5006,5058,5001,4974,4926,5070,4993,5040$ \\
+$\chi^2$ (9 degrees of freedom) & $3.72$ \\
+longest run of one digit & 5 (\texttt{00000}, \texttt{11111}, \texttt{22222}, \texttt{44444}) \\
+longest repeated block & \texttt{1891192031} at positions 28\,793 and 34\,393 \\
+longest square $XX$ & $X=\texttt{5439}$, block \texttt{54395439} at position 30\,398 \\
+longest palindrome & \texttt{05224342250} at position 11\,751 \\
+prime substrings of length $\le32$ & 83\,372 (Miller--Rabin deterministic below $3.32\times10^{24}$; otherwise strong probable primes) \\
+prime truncations, exhaustive to 2\,508 digits & lengths 6, 27, 57, 60, 1659, 2508 \\
+prime truncations, 140 sampled lengths 2\,509--15\,000 & none \\
+\bottomrule
+\end{tabular}
+\caption{Measurements on the certified 50\,000-digit string. The
+$\chi^2$ value is consistent with uniformity but proves nothing about
+normality, which remains open. The truncations of 1659 and 2508 digits
+are probable primes, not proved primes.}
+\label{tab:digits}
+\end{table}
+
+The published entry OEIS A225242 \cite{oeisA225242} records
+$a(1)=28$, $a(2)=256$, $a(3)=1967$, $a(4)=387$ and the lower bound
+$a(5)>15\,000$, where $a(n)$ is the first position at which the digit $n$
+appears $n$ times in a row. Our earlier $40\,000$-digit certificate gave
+$a(5),a(6)>40\,000$; the present string strengthens both bounds to
+$a(5),a(6)>50\,000$, because the strings \texttt{55555} and
+\texttt{666666} do not occur among the $50\,000$ digits. This is a
+conditional statement: it is valid for the certified string, hence for
+$\lam$ if the certificate is correct.
+
+We also checked every statement on the MathWorld page
+\emph{Golomb--Dickman Constant Digits} against the $50\,000$-digit string
+(\texttt{verification/mathworld\_checks.py}). The audit records eight
+passes, two historical attributions marked \texttt{NOT\_VERIFIABLE}
+(Mitchell 1968 and Weisstein 2013), the normality question open, and the
+reported $15\,000$-digit prime search \texttt{PARTIAL}: $140$ sampled
+lengths between $2\,509$ and $15\,000$ contained no primes, which is
+consistent with the page but cannot confirm or refute the historical
+exhaustive search. The passes include the opening digits, the Earls
+sequence, A229195, the digit-scanning statement, the absence of
+\texttt{0123456789} and \texttt{9876543210}, the reported digit counts
+for the first $10$, $100$, $1\,000$ and $10\,000$ digits, and the
+lambda-constant primes $624329$, $624329988543550870992936383$, and the
+lengths $6,27,57,60,1659,2508$. These checks concern the digit string
+and the page's statements; they are not a proof of normality and not a
+world-record claim.
+
+\section{Reproducibility and data}
+
+The producing pipeline is \texttt{golomb\_dickman\_26.py} in the
+\texttt{50000/} directory. It requires Python 3.11+ and
+\texttt{python-flint} \cite{pythonflint} (Arb); the run takes hours of CPU
+and is resumable through checkpoints. The plan is recorded in
+\texttt{gd\_rigorous\_ckpt\_50000/meta\_v12.json}; it fixes
+$h=80\,846\,368/2^{40}$, $K_L=149\,075$ and $K_R=158\,504$. The
+repository ships the $3\,076$ published chunks, so the certificate can be
+re-derived without recomputing the nodes:
+
+\begin{lstlisting}
+python -m pip install python-flint
+cd 50000
+python ../verification/verify_certificate.py \
+    --cert golomb_dickman_50000_certified.txt \
+    --compare ../40000/golomb_dickman_40000_digits.txt
+python ../verification/audit_chunks.py \
+    --ckpt gd_rigorous_ckpt_50000 \
+    --cert golomb_dickman_50000_certified.txt
+python golomb_dickman_26.py certify --digits 50000   # hours
+\end{lstlisting}
+
+The current self-contained command-line interface accepts
+\texttt{certify --digits 50000}, \texttt{crosscheck},
+\texttt{boundary-test}, \texttt{test} and \texttt{smoke}.
+
+\paragraph{Data.}
+The certificate \texttt{golomb\_dickman\_50000\_certified.txt}, the
+digit file \texttt{golomb\_dickman\_50000\_digits.txt}, the OEIS b-file
+\texttt{b084945.txt}, the code, the verifiers and the checkpoints are
+archived in the GitHub repository
+\url{https://github.com/fix27/golomb-dickman-constant/tree/main/50000}.
+SHA-256 checksums of the canonical files are given in
+Appendix~\ref{app:sums}. An archived release with a DOI is planned; the
+current bundle is documented in \texttt{50000/README.md}.
+
+\paragraph{Trust base.}
+The result is conditional on:
+(i) the correctness of Arb's midpoint--radius arithmetic
+\cite{johansson2017};
+(ii) the trapezoidal rule theorem of Trefethen and Weideman
+\cite[Thm.~5.1]{TW2014};
+(iii) the classical Stieltjes theorem on two-sided bounds by consecutive
+convergents \cite{stieltjes1894};
+(iv) the elementary lemmas of Sections~2--4, stated with proofs in the
+docstring of \texttt{golomb\_dickman\_26.py} and in the $40\,000$-digit
+verification package;
+(v) exact integer arithmetic in Python.
+No step depends on the normality of $\lam$, on unproved conjectures, or
+on the numerical value of $\gamma$ beyond its certified enclosure.
+
+\section{Conclusion}
+
+The first $50\,000$ decimal digits of the Golomb--Dickman constant are
+certified by an interval of width $4.390\times10^{-50043}$ whose
+endpoints give the same $50\,000$-digit truncation. The certificate is
+small, the verifier is dependency-free, and the b-file for OEIS A084945
+extends the published data from $102$ terms ($n=0,\ldots,101$) to
+$50\,000$ terms ($n=0,\ldots,49999$). The main open task is the
+independent Arb re-audit of all chunks on an unrestricted host; the
+$40\,000$-digit script is part of the package, and the $50\,000$-digit
+run would use the same method. No world record and no statement about
+the normality of $\lam$ is claimed.
+
+\appendix
+
+\section{First digits}
+
+The certified value begins
+\begin{lstlisting}
+0.6243299885435508709929363831008372441796426201805292869735519024956380888551132544624602761955398688...
+\end{lstlisting}
+The digits above are the first $100$ digits after the point; the full
+string has $50\,000$ digits and is given in
+\texttt{golomb\_dickman\_50000\_digits.txt}.
+
+\section{Checksums}
+\label{app:sums}
+
+SHA-256 of the canonical files (LF line endings, ASCII/UTF-8 without
+BOM):
+\begin{lstlisting}
+76f4155981049003351409769505c3cec39e26dfc30624c46bd199e70ed6477a  golomb_dickman_50000_certified.txt
+8f017d45ee5108bb6b976882b079279f44f8a767ce62b44bd7c54e9167ad09a0  golomb_dickman_50000_digits.txt
+1e3d23e9ac3ce51990d83decd395d6bde96027f43811b94cebd5a6a4b7c19c43  b084945.txt
+\end{lstlisting}
+
+\begin{thebibliography}{99}
+
+\bibitem{dickman1930}
+K.~Dickman,
+\emph{On the frequency of numbers containing prime factors of a certain
+relative magnitude},
+Arkiv f\"or Matematik, Astronomi och Fysik \textbf{22A} (1930), no.~10,
+1--14.
+
+\bibitem{debruijn1951}
+N.~G. de~Bruijn,
+\emph{The asymptotic behaviour of a function occurring in the theory of
+primes},
+Journal of the Indian Mathematical Society \textbf{15} (1951), 25--32.
+
+\bibitem{AS1964}
+M.~Abramowitz and I.~A. Stegun (eds.),
+\emph{Handbook of Mathematical Functions with Formulas, Graphs, and
+Mathematical Tables},
+National Bureau of Standards, 1964.
+
+\bibitem{TW2014}
+L.~N. Trefethen and J.~A.~C. Weideman,
+\emph{The exponentially convergent trapezoidal rule},
+SIAM Review \textbf{56} (2014), no.~3, 385--458.
+
+\bibitem{johansson2017}
+F.~Johansson,
+\emph{Arb: efficient arbitrary-precision midpoint--radius interval
+arithmetic},
+IEEE Transactions on Computers \textbf{66} (2017), no.~8, 1281--1292.
+
+\bibitem{stieltjes1894}
+T.-J. Stieltjes,
+\emph{Recherches sur les fractions continues},
+Annales de la Facult\'e des Sciences de Toulouse \textbf{8} (1894),
+J1--J122.
+
+\bibitem{oeisA084945}
+OEIS Foundation Inc.,
+\emph{Sequence A084945: Decimal expansion of the Golomb--Dickman
+constant},
+\url{https://oeis.org/A084945}.
+
+\bibitem{oeisA225242}
+OEIS Foundation Inc.,
+\emph{Sequence A225242: First occurrence of $n$ consecutive $n$'s in the
+decimal expansion of the Golomb--Dickman constant},
+\url{https://oeis.org/A225242}.
+
+\bibitem{mathworld}
+E.~W. Weisstein,
+\emph{Golomb--Dickman Constant Digits},
+MathWorld, Wolfram Research,
+\url{https://mathworld.wolfram.com/Golomb-DickmanConstantDigits.html}.
+
+\bibitem{pythonflint}
+F.~Johansson et al.,
+\emph{python-flint: Python bindings for FLINT and Arb},
+\url{https://github.com/flintlib/python-flint}.
+
+\end{thebibliography}
+
+\end{document}
