@@ -342,11 +342,13 @@ Zenodo/arXiv и анонс в SeqFan — в
    [`.zenodo.json`](.zenodo.json), порядок действий — в
    [`40000/PUBLICATION_CHECKLIST.md`](40000/PUBLICATION_CHECKLIST.md)
    (прошлый релиз — `v40000`);
-3. **arXiv** — препринт [`paper/main.tex`](paper/main.tex), раздел math.NA,
+3. **arXiv** — препринт [`paper/main-50000.tex`](paper/main-50000.tex)
+   (текущий результат, 50 000 знаков); предыдущая версия —
+   [`paper/main.tex`](paper/main.tex) (40 000 знаков). Раздел math.NA,
    cross-list cs.MS; поля формы — в
-   [`paper/ARXIV_SUBMISSION.md`](paper/ARXIV_SUBMISSION.md). **Текст
-   препринта пока описывает 40 000 знаков** и требует обновления перед
-   отправкой;
+   [`paper/ARXIV_SUBMISSION.md`](paper/ARXIV_SUBMISSION.md). **Метаданные
+   `ARXIV_SUBMISSION.md` пока описывают 40 000 знаков** и требуют
+   обновления перед отправкой;
 4. **OEIS** — b-file для A084945, `n = 0..49999`; готовое письмо и текст
    ссылки — в [`submission/oeis-bfile.eml`](submission/oeis-bfile.eml) и
    [`40000/OEIS_SUBMISSION.md`](40000/OEIS_SUBMISSION.md). Письмо и

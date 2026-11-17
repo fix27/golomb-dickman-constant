@@ -62,7 +62,8 @@ $\lam\in[\Lambda_-/2^S,\Lambda_+/2^S]$ and
 \]
 Consequently the digits are \emph{proved by truncation}, not merely
 computed in floating point. The interval width is
-$10^{-40042.2602491239}$, which leaves about $42.26$ guard digits. The
+$10^{-40042.2602491239}$, which leaves about $42.26$ digits of margin
+beyond the $40\,000$ certified digits. The
 computation evaluates
 $\lam=\int_{\R}G(t)\,dt$ by the trapezoidal rule after the
 Takahashi--Mori substitution, with explicit tail and discretisation
@@ -70,7 +71,7 @@ bounds in the spirit of Trefethen--Weideman and with every node enclosed
 in an Arb ball. We give the error budget, the certificate format, a
 checker that uses only exact integer arithmetic, and a b-file for OEIS
 A084945 with terms $n=0,\ldots,39999$. We also report measurements on the
-resulting digit string and two extensions of OEIS A225242. The trust base
+resulting digit string and two statements about OEIS A225242. The trust base
 is the correctness of Arb together with the cited theorems; this is not a
 formalisation in a proof assistant.
 \end{abstract}
@@ -79,29 +80,34 @@ formalisation in a proof assistant.
 
 \section{Introduction}
 
-The Golomb--Dickman constant $\lam$ is the mean value of the largest
-prime factor of a random integer, normalised by the integer, and the
-limiting density of integers whose largest prime factor is at most
-$n^{1/u}$. Dickman introduced the associated function in 1930
-\cite{dickman1930}; the constant is the integral of
-$F(u)=e^{-u-\Eone(u)}$ over $u\ge0$. It appears in the analysis of
-random permutations, in the collision probability of hashing, and in
-number-theoretic sieving; see \cite{debruijn1951} for the classical
-asymptotic analysis.
+The Golomb--Dickman constant is the limit of the average of
+$\log P(n)/\log n$, where $P(n)$ is the largest prime factor of $n$:
+\[
+  \lam=\lim_{n\to\infty}\frac1n\sum_{k=2}^{n}\frac{\log P(k)}{\log k}.
+\]
+Dickman's function $\rho(u)$ gives the limiting density of integers
+whose largest prime factor is at most $n^{1/u}$ \cite{dickman1930}.
+The constant has the integral representation
+$\lam=\int_0^\infty F(u)\,du$ with $F(u)=e^{-u-\Eone(u)}$. It appears in
+the analysis of random permutations, in the collision probability of
+hashing, and in number-theoretic sieving; see \cite{debruijn1951} for the
+classical asymptotic analysis.
 
 Numerical values are collected in OEIS A084945 \cite{oeisA084945} and on
 the MathWorld page \emph{Golomb--Dickman Constant Digits}
 \cite{mathworld}. Before the work reported here the OEIS entry carried a
 b-file with terms $n=0,\ldots,101$, synthesised from the entry itself,
-and MathWorld quoted 15\,000 digits (2013). The present computation
+and MathWorld reported 15\,000 digits in 2013; that attribution is
+historical and not machine-verified. The present computation
 extends the verified decimal expansion to 40\,000 digits and supplies a
 certificate that makes the extension independent of any particular
 floating-point implementation.
 
 The contribution is deliberately narrow. We do not claim a new
 algorithm: the method is the exponentially convergent trapezoidal rule
-\cite{TW2014} applied after a substitution that removes the double
-exponential decay, with the exponential integral evaluated by a
+\cite{TW2014} applied after the substitution \eqref{eq:subst}, which
+turns the slow decay at both ends into double exponential decay, with
+the exponential integral evaluated by a
 Stieltjes continued fraction \cite{stieltjes1894}. The contribution is
 (a) a complete error budget at $D=40\,000$ digits, (b) an integer
 certificate whose verification needs only exact arithmetic, and (c) a
@@ -212,13 +218,13 @@ with
   M_1&=C_1e^{-2c}\Bigl(\frac1c+\frac1{4c^2}\Bigr),
   &C_1&=e^{\gamma+2+(e-2)/2},\\
   M_2&=4e^{\gamma}e^{4}\exp\!\Bigl(2e^2+\tfrac12e^{e^2}\Bigr),\\
-  M_3&=\frac{e^{\,e^{e^{-2}}-2}\,(1+e^{-2})\,e^{-\kappa'e^2}}{\kappa'},
+  M_3&=\frac{e^{\,e^{e^{-2}-2}}\,(1+e^{-2})\,e^{-\kappa'e^2}}{\kappa'},
   &\kappa'&=\cos(\theta_{\max})\,e^{-e^{-2}},
 \end{align}
 and $\theta_{\max}=d+e^{-2}\sin d<\pi/2$. The three terms bound the
 strips $t\le0$, $0\le t\le2$ and $t\ge2$ respectively. The middle term
 is deliberately crude and gives $M\approx10^{360}$; this is harmless,
-because the discretisation error at $h\approx9.2\times10^{-8}$ is
+because the discretisation error at $h\approx9.2\times10^{-5}$ is
 smaller than $10^{-41285}$.
 
 \section{Enclosing the nodes}
@@ -250,7 +256,7 @@ chooses the cheapest one that is guaranteed to reach the target radius.
   S-fraction with coefficients $\alpha_{2j-1}=\alpha_{2j}=j>0$. For a
   positive Stieltjes fraction, consecutive convergents bracket the
   value; if $D_n$ bounds $|f_n-f_{n-1}|$ in interval arithmetic, then
-  $f_n+[-D_n,D_n]$ contains $e^z\Eone(z)/z$ and hence the node ball.
+  $f_n+[-D_n,D_n]$ contains $e^z\Eone(z)$ and hence the node ball.
 \item \emph{Asymptotic expansion.} From
   $e^u\Eone(u)=\int_0^\infty e^{-s}/(u+s)\,ds$ and the finite geometric
   identity,
@@ -307,8 +313,10 @@ Thus every quantity that enters $\Lambda_\pm$ is either an exact integer
 or an outward-rounded bound; no fitted constant is involved.
 
 Table~\ref{tab:params} lists the parameters of the published run and the
-resulting bounds. The numbers in the last block are reproduced
-independently by \texttt{checks/verify\_nodes\_decimal.py}.
+resulting bounds. The analytic bounds and the corrections
+$B,T_R,T_L,C$ are reproduced by
+\texttt{checks/verify\_nodes\_decimal.py --plan}; the endpoint sums and
+the interval width by \texttt{checks/verify\_checkpoints.py}.
 
 \begin{table}[ht]
 \centering
@@ -356,7 +364,7 @@ guard-digit count; the interval arithmetic does.
 
 \section{Verification}
 
-The certificate is a three-line text file: a comment line naming the
+The certificate is a four-line text file: a comment line naming the
 constant and the method, a comment line with $S$ and $\Lambda_-$, a
 comment line with $\Lambda_+$, and a line containing
 $0.d_1d_2\cdots d_D$. Verification needs only exact integer arithmetic.
@@ -376,7 +384,7 @@ $0.d_1d_2\cdots d_D$. Verification needs only exact integer arithmetic.
 \end{enumerate}
 
 Steps 1--6 are implemented in \texttt{40000/verify\_40000.py} with the
-Python standard library only, and run in about $0.1$\,s. The repository
+Python standard library only, and run in about $0.15$\,s. The repository
 also contains a secondary audit that re-reads all $1\,209$ checkpoints,
 recomputes the exact integer sums, re-derives $B$, $T_R$, $T_L$ from the
 formulas of Section~3, and checks that the published endpoints are
@@ -384,8 +392,8 @@ exactly reproduced
 (\texttt{checks/verify\_checkpoints.py}). A third script recomputes
 selected nodes from scratch in \texttt{decimal}
 (\texttt{checks/verify\_nodes\_decimal.py}); a fourth re-implements the
-three representations of $\Eone$ and recomputes all nodes in Arb
-(\texttt{checks/verify\_checkpoints\_arb.py}).
+three representations of $\Eone$ and can recompute all nodes in Arb with
+\texttt{--all --jobs N} (\texttt{checks/verify\_checkpoints\_arb.py}).
 
 The last script is the only check that re-does the Arb evaluation
 independently of the producing program. It was not executed on the
@@ -412,10 +420,13 @@ reproduces the first $1\,000$ digits in our runs.
 \section{The digit string}
 
 Table~\ref{tab:digits} collects measurements on the certified string of
-$40\,000$ digits. They are reproducible with
-\texttt{checks/verify\_sequences.py} in about $12$\,s. None of these
-observations is used in the proof; they document the object and provide
-independent consistency checks against published statements.
+$40\,000$ digits. The structural rows are reproduced by
+\texttt{checks/verify\_sequences.py} in about $12$\,s; the
+probable-prime truncation row by
+\texttt{checks/verify\_mathworld.py --prime-limit 3000} in about
+$3$\,min. None of these observations is used in the proof; they document
+the object and provide independent consistency checks against published
+statements.
 
 \begin{table}[ht]
 \centering
@@ -429,10 +440,10 @@ digit frequencies $0,\ldots,9$ &
 $\chi^2$ (9 degrees of freedom) & $4.10$ \\
 longest run of one digit & 5 (\texttt{00000}, \texttt{11111}, \texttt{22222}, \texttt{44444}) \\
 longest repeated block & \texttt{1891192031} at positions 28\,793 and 34\,393 \\
-longest square $XX$ & \texttt{54395439} at position 30\,398 \\
+longest square $XX$, $X=5439$ & \texttt{54395439} at position 30\,398 \\
 longest palindrome & \texttt{05224342250} at position 11\,751 \\
-prime substrings of length $\le32$ & 66\,816 (deterministic to 24 digits) \\
-prime truncations up to 3000 digits & lengths 6, 27, 57, 60, 1659, 2508 \\
+prime/probable-prime substrings, length $\le32$ & 66\,816 (deterministic to 24 digits) \\
+probable-prime truncations up to 3000 digits & lengths 6, 27, 57, 60, 1659, 2508 (probable primes) \\
 \bottomrule
 \end{tabular}
 \caption{Measurements on the certified 40\,000-digit string. The
@@ -441,13 +452,14 @@ normality, which remains open.}
 \label{tab:digits}
 \end{table}
 
-Two statements in OEIS A225242 \cite{oeisA225242} are extended. Writing
+We extend a statement in OEIS A225242 \cite{oeisA225242}. Writing
 $a(n)$ for the first position at which the digit $n$ appears $n$ times in
-a row, the published entry recorded $a(5)>15\,000$; the strings
+a row, the published entry records $a(5)>15\,000$; the strings
 \texttt{55555} and \texttt{666666} do not occur among the 40\,000
-digits, so $a(5),a(6)>40\,000$. This is a conditional statement: it is
-valid for the certified string, hence for $\lam$ if the certificate is
-correct.
+digits, so the published bound improves to $a(5)>40\,000$, and the new
+statement $a(6)>40\,000$ holds. These are conditional statements: they
+are valid for the certified string, hence for $\lam$ if the certificate
+is correct.
 
 \section{Reproducibility and data}
 
@@ -460,7 +472,7 @@ re-derived without recomputing the nodes:
 \begin{lstlisting}
 python -m pip install python-flint
 cd 40000
-python verify_40000.py          # 0.1 s, standard library only
+python verify_40000.py          # 0.15 s, standard library only
 python checks/run_all.py        # about 2 min
 python golomb_dickman.py        # full recomputation, hours
 \end{lstlisting}
@@ -500,7 +512,8 @@ The first 40\,000 decimal digits of the Golomb--Dickman constant are
 certified by an interval of width $10^{-40042.26}$ whose endpoints give
 the same $40\,000$-digit truncation. The certificate is small, the
 verifier is dependency-free, and the b-file for OEIS A084945 extends the
-published data from 101 to 40\,000 terms. The main open task is the
+published data from 102 terms ($n=0,\ldots,101$) to 40\,000 terms
+($n=0,\ldots,39999$). The main open task is the
 independent Arb re-audit of all nodes on an unrestricted host; the script
 is part of the package.
 
