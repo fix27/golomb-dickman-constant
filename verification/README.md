@@ -31,7 +31,48 @@ python verification/independent_quadrature.py --digits 1000
 ```
 
 `python verification/run_all.py` runs levels A and B together, and
-`--digits N` adds level C.
+`--digits N` adds level C.  It also runs the independent Arb audit
+(`verify_all_arb.py`), which is the only level that can turn the overall
+verdict into `PASS`:
+
+```sh
+python verification/run_all.py                    # Arb level NOT_RUN -> INCOMPLETE
+python verification/run_all.py --full-arb --arb-jobs 11   # hours
+python verification/run_all.py --arb-report verification/reports/arb_50000.json
+                                                  # re-check a finished audit
+```
+
+`--arb-report` does not trust the report: it re-reads every per-chunk
+containment flag (and, in verbose reports, re-derives the intervals),
+requires full node coverage, and demands that the recomputed total lies
+inside the certificate.  Use it when the audit has already run, so that a
+2-hour computation is not repeated merely to aggregate the verdict.
+
+## Statuses are three-valued, and `NOT_RUN` is never `PASS`
+
+Every check reports `PASS`, `FAIL` or `NOT_RUN`.  `run_all.py` aggregates
+them as
+
+| aggregate | meaning |
+|---|---|
+| `FAIL` | at least one required check ran and found a discrepancy |
+| `INCOMPLETE` | nothing required failed, but something required did not run |
+| `PASS` | every required check ran and passed |
+
+Only `PASS` exits with code 0.  A skipped Arb audit therefore produces
+`INCOMPLETE`, not a green release.  The same rule holds inside
+`level_b.py`: without `--with-arb` its verdict is `INCOMPLETE`.
+
+`verify_certificate.py` applies the rule to hashes as well.  It always
+computes SHA-256 for every input, but reports `MATCH (manifest)` /
+`MATCH (--sha256)` only when a trusted reference is supplied via
+`--sha256-manifest` or `--sha256 NAME=HEX`; otherwise it prints
+`computed, UNVERIFIED (no trusted reference)`.
+
+`audit_chunks.py` and `verify_all_arb.py` read checkpoints with
+`safe_pickle.py`, which allows only plain-data opcodes and rejects
+`GLOBAL`, `REDUCE`, `BUILD`, persistent IDs and extension codes.  The
+producer's own `--resume` flag remains a documented audit-only shortcut.
 
 Level B needs the 1,209 checkpoint pickles (~70 MB) and is therefore run from
 the full repository, not from this archive. The archive ships its report
@@ -87,13 +128,15 @@ repository, whose checkpoints are too large to ship here.
 |-------|------|-------------|------------------------|
 | A | seconds | SHA-256 of all inputs; `0 < lam_lo < lam_hi`; `floor(10^D*lam_lo/2^S) = floor(10^D*lam_hi/2^S)`; the digits file equals that integer; the interval is narrower than one unit in the D-th place; the b-file matches digit by digit; the first 102 digits match OEIS A084945 | that the constant really lies in the published interval |
 | B | seconds | meta-parameters reproduce from the formulas; chunk coverage 1..1,209 of the 40,000-digit run is contiguous; the integer certificate arithmetic reproduces `lam_lo`, `lam_hi`; the discretisation bound and both tails reproduce the corrections `B`, `TR`, `TL`; nodes recomputed from scratch in `Decimal` agree with the saved balls | the Arb enclosure itself (that needs `verify_checkpoints_arb.py` and python-flint) |
+| Arb | tens of minutes–hours | every node of the 50,000-digit run is recomputed in Arb from `G(t)=exp(-u-E1(u))u(1+e^{-t})` with Arb's own `E1`; every recomputed chunk interval is contained in the saved one; the recomputed total is contained in the certificate; `B`, `C` cover the recomputed discretisation and tail bounds | that the digits are right if Arb itself is wrong |
 | C | minutes–days | the leading digits reproduce from a different formula arrangement, a different quadrature rule, and a different library | rigour: mpmath is floating point, so this is numerical evidence |
 
-Levels A and B deliberately contain **no pickle loading, no import of the
-producing program, and no floating point** in the decision path. Level B's
-node check treats checkpoints as a cache: every compared value is recomputed
-from the formula, and the comparison tolerance is printed. There is no
-`trust_checkpoint=True` path.
+Level A contains no checkpoint access, no import of the producing program and
+no floating point.  Level B and the Arb audit do read checkpoints, but only
+through the restricted reader in `safe_pickle.py`, and only as a cache: every
+compared value is recomputed from the formula, and the comparison is a
+containment test of two enclosures, not a tolerance.  There is no
+`trust_checkpoint=True` path in the verification code.
 
 ## Certificate shape
 
@@ -158,6 +201,29 @@ Get-Content SHA256SUMS | ForEach-Object {
     if ((Get-FileHash $path -Algorithm SHA256).Hash -ne $hash.ToUpper()) { "FAIL $path" }
 }
 ```
+
+## Tests for the verifiers themselves
+
+```sh
+python verification/test_release_checks.py    # paper formula, LF canon, SHA, statuses, pickle
+python verification/test_verify_all_arb.py    # 27 tests of the Arb audit's structure and containment logic
+```
+
+`test_release_checks.py` also checks that `verify_certificate.py` never
+prints an unqualified `OK` for a hash, that `run_all.aggregate` maps
+`NOT_RUN` to `INCOMPLETE`, and that the certificate, digits, b-file, plan,
+producer and README all match `50000/SHA256SUMS.txt` byte-for-byte.
+
+`check_report_containment.py` re-reads the Arb report and decides whether
+containment (not merely intersection) holds:
+
+```sh
+python verification/check_report_containment.py --report verification/reports/arb_50000.json
+```
+
+It exits 0 only when every recomputed chunk interval is inside the saved one
+and the recomputed total is inside the certificate; exit 2 means `WEAK`, i.e.
+the intersections hold but only the weaker claim is supported.
 
 ## Requirements
 

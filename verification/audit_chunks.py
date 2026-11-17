@@ -59,6 +59,9 @@ from fractions import Fraction
 from pathlib import Path
 from typing import Any
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from safe_pickle import UnsafePickleError, load_restricted  # noqa: E402
+
 if hasattr(sys, "set_int_max_str_digits"):
     sys.set_int_max_str_digits(1_000_000)
 
@@ -92,8 +95,10 @@ def write_report(path: Path, text: str) -> Path:
 
 
 def load_chunk(path: Path) -> tuple[int, int, int, int, int, int]:
-    with path.open("rb") as handle:
-        value = pickle.load(handle)
+    try:
+        value = load_restricted(path)
+    except UnsafePickleError as exc:
+        fail(f"{path.name}: unsafe checkpoint ({exc})")
     if not isinstance(value, (tuple, list)) or len(value) != 4:
         fail(f"{path.name}: expected a 4-tuple (lo, hi, even, odd)")
     lo, hi, even, odd = value
@@ -101,8 +106,16 @@ def load_chunk(path: Path) -> tuple[int, int, int, int, int, int]:
         if not isinstance(pair, (tuple, list)) or len(pair) != 2:
             fail(f"{path.name}: {name} is not a pair")
     numbers = [lo, hi, even[0], even[1], odd[0], odd[1]]
-    if not all(isinstance(x, int) for x in numbers):
+    if not all(type(x) is int for x in numbers):
         fail(f"{path.name}: non-integer entry")
+    match = re.fullmatch(r"c_(-?\d+)\.pkl", path.name)
+    if match is None:
+        fail(f"{path.name}: unexpected checkpoint file name")
+    if int(match.group(1)) != lo:
+        fail(
+            f"{path.name}: file name says start {match.group(1)}, "
+            f"tuple says {lo}"
+        )
     elo, ehi = int(even[0]), int(even[1])
     olo, ohi = int(odd[0]), int(odd[1])
     if not (lo < hi):
@@ -188,7 +201,9 @@ def check_plan(
         k_right = int(params["K_R"])
     except (KeyError, TypeError, ValueError):
         fail("meta_v12.json: parameters.K_L or parameters.K_R is missing")
-    # The plan stores the rightward extent K_L; the grid runs from -K_L.\r\n    if (-k_left, k_right + 1) != (first_index, last_index):
+    # The plan stores the leftward extent K_L; the grid runs from -K_L to
+    # K_R inclusive, i.e. the half-open interval [-K_L, K_R + 1).
+    if (-k_left, k_right + 1) != (first_index, last_index):
         fail(
             f"meta_v12.json covers {k_left}..{k_right}, "
             f"chunks cover {first_index}..{last_index - 1}"
@@ -273,7 +288,8 @@ def audit(ckpt: Path, cert: Path, shift: int) -> dict[str, Any]:
         "scale_bits": S,
         "chunks": len(files),
         "nodes": node_count,
-        "index_range": [ranges[0][0], ranges[-1][1]],
+        "index_range": [ranges[0][0], ranges[-1][1] - 1],
+        "index_range_half_open": [ranges[0][0], ranges[-1][1]],
         "gaps": 0,
         "step": {"numerator": m, "denominator": 1 << shift, "source": step_source},
         "B": B,
@@ -307,7 +323,11 @@ def main(argv: list[str] | None = None) -> int:
 
     print(f"OK: {report['digits']} digits, checkpoint audit")
     print(f"  chunks: {report['chunks']} covering {report['nodes']} nodes")
-    print(f"  index range: {report['index_range'][0]} .. {report['index_range'][1]} (no gaps)")
+    lo_i, hi_i = report["index_range"]
+    print(
+        f"  index range: {lo_i} .. {hi_i} ({report['nodes']} nodes, no gaps; "
+        f"half-open {lo_i} .. {hi_i + 1})"
+    )
     step = report["step"]
     print(f"  step: {step['numerator']} / {step['denominator']}  (from {step['source']})")
     print(f"  lower correction B = {report['B']}")
@@ -330,7 +350,9 @@ def main(argv: list[str] | None = None) -> int:
             f"Checkpoint audit for {report['digits']} digits",
             f"chunks: {report['chunks']}",
             f"nodes: {report['nodes']}",
-            f"index range: {report['index_range'][0]} .. {report['index_range'][1]}",
+            f"index range: {report['index_range'][0]} .. {report['index_range'][1]} "
+            f"(half-open {report['index_range_half_open'][0]} .. "
+            f"{report['index_range_half_open'][1]})",
             f"gaps/overlaps: {report['gaps']}",
             f"step: {step['numerator']} / {step['denominator']} (from {step['source']})",
             f"B: {report['B']}",

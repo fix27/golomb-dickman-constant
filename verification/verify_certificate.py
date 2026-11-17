@@ -21,8 +21,12 @@ This script checks, using only the standard library and exact integers:
  6. an optional b-file has exactly D terms, n = 0..D-1, each equal to the
     corresponding digit, LF only, trailing blank line;
  7. the first 102 digits equal the published prefix of OEIS A084945;
- 8. optionally, the digits agree with a reference file (prefix comparison),
-    and the SHA-256 of each input matches a pinned value.
+ 8. optionally, the digits agree with a reference file (prefix comparison);
+ 9. the SHA-256 of every input is *computed*, and, when a trusted reference
+    is supplied (``--sha256 NAME=HEX`` or ``--sha256-manifest FILE``), the
+    computed value is reported as ``MATCH`` or ``MISMATCH``.  Without a
+    reference the hash is reported as ``computed`` / ``UNVERIFIED``; this
+    script never prints ``OK`` for a hash it cannot compare.
 
 It does not prove that lambda lies in the interval; that is the content of
 the producing computation and of the mathematical audit.
@@ -31,7 +35,8 @@ Usage
 -----
     python verify_certificate.py --cert ../50000/golomb_dickman_50000_certified.txt
     python verify_certificate.py --cert ... --bfile ... --compare ../40000/golomb_dickman_40000_digits.txt
-    python verify_certificate.py --cert ... --sha256 76f4... --json report.json
+    python verify_certificate.py --cert ... --sha256-manifest ../50000/SHA256SUMS.txt
+    python verify_certificate.py --cert ... --sha256 golomb_dickman_50000_certified.txt=76f4... --json report.json
 """
 
 from __future__ import annotations
@@ -75,6 +80,66 @@ def sha256_file(path: Path) -> str:
         for block in iter(lambda: handle.read(1 << 20), b""):
             digest.update(block)
     return digest.hexdigest()
+
+
+HEX64 = re.compile(r"^[0-9a-f]{64}$")
+
+
+def read_sha256_manifest(path: Path) -> dict[str, str]:
+    """Parse a ``sha256sum``-style manifest into {file name: hex digest}.
+
+    Lines are ``<hex>  <name>`` (or ``<hex> *<name>`` for binary mode).
+    Blank lines and ``#`` comments are ignored; a malformed line is an error,
+    because a silently truncated manifest would make a file look unverified.
+    """
+    entries: dict[str, str] = {}
+    for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        parts = stripped.split(None, 1)
+        if len(parts) != 2:
+            fail(f"{path.name} line {number}: expected '<sha256>  <file>'")
+        digest, name = parts[0].strip().lower(), parts[1].strip()
+        if name.startswith("*"):
+            name = name[1:]
+        if not HEX64.match(digest):
+            fail(f"{path.name} line {number}: {digest!r} is not a SHA-256 digest")
+        # Manifests are written relative to their own directory; match on the
+        # base name so that --cert with an absolute path still works.
+        entries[Path(name).name] = digest
+    return entries
+
+
+def fingerprint(
+    path: Path, pinned: dict[str, str], manifest: dict[str, str]
+) -> dict[str, object]:
+    """Compute a file hash and compare it with a trusted reference, if any."""
+    digest = sha256_file(path)
+    trusted = None
+    source = None
+    if path.name in manifest:
+        trusted, source = manifest[path.name], "manifest"
+    elif path.name in pinned:
+        trusted, source = pinned[path.name], "--sha256"
+    if trusted is None:
+        return {
+            "sha256": digest,
+            "status": "UNVERIFIED",
+            "trusted": None,
+            "source": None,
+        }
+    if digest != trusted:
+        fail(
+            f"{path.name}: SHA-256 mismatch "
+            f"(trusted {trusted} from {source}, got {digest})"
+        )
+    return {
+        "sha256": digest,
+        "status": "MATCH",
+        "trusted": trusted,
+        "source": source,
+    }
 
 
 def write_report(path: Path, text: str) -> Path:
@@ -207,7 +272,9 @@ def verify(
     bfile_path: Path | None,
     compare_path: Path | None,
     pinned: dict[str, str],
+    manifest: dict[str, str] | None = None,
 ) -> dict[str, object]:
+    manifest = manifest or {}
     scale_bits, lam_lo, lam_hi, cert_digits = parse_certificate(cert_path)
     D = len(cert_digits)
 
@@ -221,18 +288,16 @@ def verify(
     if proven != cert_digits:
         fail("certificate digits are not floor(10^D * lam_lo / 2^S)")
 
-    hashes = {"certificate": sha256_file(cert_path)}
-    if cert_path.name in pinned and hashes["certificate"] != pinned[cert_path.name]:
-        fail(f"{cert_path.name}: SHA-256 mismatch (expected {pinned[cert_path.name]}, got {hashes['certificate']})")
+    hashes: dict[str, dict[str, object]] = {
+        "certificate": fingerprint(cert_path, pinned, manifest)
+    }
 
     standalone = None
     if digits_path is not None:
         standalone = read_ascii_lf(digits_path).strip()
         if standalone != cert_digits:
             fail(f"{digits_path.name}: digits do not match the certificate")
-        hashes["digits"] = sha256_file(digits_path)
-        if digits_path.name in pinned and hashes["digits"] != pinned[digits_path.name]:
-            fail(f"{digits_path.name}: SHA-256 mismatch")
+        hashes["digits"] = fingerprint(digits_path, pinned, manifest)
 
     width = lam_hi - lam_lo
     if width * scale >= (1 << scale_bits):
@@ -243,9 +308,7 @@ def verify(
     terms = None
     if bfile_path is not None:
         terms = check_bfile(bfile_path, cert_digits)
-        hashes["bfile"] = sha256_file(bfile_path)
-        if bfile_path.name in pinned and hashes["bfile"] != pinned[bfile_path.name]:
-            fail(f"{bfile_path.name}: SHA-256 mismatch")
+        hashes["bfile"] = fingerprint(bfile_path, pinned, manifest)
 
     prefix_oeis = cert_digits[: len(KNOWN_PREFIX)] if D >= len(KNOWN_PREFIX) else None
     if prefix_oeis is not None and prefix_oeis != KNOWN_PREFIX:
@@ -275,6 +338,9 @@ def verify(
         "oeis_prefix_checked": prefix_oeis is not None,
         "comparison": comparison,
         "sha256": hashes,
+        "sha256_verified": all(
+            entry["status"] == "MATCH" for entry in hashes.values()
+        ),
         "verdict": "PASS",
     }
 
@@ -295,6 +361,13 @@ def main(argv: list[str] | None = None) -> int:
         metavar="NAME=HEX",
         help="pinned SHA-256 for an input file name (repeatable)",
     )
+    parser.add_argument(
+        "--sha256-manifest",
+        type=Path,
+        default=None,
+        help="sha256sum-style manifest used as the trusted reference "
+             "(e.g. ../50000/SHA256SUMS.txt)",
+    )
     parser.add_argument("--json", type=Path, default=None, help="write a JSON report")
     parser.add_argument("--quiet", action="store_true", help="print only the verdict")
     args = parser.parse_args(argv)
@@ -307,6 +380,20 @@ def main(argv: list[str] | None = None) -> int:
         name, value = item.split("=", 1)
         pinned[name] = value.strip().lower()
 
+    manifest: dict[str, str] = {}
+    if args.sha256_manifest is not None:
+        try:
+            manifest = read_sha256_manifest(args.sha256_manifest)
+        except (OSError, CheckError) as exc:
+            print(f"FAIL: {exc}", file=sys.stderr)
+            return 2
+        if not manifest:
+            print(
+                f"FAIL: {args.sha256_manifest}: manifest has no entries",
+                file=sys.stderr,
+            )
+            return 2
+
     cert_path = args.cert
     digits_path = args.digits_file
     bfile_path = args.bfile
@@ -318,13 +405,15 @@ def main(argv: list[str] | None = None) -> int:
         bfile_path = candidate if candidate.is_file() else None
 
     try:
-        report = verify(cert_path, digits_path, bfile_path, args.compare, pinned)
+        report = verify(
+            cert_path, digits_path, bfile_path, args.compare, pinned, manifest
+        )
     except CheckError as exc:
         print(f"FAIL: {exc}", file=sys.stderr)
         return 1
 
     if not args.quiet:
-        print(f"OK: {report['digits']} digits certified")
+        print(f"OK: {report['digits']} digits certified (interval arithmetic)")
         print(f"  certificate: {cert_path}")
         print(f"  scale: lam_lo/2^{report['scale_bits']} .. lam_hi/2^{report['scale_bits']}")
         print(
@@ -342,7 +431,27 @@ def main(argv: list[str] | None = None) -> int:
                 f"  compared with {comp['file']}: "
                 f"{comp['common_prefix']} leading digits agree"
             )
-        print("  SHA-256: OK")
+        print("  SHA-256:")
+        names = {
+            "certificate": cert_path,
+            "digits": digits_path,
+            "bfile": bfile_path,
+        }
+        for role, entry in report["sha256"].items():
+            path = names.get(role)
+            label = path.name if path is not None else role
+            if entry["status"] == "MATCH":
+                note = f"MATCH ({entry['source']})"
+            else:
+                note = "computed, UNVERIFIED (no trusted reference)"
+            print(f"    {entry['sha256']}  {label}  {note}")
+        if not report["sha256_verified"]:
+            print(
+                "  note: the hashes above were computed but not compared with a"
+            )
+            print(
+                "        trusted reference; pass --sha256-manifest or --sha256"
+            )
 
     if args.json is not None:
         write_report(args.json, json.dumps(report, indent=2) + "\n")

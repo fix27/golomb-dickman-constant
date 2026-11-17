@@ -6,7 +6,7 @@ single `main.tex` for this paper.
 ## Title
 
 ```text
-Forty thousand certified decimal digits of the Golomb-Dickman constant
+Fifty thousand certified decimal digits of the Golomb-Dickman constant
 ```
 
 ## Authors
@@ -31,27 +31,28 @@ fix@inbox.ru
 
 ```text
 We describe a rigorous interval-arithmetic certificate for the first
-40,000 decimal digits of the Golomb-Dickman constant
+50,000 decimal digits of the Golomb-Dickman constant
 lambda = integral_0^infinity exp(-u - E_1(u)) du
        = 0.624329988543550870992936383100837244...,
 where E_1 is the exponential integral. The certificate consists of
-integers Lambda_- < Lambda_+ and a scale S = 133074 such that lambda lies
+integers Lambda_- < Lambda_+ and a scale S = 166293 such that lambda lies
 in [Lambda_-/2^S, Lambda_+/2^S] and
 
-  floor(10^40000 Lambda_-/2^S) = floor(10^40000 Lambda_+/2^S).
+  floor(10^50000 Lambda_-/2^S) = floor(10^50000 Lambda_+/2^S).
 
 Consequently the digits are proved by truncation, not merely computed in
-floating point. The interval width is 10^-40042.2602491239, which leaves
-about 42.26 guard digits. The computation evaluates
+floating point. The interval width is 10^-50042.3574, which leaves more
+than 42 guard digits. The computation evaluates
 lambda = integral_R G(t) dt by the trapezoidal rule after the
 Takahashi-Mori substitution, with explicit tail and discretisation
 bounds in the spirit of Trefethen-Weideman and with every node enclosed
 in an Arb ball. We give the error budget, the certificate format, a
 checker that uses only exact integer arithmetic, and a b-file for OEIS
-A084945 with terms n = 0..39999. We also report measurements on the
-resulting digit string and two extensions of OEIS A225242. The trust
-base is the correctness of Arb together with the cited theorems; this is
-not a formalisation in a proof assistant.
+A084945 with terms n = 0..49999. The 40,000-digit certificate of the
+earlier run is kept unchanged as the previous result. We also report
+measurements on the resulting digit string and two extensions of OEIS
+A225242. The trust base is the correctness of Arb together with the
+cited theorems; this is not a formalisation in a proof assistant.
 ```
 
 ## Categories
@@ -64,7 +65,7 @@ not a formalisation in a proof assistant.
 
 ```text
 8 pages, 2 tables. Certificate, code, checkpoints and OEIS b-file:
-https://github.com/fix27/golomb-dickman-constant/tree/main/40000
+https://github.com/fix27/golomb-dickman-constant/tree/main/50000
 ```
 
 ## MSC codes

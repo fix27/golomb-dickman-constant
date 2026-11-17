@@ -34,13 +34,13 @@
 \newcommand{\floor}[1]{\left\lfloor #1 \right\rfloor}
 \DeclareMathOperator{\rad}{rad}
 
-\title{Forty thousand certified decimal digits of\\ the Golomb--Dickman constant}
+\title{Fifty thousand certified decimal digits of\\ the Golomb--Dickman constant}
 
 \author{Konstantin N. Pozdnyakov\\
 \small Surgut, Khanty--Mansi Autonomous Okrug --- Yugra, Russia\\
 \small \texttt{fix@inbox.ru}}
 
-\date{15 November 2026}
+\date{17 November 2026}
 
 \begin{document}
 
@@ -48,29 +48,31 @@
 
 \begin{abstract}
 We describe a rigorous interval-arithmetic certificate for the first
-40\,000 decimal digits of the Golomb--Dickman constant
+50\,000 decimal digits of the Golomb--Dickman constant
 \[
   \lam=\int_0^\infty e^{-u-\Eone(u)}\,du
       =0.624329988543550870992936383100837244\ldots,
 \]
 where $\Eone$ is the exponential integral. The certificate consists of
-integers $\Lambda_-<\Lambda_+$ and a scale $S=133\,074$ such that
+integers $\Lambda_-<\Lambda_+$ and a scale $S=166\,293$ such that
 $\lam\in[\Lambda_-/2^S,\Lambda_+/2^S]$ and
 \[
-  \floor{10^{40000}\Lambda_-/2^S}
-  =\floor{10^{40000}\Lambda_+/2^S}.
+  \floor{10^{50000}\Lambda_-/2^S}
+  =\floor{10^{50000}\Lambda_+/2^S}.
 \]
 Consequently the digits are \emph{proved by truncation}, not merely
 computed in floating point. The interval width is
-$10^{-40042.2602491239}$, which leaves about $42.26$ guard digits. The
+$10^{-50042.3574}$, which leaves more than $42$ guard digits. The
 computation evaluates
 $\lam=\int_{\R}G(t)\,dt$ by the trapezoidal rule after the
 Takahashi--Mori substitution, with explicit tail and discretisation
 bounds in the spirit of Trefethen--Weideman and with every node enclosed
 in an Arb ball. We give the error budget, the certificate format, a
 checker that uses only exact integer arithmetic, and a b-file for OEIS
-A084945 with terms $n=0,\ldots,39999$. We also report measurements on the
-resulting digit string and two extensions of OEIS A225242. The trust base
+A084945 with terms $n=0,\ldots,49999$. We also report measurements on the
+resulting digit string and two extensions of OEIS A225242. The
+40\,000-digit certificate of the earlier run is kept unchanged as the
+previous result. The trust base
 is the correctness of Arb together with the cited theorems; this is not a
 formalisation in a proof assistant.
 \end{abstract}
@@ -94,16 +96,18 @@ the MathWorld page \emph{Golomb--Dickman Constant Digits}
 \cite{mathworld}. Before the work reported here the OEIS entry carried a
 b-file with terms $n=0,\ldots,101$, synthesised from the entry itself,
 and MathWorld quoted 15\,000 digits (2013). The present computation
-extends the verified decimal expansion to 40\,000 digits and supplies a
+extends the verified decimal expansion to 50\,000 digits and supplies a
 certificate that makes the extension independent of any particular
-floating-point implementation.
+floating-point implementation. The 40\,000-digit run of the earlier
+version of this note is retained in the repository as the previous
+published result; its certificate and digits are unchanged.
 
 The contribution is deliberately narrow. We do not claim a new
 algorithm: the method is the exponentially convergent trapezoidal rule
 \cite{TW2014} applied after a substitution that removes the double
 exponential decay, with the exponential integral evaluated by a
 Stieltjes continued fraction \cite{stieltjes1894}. The contribution is
-(a) a complete error budget at $D=40\,000$ digits, (b) an integer
+(a) a complete error budget at $D=50\,000$ digits, (b) an integer
 certificate whose verification needs only exact arithmetic, and (c) a
 reproducible artefact set, including checkpoints and a dependency-free
 verifier.
@@ -212,14 +216,58 @@ with
   M_1&=C_1e^{-2c}\Bigl(\frac1c+\frac1{4c^2}\Bigr),
   &C_1&=e^{\gamma+2+(e-2)/2},\\
   M_2&=4e^{\gamma}e^{4}\exp\!\Bigl(2e^2+\tfrac12e^{e^2}\Bigr),\\
-  M_3&=\frac{e^{\,e^{e^{-2}}-2}\,(1+e^{-2})\,e^{-\kappa'e^2}}{\kappa'},
+  M_3&=\frac{e^{\,e^{\,e^{-2}-2}}\,(1+e^{-2})\,e^{-\kappa'e^2}}{\kappa'},
   &\kappa'&=\cos(\theta_{\max})\,e^{-e^{-2}},
 \end{align}
 and $\theta_{\max}=d+e^{-2}\sin d<\pi/2$. The three terms bound the
 strips $t\le0$, $0\le t\le2$ and $t\ge2$ respectively. The middle term
 is deliberately crude and gives $M\approx10^{360}$; this is harmless,
-because the discretisation error at $h\approx9.2\times10^{-8}$ is
-smaller than $10^{-41285}$.
+because the discretisation error at $h\approx7.35\times10^{-5}$ is
+smaller than $10^{-51594}$.
+
+\paragraph{The constant $M_3$.}
+The factor $e^{e^{e^{-2}-2}}$ is the exponential of the bound
+$e^{e^{-2}-2}=1/e^{2-e^{-2}}$ for $|E_1(u)|$ in the right strip.
+Let $t=x+iy$ with $x\ge2$ and $|y|\le d$, put $w=t-e^{-t}$ and
+$u=e^{w}$. Then
+\[
+  |\operatorname{Im}w|=|y+e^{-x}\sin y|
+  \le d+e^{-2}\sin d=\theta_{\max}<\pi/2,
+\]
+so $|\arg u|\le\theta_{\max}$ and
+$\operatorname{Re}u=|u|\cos(\operatorname{Im}w)\ge|u|\cos\theta_{\max}$.
+For $\operatorname{Re}z>0$ one has
+$E_1(z)=e^{-z}\int_0^\infty e^{-s}/(z+s)\,ds$, hence
+$|E_1(z)|\le e^{-\operatorname{Re}z}/|z|$ because
+$|z+s|\ge|z|$ for $s\ge0$. On this strip
+$|u|=e^{x-e^{-x}\cos y}\ge e^{2-e^{-2}}$, so
+\[
+  |E_1(u)|\le\frac{1}{|u|}\le e^{e^{-2}-2},
+  \qquad\text{and hence}\qquad
+  |e^{-E_1(u)}|\le e^{e^{e^{-2}-2}} .
+\]
+Together with $|1+e^{-t}|\le1+e^{-2}$ and
+$|e^{-u}|=e^{-\operatorname{Re}u}\le e^{-|u|\cos\theta_{\max}}$ this
+yields
+\[
+  |G(t)|\le e^{e^{e^{-2}-2}}(1+e^{-2})\,|u|\,
+  e^{-|u|\cos\theta_{\max}} .
+\]
+Put $\phi(x)=x-e^{-x}\cos y$, so that $|u|=e^{\phi(x)}$ and
+$\phi'(x)=1+e^{-x}\cos y\ge1$. Since $\phi(2)\ge2-e^{-2}$,
+\[
+  \int_2^\infty|G(x+iy)|\,dx
+  \le e^{e^{e^{-2}-2}}(1+e^{-2})
+  \int_{e^{2-e^{-2}}}^\infty e^{-v\cos\theta_{\max}}\,dv
+  =\frac{e^{e^{e^{-2}-2}}(1+e^{-2})e^{-\kappa'e^2}}
+        {\cos\theta_{\max}} .
+\]
+Because $\kappa'=\cos\theta_{\max}e^{-e^{-2}}\le\cos\theta_{\max}$,
+the right-hand side is at most $M_3$ as defined above; the factor
+$e^{e^{-2}}$ between $1/\cos\theta_{\max}$ and $1/\kappa'$ is absorbed
+into the bound. Numerically $M_1=195.0281\ldots$ and
+$M_3=31.8556\ldots$, while $M_2=2.4595654853\ldots\times10^{360}$
+dominates, so $\log_{10}M=360.3908583900\ldots$ as used below.
 
 \section{Enclosing the nodes}
 
@@ -308,7 +356,7 @@ or an outward-rounded bound; no fitted constant is involved.
 
 Table~\ref{tab:params} lists the parameters of the published run and the
 resulting bounds. The numbers in the last block are reproduced
-independently by \texttt{checks/verify\_nodes\_decimal.py}.
+independently by \texttt{verification/level\_b.py}.
 
 \begin{table}[ht]
 \centering
@@ -317,41 +365,42 @@ independently by \texttt{checks/verify\_nodes\_decimal.py}.
 \toprule
 Quantity & Symbol & Value \\
 \midrule
-certified decimal digits        & $D$              & 40\,000 \\
+certified decimal digits        & $D$              & 50\,000 \\
 guard digits                    & $G$              & 30 \\
-node radius exponent            & $E_{\mathrm{bits}}$ & 133\,010 \\
-certificate scale               & $S$              & 133\,074 \\
-step                            & $h$              & $100\,859\,575/2^{40}$ \\
-left/right node counts          & $K_L,K_R$        & 117\,064,\ 124\,623 \\
-chunk size                      & ---              & 200 \\
-chunks / nodes                  & ---              & 1\,209 / 241\,688 \\
+node radius exponent            & $E_{\mathrm{bits}}$ & 166\,229 \\
+certificate scale               & $S$              & 166\,293 \\
+step                            & $h$              & $80\,846\,368/2^{40}$ \\
+left/right node counts          & $K_L,K_R$        & 149\,075,\ 158\,504 \\
+chunk size                      & ---              & 100 \\
+chunks / nodes                  & ---              & 3\,076 / 307\,580 \\
 \midrule
 strip half-width                & $d$              & $7/5$ \\
 bound $\log_{10}M$              & ---              & $360.3909$ \\
-discretisation bound            & $\log_{10}B_{\mathrm{disc}}$ & $-41285.4628$ \\
-right tail bound                & $\log_{10}\tau_R$ & $-40045.8435$ \\
-left tail bound                 & $\log_{10}\tau_L$ & $-40045.6719$ \\
+discretisation bound            & $\log_{10}B_{\mathrm{disc}}$ & $-51594.8080$ \\
+right tail bound                & $\log_{10}\tau_R$ & $-50043.8007$ \\
+left tail bound                 & $\log_{10}\tau_L$ & $-50045.7499$ \\
 \midrule
 lower correction                & $B$              & 1 \\
-right tail correction           & $T_R$            & 26\,431\,841\,856\,436 \\
-left tail correction            & $T_L$            & 39\,242\,142\,865\,260 \\
-upper correction                & $C=T_R+T_L+B$    & 65\,673\,984\,721\,697 \\
+right tail correction           & $T_R$            & 2\,400\,727\,111\,627\,803 \\
+left tail correction            & $T_L$            & 26\,985\,556\,367\,958 \\
+upper correction                & $C=T_R+T_L+B$    & 2\,427\,712\,667\,995\,762 \\
 \midrule
-interval width                  & $\log_{10}(\Lambda_+-\Lambda_-)-S\log_{10}2$ & $-40042.2602491239$ \\
-guard digits beyond $10^{-D}$   & ---              & $42.2602$ \\
+interval width                  & $\log_{10}(\Lambda_+-\Lambda_-)-S\log_{10}2$ & $-50042.357438746905$ \\
+guard digits beyond $10^{-D}$   & ---              & $42.3574$ \\
 \bottomrule
 \end{tabular}
-\caption{Parameters and error budget of the 40\,000-digit run. All
+\caption{Parameters and error budget of the 50\,000-digit run. All
 integer quantities are exact.}
 \label{tab:params}
 \end{table}
 
-The discretisation bound is about $1249$ orders of magnitude below what
-is needed, and each tail is about $45$ orders below the target. The
+The discretisation bound is about $1559$ orders of magnitude below what
+is needed, i.e.\ below $10^{-(D+G+6)}$, and each tail is about $6$ to
+$8$ orders below its target $10^{-(D+G+8)}$. The
 width is dominated by the accumulated widths of the saved node
-enclosures: the chunk-sum width is $10^{-40042.260531}$, while the
-outward corrections $B$ and $C$ add $2^{45.9}$ units of $2^{-S}$ to a
-total of $2^{56.49}$. The analytic error terms do not control the
+enclosures: the chunk-sum width is $10^{-50042.3737}$, while the
+outward corrections $B$ and $C$ add $2^{51.1}$ units of $2^{-S}$ to a
+total of $2^{55.89}$. The analytic error terms do not control the
 guard-digit count; the interval arithmetic does.
 
 \section{Verification}
@@ -411,11 +460,11 @@ reproduces the first $1\,000$ digits in our runs.
 
 \section{The digit string}
 
-Table~\ref{tab:digits} collects measurements on the certified string of
-$40\,000$ digits. They are reproducible with
-\texttt{checks/verify\_sequences.py} in about $12$\,s. None of these
-observations is used in the proof; they document the object and provide
-independent consistency checks against published statements.
+Table~\ref{tab:digits} collects measurements on the first $40\,000$
+digits of the certified $50\,000$-digit string. They are reproducible
+with \texttt{40000/checks/verify\_sequences.py} in about $12$\,s. None of
+these observations is used in the proof; they document the object and
+provide independent consistency checks against published statements.
 
 \begin{table}[ht]
 \centering
@@ -435,7 +484,8 @@ prime substrings of length $\le32$ & 66\,816 (deterministic to 24 digits) \\
 prime truncations up to 3000 digits & lengths 6, 27, 57, 60, 1659, 2508 \\
 \bottomrule
 \end{tabular}
-\caption{Measurements on the certified 40\,000-digit string. The
+\caption{Measurements on the first $40\,000$ digits of the certified
+$50\,000$-digit string. The
 $\chi^2$ value is consistent with uniformity but proves nothing about
 normality, which remains open.}
 \label{tab:digits}
@@ -444,41 +494,45 @@ normality, which remains open.}
 Two statements in OEIS A225242 \cite{oeisA225242} are extended. Writing
 $a(n)$ for the first position at which the digit $n$ appears $n$ times in
 a row, the published entry recorded $a(5)>15\,000$; the strings
-\texttt{55555} and \texttt{666666} do not occur among the 40\,000
-digits, so $a(5),a(6)>40\,000$. This is a conditional statement: it is
+\texttt{55555} and \texttt{666666} do not occur among the $50\,000$
+digits, so $a(5),a(6)>50\,000$. Neither \texttt{0123456789} nor
+\texttt{9876543210} occurs either, and the longest run of a single digit
+has length $5$. This is a conditional statement: it is
 valid for the certified string, hence for $\lam$ if the certificate is
 correct.
 
 \section{Reproducibility and data}
 
-The producing pipeline is \texttt{40000/golomb\_dickman.py}. It requires
+The producing pipeline is \texttt{50000/golomb\_dickman\_26.py}. It requires
 Python 3.11+ and \texttt{python-flint} \cite{pythonflint} (Arb); the run
 takes hours of CPU and is resumable through checkpoints. The repository
-ships the $1\,209$ published checkpoints, so the certificate can be
+ships the $3\,076$ published checkpoints, so the certificate can be
 re-derived without recomputing the nodes:
 
 \begin{lstlisting}
 python -m pip install python-flint
-cd 40000
-python verify_40000.py          # 0.1 s, standard library only
-python checks/run_all.py        # about 2 min
-python golomb_dickman.py        # full recomputation, hours
+cd 50000
+python ../verification/verify_certificate.py \
+    --cert golomb_dickman_50000_certified.txt \
+    --sha256-manifest SHA256SUMS.txt
+python ../verification/run_all.py        # levels A and B, about 1 min
+python golomb_dickman_26.py certify --digits 50000   # hours
 \end{lstlisting}
 
-The current self-contained command-line interface is
-\texttt{golomb\_dickman\_26.py}; it accepts
-\texttt{certify --digits 40000}, \texttt{crosscheck},
+The command-line interface accepts
+\texttt{certify --digits 50000}, \texttt{crosscheck},
 \texttt{boundary-test}, \texttt{test} and \texttt{smoke}.
 
 \paragraph{Data.}
-The certificate \texttt{golomb\_dickman\_40000\_certified.txt}, the
-digit file \texttt{golomb\_dickman\_40000\_digits.txt}, the OEIS b-file
+The certificate \texttt{golomb\_dickman\_50000\_certified.txt}, the
+digit file \texttt{golomb\_dickman\_50000\_digits.txt}, the OEIS b-file
 \texttt{b084945.txt}, the code, the verifiers and the checkpoints are
 archived in the GitHub repository
-\url{https://github.com/fix27/golomb-dickman-constant/tree/main/40000}.
-SHA-256 checksums of the canonical files are given in
-Appendix~\ref{app:sums}. An archived release with a DOI is planned; see
-\texttt{40000/PUBLICATION\_CHECKLIST.md}.
+\url{https://github.com/fix27/golomb-dickman-constant/tree/main/50000}.
+The 40\,000-digit certificate and b-file of the previous run are kept in
+\texttt{40000/} byte-for-byte. SHA-256 checksums of the canonical files
+are given in Appendix~\ref{app:sums}. An archived release with a DOI is
+planned; see \texttt{40000/PUBLICATION\_CHECKLIST.md}.
 
 \paragraph{Trust base.}
 The result is conditional on:
@@ -513,14 +567,22 @@ The certified value begins
 0.6243299885435508709929363831008372441796426201805292869735519024956380888551132544624602761955398688...
 \end{lstlisting}
 The digits above are the first 100 digits after the point; the full
-string has 40\,000 digits and is given in
-\texttt{golomb\_dickman\_40000\_digits.txt}.
+string has 50\,000 digits and is given in
+\texttt{50000/golomb\_dickman\_50000\_digits.txt}.
 
 \section{Checksums}
 \label{app:sums}
 
-SHA-256 of the canonical files (LF line endings, ASCII/UTF-8 without
-BOM):
+SHA-256 of the canonical files of the 50\,000-digit run (LF line
+endings, ASCII/UTF-8 without BOM):
+\begin{lstlisting}
+76f4155981049003351409769505c3cec39e26dfc30624c46bd199e70ed6477a  golomb_dickman_50000_certified.txt
+8f017d45ee5108bb6b976882b079279f44f8a767ce62b44bd7c54e9167ad09a0  golomb_dickman_50000_digits.txt
+1e3d23e9ac3ce51990d83decd395d6bde96027f43811b94cebd5a6a4b7c19c43  b084945.txt
+e2eb7d4ccca761c5c5e1f2b37075f9baea245dac86cbe962fd9dc92aa574ef71  golomb_dickman_26.py
+78783a09bae599298a07415056b0ca521717c9f7ecaa1fd15cb19b4d5ab6b0e0  gd_rigorous_ckpt_50000/meta_v12.json
+\end{lstlisting}
+The 40\,000-digit run of the previous version, kept unchanged:
 \begin{lstlisting}
 8892c0715f1afbb271c9f07cc9658cea0f3ca83c2dda3ec7d23b447dc908de9c  golomb_dickman_40000_certified.txt
 fbae757900983bd4fb6421c5f27bf9602af1a1bfc013e4c501bb9da2b5a65327  golomb_dickman_40000_digits.txt

@@ -1,0 +1,30 @@
+{
+  "digits": 50000,
+  "scale_bits": 166293,
+  "chunks": 3076,
+  "nodes": 307580,
+  "index_range": [
+    -149075,
+    158505
+  ],
+  "gaps": 0,
+  "step": {
+    "numerator": 80846368,
+    "denominator": 1099511627776,
+    "source": "meta_v12.json (planned h)"
+  },
+  "B": 1,
+  "C": 2427712667995762,
+  "chunk_width": "4.230 x 10^-50043",
+  "certificate_width": "4.390 x 10^-50043",
+  "plan": {
+    "meta_pkl": false,
+    "meta_v12": true,
+    "h_checked": true,
+    "h": "7.352934335358441e-05",
+    "K_L": 149075,
+    "K_R": 158504
+  },
+  "meta_present": true,
+  "verdict": "PASS"
+}

@@ -331,7 +331,12 @@ def main(argv: list[str] | None = None) -> int:
         )
         print(f"  b-file: {report['b_file_terms']} terms, indices 0..{report['b_file_terms'] - 1}")
         print("  first 102 digits match OEIS A084945")
-        print("  SHA-256: OK for all three artefacts")
+        if args.no_hash:
+            print("  SHA-256: computed only, UNVERIFIED (--no-hash):")
+        else:
+            print("  SHA-256: MATCH (pinned in this script):")
+        for name, digest in report["sha256"].items():
+            print(f"    {digest}  {name}")
 
     if args.json is not None:
         args.json.write_text(

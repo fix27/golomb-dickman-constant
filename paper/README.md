@@ -1,7 +1,7 @@
 # arXiv preprint
 
 `main.tex` is a self-contained LaTeX article (no `.bib` file, no figures)
-describing the 40,000-digit certificate. It compiles with any standard
+describing the 50,000-digit certificate. It compiles with any standard
 TeX distribution:
 
 ```bash
@@ -18,7 +18,7 @@ tectonic main.tex
 ## What the paper claims
 
 - the interval $[\Lambda_-,\Lambda_+]$ is a certificate for the first
-  40,000 decimal digits, with width $10^{-40042.2602491239}$;
+  50,000 decimal digits, with width $10^{-50042.3574}$;
 - every number in the error budget is either an exact integer or an
   outward-rounded bound;
 - the verifier needs only exact integer arithmetic;

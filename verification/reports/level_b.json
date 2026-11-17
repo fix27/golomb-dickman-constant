@@ -1,13 +1,17 @@
 {
   "level": "B",
-  "checks_directory": "C:\\Users\\\u041a\u043e\u0441\u0442\u044f\\Documents\\GitHub\\golomb_dickman_30000\\40000\\checks",
+  "scope": {
+    "D": 40000,
+    "S": 133074
+  },
+  "checks_directory": "C:\\Users\\fix12\\Documents\\GitHub\\golomb_dickman_30000\\40000\\checks",
   "checkpoint_policy": "recompute; saved intervals are a cache, not proof",
   "steps": [
     {
       "step": "checklist",
       "command": "verify_checkpoints.py",
       "exit_code": 0,
-      "seconds": 0.46,
+      "seconds": 12.4,
       "output_tail": [
         "  meta: D=40000 G=30 Ebits=133010 S=133074 K_L=117064 K_R=124623 chunk=200",
         "  h = 100859575 / 1099511627776",
@@ -30,7 +34,7 @@
       "step": "plan",
       "command": "verify_nodes_decimal.py --plan",
       "exit_code": 0,
-      "seconds": 0.42,
+      "seconds": 9.87,
       "output_tail": [
         "  log10 M      = 360.3909",
         "  log10 B_disc = -41285.4628   (requirement 10^-40036)",
@@ -49,7 +53,7 @@
       "step": "methods",
       "command": "verify_nodes_decimal.py --methods",
       "exit_code": 0,
-      "seconds": 6.95,
+      "seconds": 41.43,
       "output_tail": [
         "  formula self-test (50 digits, series vs continued fraction):",
         "    u=    0.1  G=4.01338306105582288509e-2  |cf-series|=0.00e-69  OK",
@@ -72,7 +76,7 @@
       "step": "nodes",
       "command": "verify_nodes_decimal.py --chunks 12",
       "exit_code": 0,
-      "seconds": 3.15,
+      "seconds": 18.78,
       "output_tail": [
         "  OK   chunk [5736, 5936): nodes used 200, skipped 0; sum ~ 9.180031549748041e+1",
         "         saved pins 100 digits; recomputed agrees",
@@ -92,7 +96,16 @@
       "ok": true
     }
   ],
-  "arb_available": false,
+  "arb_available": true,
   "arb_audit_run": false,
-  "verdict": "PASS"
+  "arb": {
+    "status": "NOT_RUN",
+    "required": true,
+    "reason": "not requested; pass --with-arb to run the full Arb re-audit",
+    "command": [
+      "verify_checkpoints_arb.py",
+      "--all"
+    ]
+  },
+  "verdict": "INCOMPLETE"
 }

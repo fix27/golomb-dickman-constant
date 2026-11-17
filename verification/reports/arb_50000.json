@@ -1,0 +1,28 @@
+{
+  "certificate": "50000\\golomb_dickman_50000_certified.txt",
+  "checkpoints": "50000\\gd_rigorous_ckpt_50000",
+  "digits": 50000,
+  "scale_bits": 166293,
+  "python": "3.14.6",
+  "structure": {
+    "nodes": 307580,
+    "chunks": 3076,
+    "index_range": [
+      -149075,
+      158504
+    ],
+    "index_range_half_open": [
+      -149075,
+      158505
+    ],
+    "duplicates": 0,
+    "gaps": 0,
+    "chunk_size": 100,
+    "step": "80846368/2^40",
+    "width_log10": -50042.357438746905,
+    "guard_digits": 42.357438746905245
+  },
+  "arb": null,
+  "status": "NOT_RUN",
+  "reason": "this python-flint build has no acb.exp_integral_e1"
+}

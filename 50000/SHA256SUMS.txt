@@ -1,9 +1,11 @@
 # SHA-256 checksums for the 50000-digit Golomb-Dickman bundle.
-# The certificate, digits and b-file are ASCII with LF line endings and no BOM.
+# Canonical form: ASCII/UTF-8 text, LF line endings, no BOM (see ../.gitattributes).
+# These hashes are a reference, not a proof: verify them against an independent copy.
 # Verify with:  sha256sum -c SHA256SUMS.txt
-1e3d23e9ac3ce51990d83decd395d6bde96027f43811b94cebd5a6a4b7c19c43  b084945.txt
-0da4cbe9587c2af5cd59e43829de8b8bf859ad2aeb59181d7032b0b3a8e2b80c  gd_rigorous_ckpt_50000/meta_v12.json
-03c4ace9c3d7761b81f7681ea2710b854576643d0adf6c6213461b16d11c2f59  golomb_dickman_26.py
+#        or:    python ../verification/verify_certificate.py --cert golomb_dickman_50000_certified.txt --sha256-manifest SHA256SUMS.txt
 76f4155981049003351409769505c3cec39e26dfc30624c46bd199e70ed6477a  golomb_dickman_50000_certified.txt
 8f017d45ee5108bb6b976882b079279f44f8a767ce62b44bd7c54e9167ad09a0  golomb_dickman_50000_digits.txt
-1472e15b73ceda537ae85867efe3bbae545570a0cbab48e0af37304a78941e1e  README.md
+1e3d23e9ac3ce51990d83decd395d6bde96027f43811b94cebd5a6a4b7c19c43  b084945.txt
+78783a09bae599298a07415056b0ca521717c9f7ecaa1fd15cb19b4d5ab6b0e0  gd_rigorous_ckpt_50000/meta_v12.json
+e2eb7d4ccca761c5c5e1f2b37075f9baea245dac86cbe962fd9dc92aa574ef71  golomb_dickman_26.py
+83aacf1d1221f41650f17d1dc589b48b7432a53e3ec348257b98b897ff4e8d10  README.md

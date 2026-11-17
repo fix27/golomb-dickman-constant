@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import tempfile
 import sys
@@ -116,6 +117,16 @@ def run_step(checks: Path, name: str, command: list[str], chunks: int) -> dict[s
     }
 
 
+def _scope_from_results(results: list[dict]) -> dict[str, int | None]:
+    """Recover D and S from the checklist output, for an explicit scope line."""
+    for result in results:
+        for line in result.get("output_tail", []):
+            match = re.search(r"\bD=(\d+)\b.*\bS=(\d+)\b", line)
+            if match:
+                return {"D": int(match.group(1)), "S": int(match.group(2))}
+    return {"D": None, "S": None}
+
+
 def main(argv: list[str] | None = None) -> int:
     _configure_stdio()
     parser = argparse.ArgumentParser(description="Level B: audit the mathematics of the certificate.")
@@ -123,6 +134,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--chunks", type=int, default=12, help="chunks recomputed from scratch (default 12)")
     parser.add_argument("--json", type=Path, default=None, help="write a JSON report")
     parser.add_argument("--report", type=Path, default=None, help="write a text report")
+    parser.add_argument(
+        "--with-arb",
+        action="store_true",
+        help="also run verify_checkpoints_arb.py --all (hours); without it "
+             "the verdict is INCOMPLETE, never PASS",
+    )
     args = parser.parse_args(argv)
 
     here = Path(__file__).resolve().parent
@@ -142,10 +159,13 @@ def main(argv: list[str] | None = None) -> int:
         result = run_step(checks, name, command, args.chunks)
         results.append(result)
         status = "OK  " if result["ok"] else "FAIL"
-        print(f"{status} {name:9s} {result['seconds']:7.2f}s  {' '.join(result['command'])}")
+        print(f"{status} {name:9s} {result['seconds']:7.2f}s  {result['command']}")
         for line in result["output_tail"]:
             print(f"       {line}")
         print()
+
+    scope = _scope_from_results(results)
+    print(f"  scope: previous run, D={scope['D']}, S={scope['S']}")
 
     arb = checks / "verify_checkpoints_arb.py"
     arb_available = False
@@ -157,38 +177,87 @@ def main(argv: list[str] | None = None) -> int:
         )
         arb_available = probe.returncode == 0
 
-    failed = [r["step"] for r in results if not r["ok"]]
-    verdict = "PASS" if not failed else "FAIL"
-    print(f"Level B verdict: {verdict}")
-    if not arb_available:
-        print("  note: Arb (python-flint) is not importable here, so the rigorous")
-        print("        interval re-audit (verify_checkpoints_arb.py) was NOT run.")
-        print("        The certificate's enclosure itself is therefore still")
-        print("        established only by the original production run.")
+    arb_audit_run = False
+    arb_ok = False
+    arb_reason = ""
+    if not arb.exists():
+        arb_reason = "verify_checkpoints_arb.py is not present"
+    elif not arb_available:
+        arb_reason = "python-flint is not available"
+    elif args.with_arb:
+        started = time.time()
+        completed = subprocess.run(
+            [sys.executable, "-u", "verify_checkpoints_arb.py", "--all"],
+            cwd=checks,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+        arb_audit_run = True
+        arb_ok = completed.returncode == 0
+        arb_reason = "" if arb_ok else "verify_checkpoints_arb.py --all failed"
+        print(
+            f"{'OK  ' if arb_ok else 'FAIL'} arb      "
+            f"{time.time() - started:7.2f}s  verify_checkpoints_arb.py --all"
+        )
+        tail = ((completed.stdout or "") + (completed.stderr or "")).strip().splitlines()
+        for line in tail[-5:]:
+            print(f"       {line}")
+        print()
+    else:
+        arb_reason = "not requested; pass --with-arb to run the full Arb re-audit"
 
+    failed = [r["step"] for r in results if not r["ok"]]
+    if failed:
+        verdict = "FAIL"
+    elif not arb_audit_run:
+        verdict = "INCOMPLETE"
+    elif not arb_ok:
+        verdict = "FAIL"
+    else:
+        verdict = "PASS"
+    print(f"Level B verdict: {verdict}")
+    if verdict != "PASS":
+        print(f"  Arb re-audit: NOT_RUN ({arb_reason})")
+        print("  this is not a Level B PASS; the certificate enclosure is")
+        print("  still established only by the original production run")
+
+    arb_status = "NOT_RUN" if not arb_audit_run else ("PASS" if arb_ok else "FAIL")
     report = {
         "level": "B",
+        "scope": scope,
         "checks_directory": str(checks),
         "checkpoint_policy": "recompute; saved intervals are a cache, not proof",
         "steps": results,
         "arb_available": arb_available,
-        "arb_audit_run": False,
+        "arb_audit_run": arb_audit_run,
+        "arb": {
+            "status": arb_status,
+            "required": True,
+            "reason": arb_reason,
+            "command": ["verify_checkpoints_arb.py", "--all"],
+        },
         "verdict": verdict,
     }
 
     if args.report is not None:
-        lines = [f"Level B mathematical audit  ({verdict})", f"scripts: {checks}", ""]
+        lines = [
+            f"Level B mathematical audit  ({verdict})",
+            f"scope: previous run, D={scope['D']}, S={scope['S']}",
+            f"scripts: {checks}",
+            "",
+        ]
         for result in results:
             lines.append(f"{result['step']}: exit {result['exit_code']} in {result['seconds']}s")
             lines.extend(f"    {line}" for line in result["output_tail"])
             lines.append("")
-        if not arb_available:
-            lines.append("Arb re-audit: NOT RUN (python-flint could not be imported)")
+        lines.append(f"Arb re-audit: {arb_status} ({arb_reason})")
         write_report(args.report, "\n".join(lines) + "\n")
     if args.json is not None:
         write_report(args.json, json.dumps(report, indent=2) + "\n")
 
-    return 0 if not failed else 1
+    return 0 if verdict == "PASS" else (1 if verdict == "FAIL" else 2)
 
 
 if __name__ == "__main__":

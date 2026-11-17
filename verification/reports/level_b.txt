@@ -1,7 +1,8 @@
-Level B mathematical audit  (PASS)
-scripts: C:\Users\Костя\Documents\GitHub\golomb_dickman_30000\40000\checks
+Level B mathematical audit  (INCOMPLETE)
+scope: previous run, D=40000, S=133074
+scripts: C:\Users\fix12\Documents\GitHub\golomb_dickman_30000\40000\checks
 
-checklist: exit 0 in 0.46s
+checklist: exit 0 in 12.4s
       meta: D=40000 G=30 Ebits=133010 S=133074 K_L=117064 K_R=124623 chunk=200
       h = 100859575 / 1099511627776
       chunks: 1209 (expected 1209)
@@ -17,7 +18,7 @@ checklist: exit 0 in 0.46s
     NOTE: this audit does not recompute the Arb node balls.
           Run verify_checkpoints_arb.py for the deep Arb verification.
 
-plan: exit 0 in 0.42s
+plan: exit 0 in 9.87s
       log10 M      = 360.3909
       log10 B_disc = -41285.4628   (requirement 10^-40036)
       log10 tau_R  = -40045.8435
@@ -29,7 +30,7 @@ plan: exit 0 in 0.42s
       certificate implies B = 1, TR + TL + B = 65673984721697
     OK: discretisation and tail bounds reproduce the certificate corrections
 
-methods: exit 0 in 6.95s
+methods: exit 0 in 41.43s
       formula self-test (50 digits, series vs continued fraction):
         u=    0.1  G=4.01338306105582288509e-2  |cf-series|=0.00e-69  OK
         u= 0.3679  G=2.38332619057353097782e-1  |cf-series|=1.00e-70  OK
@@ -45,7 +46,7 @@ methods: exit 0 in 6.95s
         u=  20000  K=20000   relative difference=0.00e-30  OK
     OK: formula self-test passed
 
-nodes: exit 0 in 3.15s
+nodes: exit 0 in 18.78s
       OK   chunk [5736, 5936): nodes used 200, skipped 0; sum ~ 9.180031549748041e+1
              saved pins 100 digits; recomputed agrees
       OK   chunk [17336, 17536): nodes used 200, skipped 0; sum ~ 1.697476213578505e+1
@@ -61,4 +62,4 @@ nodes: exit 0 in 3.15s
     OK: recomputed chunk sums agree with the saved intervals
         (numerical consistency only; use verify_checkpoints_arb.py for the rigorous check)
 
-Arb re-audit: NOT RUN (python-flint could not be imported)
+Arb re-audit: NOT_RUN (not requested; pass --with-arb to run the full Arb re-audit)
