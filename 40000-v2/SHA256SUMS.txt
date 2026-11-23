@@ -1,0 +1,20 @@
+# SHA-256 checksums for the 40000-v2 Golomb-Dickman bundle.
+# Canonical form: UTF-8/ASCII, LF line endings, no BOM (see .gitattributes).
+# Digests are over LF-normalised bytes, matching verification/verify_40000.py.
+# Verify with:  python verification/verify_40000.py
+#          or:  sha256sum -c SHA256SUMS.txt
+
+e1ff3fd980444baccdf6c37cd6e1ee31a29ad7964c36a24cd92e22092cdd7b83  .gitattributes
+4e0c8906a08c268f0eb61cae73ffffeb8c51dd8664f8a0862b24f3fc90381cd6  .gitignore
+c73af643198da299d2e624e3c2f69d05439efcddbbefa7cec176ac63f993bed3  b084945.txt
+f5a02374d79b4ca6af889a9c4a63b53fe265bc3c861a1c20dc2683c696e781ea  golomb_dickman_27.py
+8892c0715f1afbb271c9f07cc9658cea0f3ca83c2dda3ec7d23b447dc908de9c  golomb_dickman_40000_certified.txt
+fbae757900983bd4fb6421c5f27bf9602af1a1bfc013e4c501bb9da2b5a65327  golomb_dickman_40000_digits.txt
+7b509b6a8a16c26e4f1a236b0300e905070d30a7019a0f2dbf053c469540961c  PLAN.md
+9a04ea122ce024a6b4f56b92759e49ace8e8dc3be60d4ac09a26b67df765ed59  pyproject.toml
+6b16933cb62ddfebb5f88f01a85a22083cf1779b61809757cf8f75c6eb633c7c  README.md
+e081bf2955692052aceb5e70f01ad4082b31a45abc7fdaa9dc7f6ff8c02685a8  VERIFICATION.md
+998e0568d35dd24d678793acac7eb3282f2c96c1d29e0435e64fe5344dbd7e19  ci/golomb_dickman_40000.yml
+fb03d2d8a6fbf8c3ac528504e2f3d95b8afdd3c1c611fedc0a1d67b29de96586  verification/crosscheck_1000_mpmath.py
+b6a985288da906b1f89ba7d4bce613db75f4f4633764bb5ba224f3e740db127e  verification/full_arb_replay_40000.py
+c399ec4f1229514ae49e6b0fe6d382eccfd48873ce388f87aeefb087cbe88f13  verification/verify_40000.py

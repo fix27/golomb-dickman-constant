@@ -33,6 +33,13 @@ truncation is proved. Its width is about 10^-40042.26.
 Certificate, verifier and code:
 https://github.com/fix27/golomb-dickman-constant/tree/main/40000
 
+Reproducibility notes for the 40,000-digit run are collected in 40000-v2/:
+the same certificate and digits with canonical LF bytes, a verifier that
+normalises line endings before hashing, and a full Arb replay tool that
+recomputes every chunk from the plan without reading saved checkpoints. The
+full replay has not yet been run; the digits above and this SHA-256 are
+unchanged.
+
 SHA-256 of b084945.txt:
 c73af643198da299d2e624e3c2f69d05439efcddbbefa7cec176ac63f993bed3
 

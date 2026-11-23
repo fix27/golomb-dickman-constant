@@ -1,0 +1,18 @@
+# 40000-v2 line-ending policy.  Canonical LF for every text artefact.
+* text=auto eol=lf
+
+*.py   text eol=lf
+*.txt  text eol=lf
+*.md   text eol=lf
+*.toml text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.tex  text eol=lf
+*.bib  text eol=lf
+*.sh   text eol=lf
+
+# Checkpoint pickles are binary; Git must never touch them.
+*.pkl  binary
+gd_rigorous_ckpt_*/** -text
+__pycache__/**        -text

@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "golomb-dickman-core"
+version = "0.1.0"
+description = "Rigorous Arb interval certificate core for the Golomb-Dickman constant"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Golomb-Dickman certificate project" }]
+dependencies = ["python-flint>=0.9,<1"]
+
+[project.optional-dependencies]
+crosscheck = ["mpmath>=1.3"]
+
+[project.scripts]
+golomb-dickman = "golomb_dickman_27:main"
+
+[tool.setuptools]
+py-modules = ["golomb_dickman_27"]

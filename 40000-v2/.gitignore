@@ -1,0 +1,22 @@
+# Checkpoints are inputs, not artefacts: never commit a pickle directory.
+gd_rigorous_ckpt_*/
+ckpt*/
+*.pkl
+*.pkl.tmp
+MIGRATION.json
+
+# Local runs and profiles
+smoke_60.txt
+*.prof
+*.prof.txt
+level_b.json
+level_b_report.json
+level_c_report.json
+
+# Packaging output
+build/
+dist/
+*.egg-info/
+
+__pycache__/
+*.py[cod]

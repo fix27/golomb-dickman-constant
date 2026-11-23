@@ -534,6 +534,21 @@ The 40\,000-digit certificate and b-file of the previous run are kept in
 are given in Appendix~\ref{app:sums}. An archived release with a DOI is
 planned; see \texttt{40000/PUBLICATION\_CHECKLIST.md}.
 
+\paragraph{The 40000-v2 build.}
+The $40\,000$-digit artefacts in \texttt{40000/} were produced before the
+line-ending and resume defects were found: on a Windows checkout their CRLF
+bytes do not match the LF checksums in \texttt{SHA256SUMS.txt}, and
+\texttt{--resume} could feed saved checkpoints into a run that still printed a
+certificate. The directory \texttt{40000-v2/} carries the same certificate and
+the same digits with canonical LF bytes, a hash routine that normalises line
+endings before hashing, a strict \texttt{certify} that refuses
+\texttt{--resume}, and a separate audit-only path that prints
+\texttt{CERTIFICATE: NONE (AUDIT ONLY)}. It also contains a full Arb replay
+tool (\texttt{verification/full\_arb\_replay\_40000.py}) that recomputes all
+$1\,209$ chunks from the plan without reading a checkpoint. That replay has
+\emph{not} been executed on the full $40\,000$-digit certificate: it is a
+multi-hour job and is reported as not run, not as passed.
+
 \paragraph{Trust base.}
 The result is conditional on:
 (i) the correctness of Arb's midpoint--radius arithmetic
