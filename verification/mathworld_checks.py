@@ -33,8 +33,8 @@ Extra long-sequence checks (not MathWorld claims):
   * k-gram coverage for k = 1..6, missing 4-grams, most frequent 4/5/6-grams;
   * chi-square tests: digit frequencies, digit vs position mod 10, overlapping
     and non-overlapping pairs, and overlapping triples;
-  * permutation-test p-values for up/down and equal/unequal runs (fixed-seed
-    Monte Carlo, not an exact test);
+  * Monte Carlo p-values for up/down and equal/unequal runs against random
+    digit strings of the same length (fixed seed, not an exact test);
   * optional prime scan: exhaustive prefix lengths 1..2508, a sampled scan
     from 2509 to 15000 (--deep-primes), and random substrings.
 
@@ -185,49 +185,73 @@ def run_count(values: list[int]) -> int:
     return 1 + sum(1 for i in range(1, len(values)) if values[i] != values[i - 1])
 
 
-def permutation_runs_pvalue(
-    values: list[int], trials: int = 500, seed: int = 20261124
-) -> dict[str, object]:
-    """Two-sided fixed-seed permutation test for the number of runs.
+def digit_runs_pvalue(
+    digits: str, trials: int = 500, seed: int = 20261124
+) -> dict[str, dict[str, object]]:
+    """Two-sided fixed-seed Monte Carlo test for two run statistics.
 
-    Up/down signs are not independent after equal pairs are dropped, so a
-    naive Wald-Wolfowitz normal approximation is inappropriate.  Shuffling
-    the observed multiset of signs preserves its composition and calibrates
-    the run count empirically.  This is Monte Carlo evidence, not an exact
-    test; the seed makes it reproducible.
+    The up/down signs from overlapping pairs are *not* independent: a sign
+    change means the middle digit is a strict local extremum.  Shuffling the
+    observed signs destroys that structure and gives the wrong null.  Here
+    the null is iid uniform decimal digits of the same length; for each
+    replicate both run counts are recomputed the same way as for the real
+    digits.  This is Monte Carlo evidence, not an exact test; the seed makes
+    it reproducible.
     """
-    observed = run_count(values)
-    if len(values) < 2:
-        return {
-            "runs": observed,
-            "elements": len(values),
+    def statistics(text: str) -> tuple[int, int, int]:
+        up_down: list[int] = []
+        equal_unequal: list[int] = []
+        for i in range(len(text) - 1):
+            left, right = int(text[i]), int(text[i + 1])
+            equal_unequal.append(1 if right == left else 0)
+            if right != left:
+                up_down.append(1 if right > left else -1)
+        return len(up_down), run_count(up_down), run_count(equal_unequal)
+
+    n = len(digits)
+    if n < 2:
+        empty = {
+            "runs": 0,
+            "elements": 0,
             "p_value": None,
-            "method": "too few observations for a permutation test",
+            "method": "too few digits for a Monte Carlo run test",
             "trials": 0,
             "extreme_or_equal": 0,
             "mean_runs": None,
         }
+        return {"up_down": empty, "equal_unequal": dict(empty)}
+
+    up_n, up_obs, eq_obs = statistics(digits)
     rng = random.Random(seed)
-    shuffled = list(values)
-    permuted: list[int] = []
+    up_sim: list[int] = []
+    eq_sim: list[int] = []
     for _ in range(trials):
-        rng.shuffle(shuffled)
-        permuted.append(run_count(shuffled))
-    mean = sum(permuted) / trials
-    deviation = abs(observed - mean)
-    extreme = sum(1 for value in permuted if abs(value - mean) >= deviation)
-    return {
-        "runs": observed,
-        "elements": len(values),
-        "p_value": (extreme + 1) / (trials + 1),
-        "method": (
-            f"two-sided permutation test, fixed seed {seed}, "
-            f"{trials} shuffles (Monte Carlo, not exact)"
-        ),
-        "trials": trials,
-        "extreme_or_equal": extreme,
-        "mean_runs": mean,
-    }
+        sample = "".join(str(rng.randrange(10)) for _ in range(n))
+        _, up_runs, eq_runs = statistics(sample)
+        up_sim.append(up_runs)
+        eq_sim.append(eq_runs)
+
+    result: dict[str, dict[str, object]] = {}
+    for name, observed, simulated, elements in (
+        ("up_down", up_obs, up_sim, up_n),
+        ("equal_unequal", eq_obs, eq_sim, n - 1),
+    ):
+        mean = sum(simulated) / trials
+        deviation = abs(observed - mean)
+        extreme = sum(1 for value in simulated if abs(value - mean) >= deviation)
+        result[name] = {
+            "runs": observed,
+            "elements": elements,
+            "p_value": (extreme + 1) / (trials + 1),
+            "method": (
+                f"two-sided Monte Carlo, fixed seed {seed}, {trials} random "
+                "digit strings of the same length (not an exact test)"
+            ),
+            "trials": trials,
+            "extreme_or_equal": extreme,
+            "mean_runs": mean,
+        }
+    return result
 
 
 # ---------------------------------------------------------------- MathWorld
@@ -755,17 +779,7 @@ def digit_checks(digits: str) -> dict[str, object]:
     )
     chi_triplets += triple_expected * (1000 - len(triple_counts))
 
-    up_down: list[int] = []
-    equal_unequal: list[int] = []
-    for i in range(n - 1):
-        left, right = int(digits[i]), int(digits[i + 1])
-        equal_unequal.append(1 if right == left else 0)
-        if right != left:
-            up_down.append(1 if right > left else -1)
-    runs_significance = {
-        "up_down": permutation_runs_pvalue(up_down),
-        "equal_unequal": permutation_runs_pvalue(equal_unequal),
-    }
+    runs_significance = digit_runs_pvalue(digits)
 
     coverage = {}
     for k in range(1, 7):
