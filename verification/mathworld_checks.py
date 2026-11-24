@@ -32,7 +32,9 @@ Extra long-sequence checks (not MathWorld claims):
     periodic runs with at least two full copies;
   * k-gram coverage for k = 1..6, missing 4-grams, most frequent 4/5/6-grams;
   * chi-square tests: digit frequencies, digit vs position mod 10, overlapping
-    and non-overlapping pairs;
+    and non-overlapping pairs, and overlapping triples;
+  * permutation-test p-values for up/down and equal/unequal runs (fixed-seed
+    Monte Carlo, not an exact test);
   * optional prime scan: exhaustive prefix lengths 1..2508, a sampled scan
     from 2509 to 15000 (--deep-primes), and random substrings.
 
@@ -44,8 +46,10 @@ Usage
 
 Only the Python standard library is required.  sympy is optional and is used
 for an independent BPSW confirmation of large candidates; without sympy the
-Miller-Rabin result is reported as a probable prime.  Nothing here proves
-normality, and nothing here is a world-record claim.
+Miller-Rabin result is reported as a probable prime.  Miller-Rabin and BPSW
+are probable-prime tests: no APRCL/ECPP primality certificate is produced
+here.  Nothing here proves normality, and nothing here is a world-record
+claim.
 """
 
 from __future__ import annotations
@@ -172,6 +176,58 @@ def chi2_sf(x: float, df: int) -> float:
             break
     q = math.exp(-z + a * math.log(z) - math.lgamma(a)) * h
     return max(0.0, min(1.0, q))
+
+
+def run_count(values: list[int]) -> int:
+    """Number of runs in a binary/sign sequence (0 for an empty sequence)."""
+    if not values:
+        return 0
+    return 1 + sum(1 for i in range(1, len(values)) if values[i] != values[i - 1])
+
+
+def permutation_runs_pvalue(
+    values: list[int], trials: int = 500, seed: int = 20261124
+) -> dict[str, object]:
+    """Two-sided fixed-seed permutation test for the number of runs.
+
+    Up/down signs are not independent after equal pairs are dropped, so a
+    naive Wald-Wolfowitz normal approximation is inappropriate.  Shuffling
+    the observed multiset of signs preserves its composition and calibrates
+    the run count empirically.  This is Monte Carlo evidence, not an exact
+    test; the seed makes it reproducible.
+    """
+    observed = run_count(values)
+    if len(values) < 2:
+        return {
+            "runs": observed,
+            "elements": len(values),
+            "p_value": None,
+            "method": "too few observations for a permutation test",
+            "trials": 0,
+            "extreme_or_equal": 0,
+            "mean_runs": None,
+        }
+    rng = random.Random(seed)
+    shuffled = list(values)
+    permuted: list[int] = []
+    for _ in range(trials):
+        rng.shuffle(shuffled)
+        permuted.append(run_count(shuffled))
+    mean = sum(permuted) / trials
+    deviation = abs(observed - mean)
+    extreme = sum(1 for value in permuted if abs(value - mean) >= deviation)
+    return {
+        "runs": observed,
+        "elements": len(values),
+        "p_value": (extreme + 1) / (trials + 1),
+        "method": (
+            f"two-sided permutation test, fixed seed {seed}, "
+            f"{trials} shuffles (Monte Carlo, not exact)"
+        ),
+        "trials": trials,
+        "extreme_or_equal": extreme,
+        "mean_runs": mean,
+    }
 
 
 # ---------------------------------------------------------------- MathWorld
@@ -691,6 +747,26 @@ def digit_checks(digits: str) -> dict[str, object]:
     )
     chi_nonoverlap += nonoverlap_expected * (100 - len(nonoverlap))
 
+    triple_counts = Counter(digits[i : i + 3] for i in range(n - 2))
+    triple_expected = (n - 2) / 1000.0
+    chi_triplets = sum(
+        (value - triple_expected) ** 2 / triple_expected
+        for value in triple_counts.values()
+    )
+    chi_triplets += triple_expected * (1000 - len(triple_counts))
+
+    up_down: list[int] = []
+    equal_unequal: list[int] = []
+    for i in range(n - 1):
+        left, right = int(digits[i]), int(digits[i + 1])
+        equal_unequal.append(1 if right == left else 0)
+        if right != left:
+            up_down.append(1 if right > left else -1)
+    runs_significance = {
+        "up_down": permutation_runs_pvalue(up_down),
+        "equal_unequal": permutation_runs_pvalue(equal_unequal),
+    }
+
     coverage = {}
     for k in range(1, 7):
         counter = Counter(digits[i : i + k] for i in range(n - k + 1))
@@ -795,6 +871,13 @@ def digit_checks(digits: str) -> dict[str, object]:
             "p_value": chi2_sf(chi_nonoverlap, 99),
             "critical_5pct": 123.225,
         },
+        "chi2_triplets": {
+            "triples": n - 2,
+            "distinct": len(triple_counts),
+            "value": chi_triplets,
+            "df": 999,
+            "p_value": chi2_sf(chi_triplets, 999),
+        },
         "coverage": coverage,
         "missing_4grams_first10": missing4,
         "expected_missing_4grams": 10000 * math.exp(-(n - 3) / 10000),
@@ -813,6 +896,7 @@ def digit_checks(digits: str) -> dict[str, object]:
             "alternating_parity": alternating_run(digits, lambda x: x % 2),
             "alternating_low_high": alternating_run(digits, lambda x: x < 5),
         },
+        "runs_significance": runs_significance,
         "palindrome": longest_palindrome(digits),
         "repeats": {
             "longest_repeated_twice": repeat_details(digits, repeat2[1][0], repeat2[0])
@@ -882,8 +966,9 @@ def sympy_isprime(n: int) -> bool | str:
 def prime_checks(digits: str, deep: bool) -> dict[str, object]:
     result: dict[str, object] = {
         "trial_division_limit": SMALL_PRIMES[-1],
-        "method": "deterministic Miller-Rabin bases 2..37 plus trial division; "
-        "BPSW via sympy for the two large prefixes when available",
+        "method": "trial division plus Miller-Rabin (12 fixed bases for the "
+        "large prefixes); sympy BPSW when available.  These are "
+        "probable-prime tests, not APRCL/ECPP primality proofs",
     }
 
     # Exhaustive prefix scan 1..2508.
@@ -1074,6 +1159,15 @@ def main(argv: list[str] | None = None) -> int:
         f"  chi2 position mod 10: {extras['chi2_position_mod10']['value']:.3f} "
         f"(p={extras['chi2_position_mod10']['p_value']:.4f})"
     )
+    print(
+        f"  chi2 triplets: {extras['chi2_triplets']['value']:.4f} "
+        f"(df={extras['chi2_triplets']['df']}, "
+        f"p={extras['chi2_triplets']['p_value']:.4f})"
+    )
+    for name, test in extras["runs_significance"].items():
+        p_value = test["p_value"]
+        shown = "n/a" if p_value is None else f"{p_value:.4f}"
+        print(f"  runs test ({name}): {test['runs']} runs, p={shown}")
     print(
         f"  identical run: {runs['identical']['longest']}; "
         f"runs >= 6: {runs['identical']['count_runs_length_ge_6']}"

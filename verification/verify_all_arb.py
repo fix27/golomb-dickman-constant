@@ -7,7 +7,7 @@ the producing program's node routine: the integrand
     G(t) = exp(-u - E1(u)) * u * (1 + exp(-t)),   u = exp(t - exp(-t)),
 
 is evaluated here from Arb primitives, and E1 comes from Arb's own
-``acb.exp_integral_e1`` rather than from the Stieltjes continued fraction
+``arb.expint(1)`` rather than from the Stieltjes continued fraction
 used by ``golomb_dickman_26.py``.  Summation, directed rounding and the
 fixed-point conversion are re-implemented as well.
 
@@ -27,9 +27,10 @@ What is checked
    tail bounds.
 
 Two correct enclosures of the same real number must intersect; that is a
-necessary condition, not a tolerance.  Containment is *not* required,
-because two rigorous computations at different precisions may each stick
-out of the other.
+necessary condition, not a tolerance.  A full PASS additionally requires
+every recomputed chunk interval to be contained in the saved one.  If only
+intersection can be established, the audit is reported as NOT_RUN -- never
+as PASS.
 
 Exit codes
 ----------

@@ -22,11 +22,13 @@ This script checks, using only the standard library and exact integers:
     corresponding digit, LF only, trailing blank line;
  7. the first 102 digits equal the published prefix of OEIS A084945;
  8. optionally, the digits agree with a reference file (prefix comparison);
- 9. the SHA-256 of every input is *computed*, and, when a trusted reference
-    is supplied (``--sha256 NAME=HEX`` or ``--sha256-manifest FILE``), the
-    computed value is reported as ``MATCH`` or ``MISMATCH``.  Without a
-    reference the hash is reported as ``computed`` / ``UNVERIFIED``; this
-    script never prints ``OK`` for a hash it cannot compare.
+ 9. the SHA-256 of each input reached by the check is *computed*, and, when a
+    trusted reference is supplied (``--sha256 NAME=HEX`` or
+    ``--sha256-manifest FILE``), the computed value is reported as ``MATCH``
+    or a mismatch.  Without a reference the hash is reported as
+    ``computed`` / ``UNVERIFIED``; this script never prints ``OK`` for a
+    hash it cannot compare.  Because checks fail fast, a later input may not
+    be hashed if an earlier check already failed.
 
 It does not prove that lambda lies in the interval; that is the content of
 the producing computation and of the mathematical audit.
@@ -140,6 +142,20 @@ def fingerprint(
         "trusted": trusted,
         "source": source,
     }
+
+
+def read_decimal_reference(path: Path) -> str:
+    """Read a reference digit file tolerantly (CRLF is fine for --compare)."""
+    try:
+        text = path.read_bytes().decode("ascii")
+    except OSError as exc:
+        fail(f"{path.name}: cannot read ({exc})")
+    except UnicodeDecodeError as exc:
+        fail(f"{path.name}: not plain ASCII ({exc})")
+    normalized = text.replace("\r\n", "\n").replace("\r", "\n").strip()
+    if not normalized.isdigit():
+        fail(f"{path.name}: not a decimal digit string")
+    return normalized
 
 
 def write_report(path: Path, text: str) -> Path:
@@ -316,7 +332,7 @@ def verify(
 
     comparison = None
     if compare_path is not None:
-        reference = compare_path.read_text(encoding="ascii").strip()
+        reference = read_decimal_reference(compare_path)
         matched = common_prefix(cert_digits, reference)
         comparison = {
             "file": str(compare_path),
