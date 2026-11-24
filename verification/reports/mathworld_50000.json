@@ -910,11 +910,38 @@
         "end": 1950,
         "substring": "11111"
       }
-    ]
+    ],
+    "chi2_triplets": {
+      "triples": 49998,
+      "distinct": 1000,
+      "value": 983.7992719708789,
+      "df": 999,
+      "p_value": 0.6281186672929016
+    },
+    "runs_significance": {
+      "up_down": {
+        "runs": 31735,
+        "elements": 44983,
+        "p_value": 0.47305389221556887,
+        "method": "two-sided Monte Carlo, fixed seed 20261124, 500 random digit strings of the same length (not an exact test)",
+        "trials": 500,
+        "extreme_or_equal": 236,
+        "mean_runs": 31664.94
+      },
+      "equal_unequal": {
+        "runs": 9033,
+        "elements": 49999,
+        "p_value": 0.8383233532934131,
+        "method": "two-sided Monte Carlo, fixed seed 20261124, 500 random digit strings of the same length (not an exact test)",
+        "trials": 500,
+        "extreme_or_equal": 419,
+        "mean_runs": 9009.872
+      }
+    }
   },
   "primes": {
     "trial_division_limit": 997,
-    "method": "deterministic Miller-Rabin bases 2..37 plus trial division; BPSW via sympy for the two large prefixes when available",
+    "method": "trial division plus Miller-Rabin (12 fixed bases for the large prefixes); sympy BPSW when available.  These are probable-prime tests, not APRCL/ECPP primality proofs",
     "exhaustive_1_2508": {
       "limit": 2508,
       "prime_lengths": [
