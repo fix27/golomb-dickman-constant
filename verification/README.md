@@ -63,11 +63,12 @@ Only `PASS` exits with code 0.  A skipped Arb audit therefore produces
 `INCOMPLETE`, not a green release.  The same rule holds inside
 `level_b.py`: without `--with-arb` its verdict is `INCOMPLETE`.
 
-`verify_certificate.py` applies the rule to hashes as well.  It always
-computes SHA-256 for every input, but reports `MATCH (manifest)` /
+`verify_certificate.py` applies the rule to hashes as well.  It computes
+SHA-256 for every input it reaches, but reports `MATCH (manifest)` /
 `MATCH (--sha256)` only when a trusted reference is supplied via
 `--sha256-manifest` or `--sha256 NAME=HEX`; otherwise it prints
-`computed, UNVERIFIED (no trusted reference)`.
+`computed, UNVERIFIED (no trusted reference)`.  Checks fail fast, so an
+input after an earlier failure is not hashed.
 
 `audit_chunks.py` and `verify_all_arb.py` read checkpoints with
 `safe_pickle.py`, which allows only plain-data opcodes and rejects
@@ -88,16 +89,17 @@ against the 50,000-digit file: the opening digits, the Earls sequence
 search through 15,000 digits.
 
 ```sh
-python verification/mathworld_checks.py            # ~7 s
+python verification/mathworld_checks.py            # ~30 s with Monte Carlo run tests
 python verification/mathworld_checks.py --primes   # + exhaustive 1..2508
 python verification/mathworld_checks.py --primes --deep-primes  # ~12 min (698 s)
 ```
 
 Result: 8 PASS, two historical attributions NOT_VERIFIABLE (Mitchell 1968 and
 Weisstein's 2013 computation depth), normality OPEN, and the 15,000-digit
-prime search PARTIAL (140 sampled lengths). Extra checks cover runs,
-palindromes, repeated and tandem substrings, periodic runs, k-gram coverage,
-chi-square tests, and random prime substrings. See
+prime search PARTIAL (140 sampled lengths). Extra checks cover runs and
+their Monte Carlo p-values, palindromes, repeated and tandem substrings,
+periodic runs, k-gram coverage, chi-square tests including triples, and
+random prime substrings. See
 `reports/mathworld_50000.md` (Russian) and `reports/mathworld_50000.json`;
 reference b-files are in `reports/oeis/`. These are checks of the digit string
 and of the page's statements, not a proof of normality and not a world-record
@@ -150,33 +152,38 @@ containment test of two enclosures, not a tolerance.  There is no
 | width | `4.390 × 10^-50043` (below `10^-50042`) | `5.492 × 10^-40043` (below `10^-40042`) |
 | guard digits beyond the `D`-th place | 42 | 42 |
 
-## Honest status on the packaging machine
+## Honest status on the current checkout
 
-* Level A: **PASS**.
-* Level B: **PASS** for the checklist, the plan and 12 recomputed chunks.
-  The rigorous Arb re-audit of all 1,209 chunks was **not run here**:
-  `python-flint` installs but its DLL cannot be loaded on this machine
-  (`ImportError: DLL load failed while importing flint_base`, Windows
-  Application Control). Consequently the enclosure of the constant by the
-  published interval still rests on the original production run, and this
-  package says so instead of implying otherwise.
-* The 50,000-digit certificate added on 2026-11-16 passes level A and the
-  checkpoint-sum audit (`reports/50000_verification.txt`): its first 40,000
-  digits agree with the older certificate, and its 3,076 checkpoint chunks
-  are contiguous and reproduce both endpoints with corrections `B = 1`,
-  `C = 2427712667995762`. Its plan is `meta_v12.json` (not `meta.pkl`):
-  the recorded step `h = 7.352934335358441e-05` gives exactly
-  `m = 80846368`, and `K_L = 149075`, `K_R = 158504` match the covered
-  node range, so the audit uses the planned step and `B = 1` is a genuine
-  consistency check. The 40,000-digit control, whose plan is `meta.pkl`,
-  recovers exactly the documented values, which validates the old format
-  as well.
-* Level C: 1,000 digits reproduced independently (see
-  `reports/independent_1000.txt`): the two quadrature rules agree for 1,020
-  leading digits and both agree with the certified file for the same 1,020.
-  The run took 64 min (tanh-sinh) and 51 min (Gauss-Legendre) at 1,060
-  working digits. 5,000 / 10,000 / 40,000 digits are supported by the same
-  script; the full run needs hours to days of CPU.
+The reports in `reports/` are historical artefacts from an LF-normalised
+packaging run; they are not the live status of this checkout.
+
+* The canonical artefacts in `50000/`, their root copies and `40000/` are
+  currently CRLF on disk. Strict LF checks therefore give **FAIL** today:
+  `verify_certificate.py`, `level_b.py`, `test_release_checks.py` and
+  `run_all.py` stop on `contains CR`. After LF normalisation the decimal
+  arithmetic, the digits, the b-files, the first 102 OEIS digits and the
+  SHA-256 values in `50000/SHA256SUMS.txt` all reproduce. Normalise LF and
+  rebuild the affected manifests before treating saved `PASS` reports as
+  current; nothing in the arithmetic needs changing.
+* Level B mathematics needs no fix: `M`, `B_disc`, both tails, `B`, `C`, the
+  Λ± reconstruction and the exact `Fraction` identities for Lemma 7 were
+  reproduced independently. The 50,000-digit checkpoint-sum audit
+  (`audit_chunks.py`) passes: 3,076 chunks / 307,580 nodes, `B = 1`,
+  `C = 2427712667995762`.
+* Arb: `reports/arb_50000.json` is `NOT_RUN` and contains no per-chunk
+  blocks. Current `python-flint` provides `arb.expint`, so the old
+  “DLL blocked by Application Control” explanation is obsolete; a 5-chunk
+  smoke run gave containment 5/5, but the full 3,076-chunk audit has not
+  been rerun here. The Arb level stays `NOT_RUN` until it is.
+* Level C: the saved prose/log reports say 1,020 leading digits by both
+  quadrature rules and against the certificate. The saved JSON stored only
+  the requested 1,000 digits, so that claim was not reproducible from the
+  machine-readable report. `independent_quadrature.py` now stores the full
+  probe strings; existing JSON reports need regeneration to benefit.
+* Level D: χ² for digits/positions/pairs/triples and the fixed-seed Monte
+  Carlo runs tests now live in `mathworld_checks.py`; all p-values are above
+  0.01. Prime prefixes are supported by Miller–Rabin/BPSW as **probable
+  primes**; no APRCL/ECPP certificate is produced or claimed.
 
 ## Deliberate non-claims
 
