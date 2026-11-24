@@ -1,5 +1,9 @@
 {
-  "verdict": "PASS",
+  "verdict": "FAIL",
+  "required_total": 4,
+  "passed": 1,
+  "failed": 3,
+  "not_run": 0,
   "levels": [
     {
       "level": "A (50,000)",
@@ -7,10 +11,15 @@
         "verify_certificate.py",
         "--cert",
         "../50000/golomb_dickman_50000_certified.txt",
+        "--sha256-manifest",
+        "../50000/SHA256SUMS.txt",
         "--compare",
         "../40000/golomb_dickman_40000_digits.txt"
       ],
-      "exit_code": 0,
+      "required": true,
+      "status": "FAIL",
+      "exit_code": 1,
+      "reason": "FAIL: golomb_dickman_50000_certified.txt: contains CR (canonical form is LF only)",
       "seconds": 0.2
     },
     {
@@ -18,8 +27,11 @@
       "command": [
         "verify_40000.py"
       ],
-      "exit_code": 0,
-      "seconds": 0.2
+      "required": true,
+      "status": "FAIL",
+      "exit_code": 1,
+      "reason": "FAIL: golomb_dickman_40000_certified.txt: SHA-256 mismatch (expected 8892c0715f1afbb271c9f07cc9658cea0f3ca83c2dda3ec7d23b447dc908de9c, got 6e28d6c30e73ba4285668747539d84205fdf35981d8a96809f89141fa3543cfc)",
+      "seconds": 0.1
     },
     {
       "level": "B' (chunks)",
@@ -30,16 +42,37 @@
         "--cert",
         "../50000/golomb_dickman_50000_certified.txt"
       ],
+      "required": true,
+      "status": "PASS",
       "exit_code": 0,
-      "seconds": 0.8
+      "reason": "",
+      "seconds": 1.7
     },
     {
-      "level": "B",
+      "level": "Arb (50,000, saved report)",
+      "command": [
+        "check_report_containment.py",
+        "--report",
+        "C:\\Users\\fix12\\Documents\\GitHub\\golomb_dickman_30000\\verification\\reports\\arb_50000.json",
+        "--cert",
+        "../50000/golomb_dickman_50000_certified.txt"
+      ],
+      "required": true,
+      "status": "FAIL",
+      "exit_code": 1,
+      "reason": "reason: AuditFailure: certificate: contains CR (canonical form is LF only)",
+      "seconds": 0.2
+    },
+    {
+      "level": "B (math, 40,000)",
       "command": [
         "level_b.py"
       ],
-      "exit_code": 0,
-      "seconds": 11.3
+      "required": false,
+      "status": "FAIL",
+      "exit_code": 1,
+      "reason": "FAIL: golomb_dickman_40000_certified.txt: contains CR (expected LF-only)",
+      "seconds": 17.2
     }
   ]
 }

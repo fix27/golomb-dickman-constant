@@ -1,5 +1,5 @@
 {
-  "verdict": "INCOMPLETE",
+  "verdict": "FAIL",
   "checks": [
     {
       "check": "m3_paper_matches_code",
@@ -18,13 +18,23 @@
     },
     {
       "check": "line_endings",
-      "status": "PASS",
-      "detail": "8 canonical artefacts are LF-only, no BOM"
+      "status": "FAIL",
+      "detail": "golomb_dickman_26.py: 2679 CR bytes; golomb_dickman_50000_certified.txt: 4 CR bytes; golomb_dickman_50000_digits.txt: 1 CR bytes; b084945.txt: 50001 CR bytes; meta_v12.json: 19 CR bytes"
+    },
+    {
+      "check": "paper_params_match_plan",
+      "status": "FAIL",
+      "detail": "exception: certificate: contains CR (canonical form is LF only)"
+    },
+    {
+      "check": "paper_tail_corrections",
+      "status": "FAIL",
+      "detail": "exception: certificate: contains CR (canonical form is LF only)"
     },
     {
       "check": "sha_manifest",
-      "status": "PASS",
-      "detail": "6 entries match the files byte-for-byte"
+      "status": "FAIL",
+      "detail": "b084945.txt: manifest 1e3d23e9ac3c\u2026 != 3e8834051a14\u2026; golomb_dickman_26.py: manifest e2eb7d4ccca7\u2026 != 03c4ace9c3d7\u2026; golomb_dickman_50000_certified.txt: manifest 76f415598104\u2026 != 71ae993df616\u2026; golomb_dickman_50000_digits.txt: manifest 8f017d45ee51\u2026 != bd4af9d2c4cc\u2026; meta_v12.json: manifest 78783a09bae5\u2026 != 0da4cbe9587c\u2026"
     },
     {
       "check": "sha_semantics",

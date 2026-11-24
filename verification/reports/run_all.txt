@@ -1,7 +1,12 @@
-Golomb-Dickman constant: three-level verification
-verdict: PASS
+Golomb-Dickman constant: verification levels
+verdict: FAIL
 
-Level A (50,000): exit 0 in 0.2s
-Level A (40,000): exit 0 in 0.2s
-Level B' (chunks): exit 0 in 0.8s
-Level B: exit 0 in 11.3s
+[FAIL   ] A (50,000) (required): exit 1 in 0.2s
+          FAIL: golomb_dickman_50000_certified.txt: contains CR (canonical form is LF only)
+[FAIL   ] A (40,000) (required): exit 1 in 0.1s
+          FAIL: golomb_dickman_40000_certified.txt: SHA-256 mismatch (expected 8892c0715f1afbb271c9f07cc9658cea0f3ca83c2dda3ec7d23b447dc908de9c, got 6e28d6c30e73ba4285668747539d84205fdf35981d8a96809f89141fa3543cfc)
+[PASS   ] B' (chunks) (required): exit 0 in 1.7s
+[FAIL   ] Arb (50,000, saved report) (required): exit 1 in 0.2s
+          reason: AuditFailure: certificate: contains CR (canonical form is LF only)
+[FAIL   ] B (math, 40,000) (optional): exit 1 in 17.2s
+          FAIL: golomb_dickman_40000_certified.txt: contains CR (expected LF-only)

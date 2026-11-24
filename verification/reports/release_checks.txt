@@ -1,0 +1,13 @@
+Release checks: FAIL
+
+[PASS] m3_paper_matches_code: paper and code both use exp(exp(e^-2 - 2))
+[PASS] m3_numeric: M1=195.0281226, M3=31.85557901, log10 M=360.39085839
+[PASS] m3_dominance: M3(wrong)/M3(right)=2.74567668484; M2 dominates
+[FAIL] line_endings: golomb_dickman_26.py: 2679 CR bytes; golomb_dickman_50000_certified.txt: 4 CR bytes; golomb_dickman_50000_digits.txt: 1 CR bytes; b084945.txt: 50001 CR bytes; meta_v12.json: 19 CR bytes
+[FAIL] paper_params_match_plan: exception: certificate: contains CR (canonical form is LF only)
+[FAIL] paper_tail_corrections: exception: certificate: contains CR (canonical form is LF only)
+[FAIL] sha_manifest: b084945.txt: manifest 1e3d23e9ac3c… != 3e8834051a14…; golomb_dickman_26.py: manifest e2eb7d4ccca7… != 03c4ace9c3d7…; golomb_dickman_50000_certified.txt: manifest 76f415598104… != 71ae993df616…; golomb_dickman_50000_digits.txt: manifest 8f017d45ee51… != bd4af9d2c4cc…; meta_v12.json: manifest 78783a09bae5… != 0da4cbe9587c…
+[PASS] sha_semantics: computed / MATCH / UNVERIFIED are distinguished; mismatch fails
+[PASS] status_aggregation: FAIL/INCOMPLETE/PASS semantics and exit-code mapping hold
+[PASS] safe_pickle: GLOBAL/REDUCE pickles are rejected; a real chunk loads as plain data
+[NOT_RUN] arb_report: Arb audit status is NOT_RUN: this python-flint build has no acb.exp_integral_e1
