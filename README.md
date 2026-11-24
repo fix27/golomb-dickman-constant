@@ -323,6 +323,7 @@ Zenodo/arXiv и анонс в SeqFan — в
 |---|---|
 | [`50000/README.md`](50000/README.md) | Подробное описание текущего результата на 50 000 знаков |
 | [`50000/SHA256SUMS.txt`](50000/SHA256SUMS.txt) | Контрольные суммы текущего пакета |
+| [`RELEASE_v50000.md`](RELEASE_v50000.md) | Release notes v50000: параметры, железо, время, проверки, DOI |
 | [`40000/README.md`](40000/README.md) | Подробное описание результата на 40 000 знаков |
 | [`40000/VERIFICATION.md`](40000/VERIFICATION.md) | Что и как проверяется, найденные дефекты, база доверия |
 | [`40000/OEIS_SUBMISSION.md`](40000/OEIS_SUBMISSION.md) | Отправка b-file в OEIS |
@@ -339,16 +340,17 @@ Zenodo/arXiv и анонс в SeqFan — в
 1. **GitHub** — исходный репозиторий
    <https://github.com/fix27/golomb-dickman-constant>;
 2. **Zenodo** — релиз `v50000` с version DOI; метаданные обновлены в
-   [`.zenodo.json`](.zenodo.json), порядок действий — в
+   [`.zenodo.json`](.zenodo.json), текст релиза — в
+   [`RELEASE_v50000.md`](RELEASE_v50000.md), порядок действий — в
    [`40000/PUBLICATION_CHECKLIST.md`](40000/PUBLICATION_CHECKLIST.md)
    (прошлый релиз — `v40000`);
-3. **arXiv** — препринт [`paper/main-50000.tex`](paper/main-50000.tex)
-   (текущий результат, 50 000 знаков); предыдущая версия —
-   [`paper/main.tex`](paper/main.tex) (40 000 знаков). Раздел math.NA,
-   cross-list cs.MS; поля формы — в
-   [`paper/ARXIV_SUBMISSION.md`](paper/ARXIV_SUBMISSION.md). **Метаданные
-   `ARXIV_SUBMISSION.md` пока описывают 40 000 знаков** и требуют
-   обновления перед отправкой;
+3. **arXiv** — препринт [`paper/main.tex`](paper/main.tex)
+   (текущий результат, 50 000 знаков). Файл
+   [`paper/main-50000.tex`](paper/main-50000.tex) — более ранний длинный
+   черновик той же работы; он помечен как superseded и не цитируется.
+   Раздел math.NA, cross-list cs.MS; поля формы — в
+   [`paper/ARXIV_SUBMISSION.md`](paper/ARXIV_SUBMISSION.md), метаданные
+   там уже описывают 50 000 знаков;
 4. **OEIS** — b-file для A084945, `n = 0..49999`; готовое письмо и текст
    ссылки — в [`submission/oeis-bfile.eml`](submission/oeis-bfile.eml) и
    [`40000/OEIS_SUBMISSION.md`](40000/OEIS_SUBMISSION.md). Письмо и

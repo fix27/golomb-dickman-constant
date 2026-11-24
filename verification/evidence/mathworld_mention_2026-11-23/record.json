@@ -1,0 +1,52 @@
+{
+  "url": "https://mathworld.wolfram.com/Golomb-DickmanConstantDigits.html",
+  "title": "Golomb-Dickman Constant Digits",
+  "publisher": "MathWorld--A Wolfram Resource (Wolfram Research)",
+  "author": "Eric W. Weisstein",
+  "accessed_local": "2026-11-23T21:51:16+04:00",
+  "screenshot_taken_local": "2026-11-23T21:53:00+04:00",
+  "page_last_updated": "Mon Nov 23 2026",
+  "exact_quotes": [
+    "40,000 Pozdnyakov (2026)",
+    "Pozdnyakov (2026) provides digit data and computation code.",
+    "Pozdnyakov, K. N. Forty Thousand Certified Decimal Digits of the Golomb-Dickman Constant. 2026. https://github.com/fix27/golomb-dickman-constant/blob/87bdfe378c3197b9710ed919f72ac9df28f9dcb3/paper/main.tex. Digit data and code: https://github.com/fix27/golomb-dickman-constant/tree/87bdfe378c3197b9710ed919f72ac9df28f9dcb3/40000."
+  ],
+  "mentioned": [
+    "author name: Pozdnyakov (2026)",
+    "40,000 decimal digits",
+    "title of the 40,000-digit paper",
+    "digit data and computation code",
+    "GitHub URLs at commit 87bdfe378c3197b9710ed919f72ac9df28f9dcb3"
+  ],
+  "not_mentioned": [
+    "50,000 digits",
+    "the 50,000-digit certificate or current main.tex",
+    "algorithm or method",
+    "DOI or Zenodo release",
+    "independent verification or record claim"
+  ],
+  "cited_commit": {
+    "hash": "87bdfe378c3197b9710ed919f72ac9df28f9dcb3",
+    "date": "2026-11-15T03:01:07+04:00",
+    "subject": "Merge branch main of https://github.com/fix27/golomb-dickman-constant"
+  },
+  "current_head": {
+    "hash": "196e40cd18de9504f28d3605ffc01976a1ae6f96",
+    "date": "2026-11-23T17:03:08+05:00",
+    "subject": "v2"
+  },
+  "evidence": {
+    "page.html": {
+      "sha256": "a445c0079bbc0073c47e848d677c683e7e2f8155bde79222a437906ed8dc440a",
+      "bytes": 65264
+    },
+    "mathworld_2026-11-23.png": {
+      "sha256": "757f104d2069b6bd49aa73452c2fb09d287f78abb58a2cd1b4bad4230f4d0874",
+      "bytes": 156625
+    },
+    "page.txt": {
+      "sha256": "b88f77939b4026263a881985232d6027d7d07e7f8615370510edb1d843d44933",
+      "bytes": 4477
+    }
+  }
+}

@@ -47,6 +47,23 @@ At 1,000 digits the two rules agreed for 1,020 leading digits, and both
 agreed with the certified file for the same 1,020 digits; see
 `independent_1000.txt`.
 
+The check was repeated on 2026-11-23 against the shipped
+`50000/golomb_dickman_50000_digits.txt` (the earlier run compared with the
+40,000-digit file). The two rules again agreed for 1,020 digits and matched
+the 50,000-digit file for the same 1,020 digits, with no Arb and no
+Python-flint in the loop:
+
+| rule | working dps | wall time |
+|------|-------------|-----------|
+| tanh-sinh | 1060 | 912.64 s |
+| Gauss-Legendre | 1060 | 1079.04 s |
+
+Full output: `independent_1000_vs_50000.txt`; machine-readable:
+`independent_1000_vs_50000.json`. The rerun was faster than the November 15
+measurement in the table above (3,817 s and 3,081 s) on a different mpmath
+build; both measurements are reported.
+
+
 A match of the first N digits between the two rules and the certified file
 is strong numerical evidence that the published digits are right. It is not
 a proof: mpmath does not propagate rounding errors, so a systematic error
