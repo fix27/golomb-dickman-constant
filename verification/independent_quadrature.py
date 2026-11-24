@@ -40,7 +40,10 @@ Usage
     python independent_quadrature.py --digits 40000 --jobs 12
 
 Exit code 0 means the two quadrature rules agreed to the requested number
-of digits and the certified file matched as well (when it was found).
+of digits and the certified file matched as well (when it was found).  The
+JSON report keeps the full probe strings (the requested digits plus up to
+20 extra), so the reported agreement can be recomputed from the report
+itself instead of trusting the prose summary.
 """
 
 from __future__ import annotations
@@ -217,7 +220,14 @@ def main(argv: list[str] | None = None) -> int:
     report = {
         "digits": args.digits,
         "jobs": args.jobs,
-        "methods": {name: {"digits": results[name][: args.digits], **meta[name]} for name in names},
+        "methods": {
+            name: {
+                "digits": results[name],
+                "probe_digits": len(results[name]),
+                **meta[name],
+            }
+            for name in names
+        },
         "agreement": agreement,
         "certified_file": str(certified_path) if certified_path else None,
         "certified_agreement": certified_match,

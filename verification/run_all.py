@@ -217,6 +217,12 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     here = Path(__file__).resolve().parent
+    if args.arb_report is not None and not args.arb_report.is_absolute():
+        # Command-line paths are relative to the caller's cwd, while every
+        # child process below is started with cwd=here.  Resolve once here so
+        # that `python verification/run_all.py --arb-report verification/...`
+        # works from the repository root and `reports/...` works from here.
+        args.arb_report = (Path.cwd() / args.arb_report).resolve()
     levels = build_levels(args)
     if not (here.parent / "50000" / "gd_rigorous_ckpt_50000").is_dir():
         # Without checkpoints, B' and a live Arb run are impossible; a saved
