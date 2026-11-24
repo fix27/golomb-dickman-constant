@@ -33,12 +33,16 @@ Notes
   that the release ships.
 * 1,020 digits agree, i.e. 20 more than the 1,000 requested: the working
   precision was 1,060 digits and both rules were truncated at 10^-1060.
+  The historical JSON report saved only the 1,000 requested digits per
+  method, so the 1,020 agreement is documented by this log, not by that
+  JSON.  `independent_quadrature.py` now stores the full probe strings;
+  re-run or regenerate the JSON to make it self-contained.
 * Numerical evidence, not a proof.  mpmath does not propagate rounding
   errors, so a systematic error common to both rules would not be visible.
-  The rigorous enclosure is the Arb certificate, and its independent
-  full re-audit (verification/verify_all_arb.py) is still NOT_RUN on this
-  machine (python-flint is blocked by Application Control).  Overall
-  release status therefore remains INCOMPLETE, not PASS.
+  The rigorous enclosure is the Arb certificate.  The saved
+  `arb_50000.json` is NOT_RUN (no per-chunk blocks); current python-flint
+  provides `arb.expint`, but the full 3,076-chunk audit has not been rerun
+  here.  Overall release status therefore remains INCOMPLETE, not PASS.
 * No 50,000-digit independent recomputation was attempted.  The scaling
   argument and measured costs are in COSTS.md.
 * The two rules were faster here than in the 15 November run recorded in
