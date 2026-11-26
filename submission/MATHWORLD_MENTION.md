@@ -81,8 +81,10 @@ MathWorld 14 ноября 2026 г. (по дате сайта; подробнос
 1. **Локальный снимок + PDF** с контрольными суммами — `mathworld-evidence/`.
 2. **Заголовки HTTP ответа** (`Date`, `Last-Modified`, `ETag`) —
    `mathworld-evidence/*-headers.txt`, получены через `curl.exe -D`.
-3. **Wayback Machine** — снимок страницы по адресу
-   <https://web.archive.org/web/2026/https://mathworld.wolfram.com/Golomb-DickmanConstantDigits.html>.
+3. **Wayback Machine** — снимок страницы с цифрами запрошен 2026-11-26 и
+   доступен по адресу
+   <https://web.archive.org/web/20261126160603/https://mathworld.wolfram.com/Golomb-DickmanConstantDigits.html>;
+   запрос для основной страницы дважды истёк по таймауту (повторить позже).
 4. **Пермалинк на коммит GitHub** — уже используется в самой ссылке MathWorld
    (`87bdfe…`); он неизменен даже при движении ветки `main`.
 5. **Машиночитаемая цитата** — `CITATION.cff` и `README.md` с датой доступа.

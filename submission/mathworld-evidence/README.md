@@ -20,7 +20,15 @@ are preserved.
 `SHA256SUMS.txt` binds every file name to its bytes. Verify with
 `sha256sum -c SHA256SUMS.txt` (or `Get-FileHash` on Windows).
 
-For a third-party timestamp, archive the same URLs in the Internet Archive:
+Third-party timestamp in the Internet Archive:
 
-- <https://web.archive.org/web/2026/https://mathworld.wolfram.com/Golomb-DickmanConstant.html>
-- <https://web.archive.org/web/2026/https://mathworld.wolfram.com/Golomb-DickmanConstantDigits.html>
+- *Golomb-Dickman Constant Digits* — snapshot successfully requested on
+  2026-11-26:
+  <https://web.archive.org/web/20261126160603/https://mathworld.wolfram.com/Golomb-DickmanConstantDigits.html>
+- *Golomb-Dickman Constant* — the `/save/` request timed out twice; use the
+  generic capture link
+  <https://web.archive.org/web/2026/https://mathworld.wolfram.com/Golomb-DickmanConstant.html>
+  and re-check later.
+
+The local HTTP headers, HTML and hashes above already fix the Digits page
+independently of the Wayback Machine.
