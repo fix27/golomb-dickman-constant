@@ -1,0 +1,23 @@
+{
+  "chunk": 100,
+  "format": "gd-checkpoint-v13",
+  "ladder_max_relax_bits": 48,
+  "parameters": {
+    "D": "75000",
+    "EGbits": "362151",
+    "Ebits": "249277",
+    "G": "30",
+    "K_L": "231270",
+    "K_R": "245377",
+    "S": "249341",
+    "cf_min_u": "13000.0",
+    "h": "4.9148458856507204e-05"
+  },
+  "platform": "Linux-7.3.0-9-generic-x86_64-with-glibc2.44",
+  "precision_ladder": false,
+  "program_version": "27",
+  "python": "3.14.8 (main, Oct  1 2026, 20:09:47) [GCC 15.3.0]",
+  "python_flint": "0.9.0",
+  "schema": 13,
+  "source_sha256": "f5a02374d79b4ca6af889a9c4a63b53fe265bc3c861a1c20dc2683c696e781ea"
+}
