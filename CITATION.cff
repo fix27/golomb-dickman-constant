@@ -53,5 +53,6 @@ references:
     url: "https://mathworld.wolfram.com/Golomb-DickmanConstantDigits.html"
     date-accessed: 2026-11-26
     notes: >-
-      Updated 2026-11-15; cites the 40,000-digit computation and a
-      GitHub commit of this project.
+      Listed in MathWorld's whatsnew under 2026-11-14 (site date); the cited
+      GitHub commit is dated 2026-11-15 (+04:00). Cites the 40,000-digit
+      computation and a commit of this project.

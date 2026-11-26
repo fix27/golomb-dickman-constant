@@ -129,8 +129,9 @@ arithmetic. Full production: `python golomb_dickman_27.py certify --digits
 
 ## MathWorld fixation
 
-MathWorld updated both *Golomb-Dickman Constant* and *Golomb-Dickman Constant
-Digits* on 2026-11-15; the latter says "Pozdnyakov (2026) provides digit data
+MathWorld listed both *Golomb-Dickman Constant* and *Golomb-Dickman Constant
+Digits* under 2026-11-14 in its whatsnew log (the cited commit is dated
+2026-11-15 +04:00); the latter page says "Pozdnyakov (2026) provides digit data
 and computation code" and links to a commit-specific GitHub URL. Exact URLs,
 wording, date, HTTP headers, HTML, screenshots and PDF are archived in
 `submission/MATHWORLD_MENTION.md` and `submission/mathworld-evidence/`.

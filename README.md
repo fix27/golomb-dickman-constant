@@ -379,8 +379,8 @@ Zenodo/arXiv и анонс в SeqFan — в
    b-файла на 75 000 термов нет. Готовое письмо — в
    [`submission/oeis-bfile.eml`](submission/oeis-bfile.eml).
 
-Упоминание на MathWorld уже опубликовано (2026-11-15), новая отправка не
-требуется. Факт зафиксирован в
+Упоминание на MathWorld уже опубликовано (журнал обновлений: 2026-11-14;
+процитированный коммит: 2026-11-15 +04:00), новая отправка не требуется. Факт зафиксирован в
 [`submission/MATHWORLD_MENTION.md`](submission/MATHWORLD_MENTION.md) с точными
 URL, формулировками, HTML, заголовками HTTP, скриншотами и PDF; черновик письма
 [`submission/mathworld-thanks.eml`](submission/mathworld-thanks.eml) **не

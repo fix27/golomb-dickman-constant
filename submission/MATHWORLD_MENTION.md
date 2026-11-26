@@ -2,18 +2,27 @@
 
 ## Источники
 
-Упомянуты **две страницы MathWorld**, обе обновлены 15 ноября 2026 г.:
+Упомянуты **две страницы MathWorld**, обе добавлены в журнал обновлений
+MathWorld 14 ноября 2026 г. (по дате сайта; подробности ниже):
 
 1. **Основная:** <https://mathworld.wolfram.com/Golomb-DickmanConstant.html>
 2. **С цифрами (указана пользователем):**
    <https://mathworld.wolfram.com/Golomb-DickmanConstantDigits.html>
 
-- **Дата правки:** **2026-11-15** — согласно
-  [New in MathWorld — November 2026](https://mathworld.wolfram.com/whatsnew/2026/11.html):
-  под заголовком *Sunday November 15, 2026* перечислены
-  `Golomb-Dickman Constant (modified)` и
-  `Golomb-Dickman Constant Digits (modified)`.
+- **Дата правки по журналу MathWorld:** **2026-11-14** (по дате сайта) —
+  согласно [New in MathWorld — November 2026](https://mathworld.wolfram.com/whatsnew/2026/11.html),
+  обе страницы (`Golomb-Dickman Constant (modified)` и
+  `Golomb-Dickman Constant Digits (modified)`) стоят в разделе
+  *Saturday November 14, 2026*. Это подтверждено разбором HTML: ближайший
+  заголовок даты перед ссылкой — `Saturday November 14, 2026`.
+- **Дата процитированного коммита:** `87bdfe…` датирован
+  `2026-11-15T03:01:07+04:00` (= `2026-11-14T23:01:07Z`), то есть тот же
+  день по UTC и уже 15-е по местному времени. Не путать с датой правки
+  страницы: 15 ноября — это дата коммита, а не обновления MathWorld.
 - **Дата доступа/проверки:** 2026-11-26.
+- **Более ранняя фиксация:** `verification/evidence/mathworld_mention_2026-11-23/`
+  (доступ 2026-11-23, футер страницы `Last Updated: Mon Nov 23 2026` —
+  общесайтовая метка, а не дата правки).
 - **Каноническая цитата страницы:** Weisstein, Eric W. "Golomb-Dickman Constant
   Digits." From *MathWorld* — A Wolfram Resource.
   <https://mathworld.wolfram.com/Golomb-DickmanConstantDigits.html>.
