@@ -1,0 +1,32 @@
+To: MathWorld editorial contact (form: https://mathworld.wolfram.com/contact/)
+Subject: Thank you for mentioning the Golomb-Dickman computation
+
+Dear Dr. Weisstein / MathWorld editors,
+
+Thank you for the mention on the page "Golomb-Dickman Constant":
+
+  https://mathworld.wolfram.com/Golomb-DickmanConstant.html
+
+I appreciate the citation of the 40,000-digit computation and the links to the
+manuscript, digit data and code. The entry was updated on 15 November 2026
+according to the MathWorld "New in MathWorld" log.
+
+The work now has a versioned, archived release. If it is useful for readers,
+the canonical links are:
+
+  GitHub release: RELEASE_TAG_PLACEHOLDER
+  DOI (version):  DOI_PLACEHOLDER
+  Repository:     https://github.com/fix27/golomb-dickman-constant
+
+The repository also contains later certificates (50,000 and 75,000 digits)
+with their own verification scripts and checksums. I am not asking you to
+change the reported 40,000-digit figure or to make any priority claim; I only
+wanted to provide a stable citable link in place of the commit-specific URLs.
+
+Please let me know if further metadata or a machine-readable citation file
+would help (CITATION.cff is included in the repository).
+
+With best regards,
+Konstantin N. Pozdnyakov
+Surgut, Khanty-Mansi Autonomous Okrug - Yugra, Russia
+fix@inbox.ru

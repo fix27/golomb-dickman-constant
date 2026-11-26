@@ -1,0 +1,12 @@
+HTTP/1.1 200 OK
+date: Thu, 26 Nov 2026 15:50:46 GMT
+server: Generic Web Server
+set-cookie: WR_SID=c0a5264e.6612fe82cb609; path=/; max-age=315360000; domain=.wolfram.com
+accept-ranges: bytes
+transfer-encoding: chunked
+content-type: text/html; charset=UTF-8
+content-security-policy: upgrade-insecure-requests
+access-control-allow-origin: *
+access-control-allow-private-network: true
+strict-transport-security: max-age=15552000
+

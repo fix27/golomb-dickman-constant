@@ -5,8 +5,8 @@ $$\lambda=\int_0^\infty F(u)\,du,\qquad F(u)=e^{-u-E_1(u)}
 
 Здесь $E_1$ — интегральная показательная функция. В репозитории лежат
 вычисления этой константы в интервальной арифметике с явным сертификатом
-точности: 30 000 знаков (первая версия), 40 000 знаков (предыдущий
-результат) и **50 000 знаков** (текущий результат).
+точности: 30 000 знаков (первая версия), 40 000 знаков, 50 000 знаков и
+**75 000 знаков** (текущий результат, релиз `v75000`).
 
 ## Автор
 
@@ -20,7 +20,36 @@ Russia. Машиночитаемая цитата — [`CITATION.cff`](CITATION.
 Zenodo — [`.zenodo.json`](.zenodo.json), препринт — [`paper/`](paper/),
 готовые письма для OEIS/SeqFan/MathWorld — [`submission/`](submission/).
 
-## Текущий результат: 50 000 знаков
+## Новый результат: 75 000 знаков (релиз v75000)
+
+Сертификат
+[`75000/golomb_dickman_75000_certified.txt`](75000/golomb_dickman_75000_certified.txt)
+задаёт интервал $[\Lambda_-,\Lambda_+]\ni\lambda$ с масштабом $S=249341$,
+в котором $\lfloor 10^{75000}\Lambda_-/2^S\rfloor
+=\lfloor 10^{75000}\Lambda_+/2^S\rfloor$. Первые **75 000** знаков доказаны
+усечением; ширина интервала — $5.8206\times10^{-75043}$ (42.235 запасных
+знака). Полный Arb-аудит всех 476 648 узлов **не выполнялся** — проверены
+2 000 узлов; это расширение результата, а не заявка на рекорд.
+
+| Что | Файл |
+|---|---|
+| Сертификат, код, чекпоинты, контрольные суммы | [`75000/`](75000/) |
+| Release notes | [`RELEASE_v75000.md`](RELEASE_v75000.md) |
+| Препринт | [`paper/main-75000.tex`](paper/main-75000.tex) |
+| Аудит | [`audit/06-75000.md`](audit/06-75000.md) |
+| Фиксация упоминания MathWorld | [`submission/MATHWORLD_MENTION.md`](submission/MATHWORLD_MENTION.md) |
+
+Быстрая проверка:
+
+```bash
+python verification/verify_certificate.py \
+    --cert 75000/golomb_dickman_75000_certified.txt \
+    --digits-file golomb_dickman_75000_digits.txt \
+    --sha256-manifest 75000/SHA256SUMS.txt \
+    --compare 50000/golomb_dickman_50000_digits.txt
+```
+
+## Предыдущий результат: 50 000 знаков
 
 Сертификат
 [`50000/golomb_dickman_50000_certified.txt`](50000/golomb_dickman_50000_certified.txt)
@@ -338,39 +367,36 @@ Zenodo/arXiv и анонс в SeqFan — в
 Результат подготовлен к публикации в четырёх местах:
 
 1. **GitHub** — исходный репозиторий
-   <https://github.com/fix27/golomb-dickman-constant>;
-2. **Zenodo** — релиз `v50000` с version DOI; метаданные обновлены в
-   [`.zenodo.json`](.zenodo.json), текст релиза — в
-   [`RELEASE_v50000.md`](RELEASE_v50000.md), порядок действий — в
-   [`40000/PUBLICATION_CHECKLIST.md`](40000/PUBLICATION_CHECKLIST.md)
-   (прошлый релиз — `v40000`);
-3. **arXiv** — препринт [`paper/main.tex`](paper/main.tex)
-   (текущий результат, 50 000 знаков). Файл
-   [`paper/main-50000.tex`](paper/main-50000.tex) — более ранний длинный
-   черновик той же работы; он помечен как superseded и не цитируется.
-   Раздел math.NA, cross-list cs.MS; поля формы — в
-   [`paper/ARXIV_SUBMISSION.md`](paper/ARXIV_SUBMISSION.md), метаданные
-   там уже описывают 50 000 знаков;
-4. **OEIS** — b-file для A084945, `n = 0..49999`; готовое письмо и текст
-   ссылки — в [`submission/oeis-bfile.eml`](submission/oeis-bfile.eml) и
-   [`40000/OEIS_SUBMISSION.md`](40000/OEIS_SUBMISSION.md). Письмо и
-   инструкция пока ссылаются на 40 000 термов; перед отправкой замените
-   их на файл и ссылку из `50000/`.
+   <https://github.com/fix27/golomb-dickman-constant>, релиз `v75000`;
+2. **Zenodo** — version DOI для тега `v75000` (после включения интеграции
+   GitHub в настройках Zenodo); метаданные — в [`.zenodo.json`](.zenodo.json),
+   текст релиза — в [`RELEASE_v75000.md`](RELEASE_v75000.md);
+3. **arXiv** — препринт [`paper/main-75000.tex`](paper/main-75000.tex)
+   (75 000 знаков); [`paper/main.tex`](paper/main.tex) описывает предыдущий
+   результат на 50 000 знаков. Раздел math.NA, cross-list cs.MS; поля формы —
+   в [`paper/ARXIV_SUBMISSION.md`](paper/ARXIV_SUBMISSION.md);
+4. **OEIS** — b-file для A084945 в `50000/b084945.txt`, `n = 0..49999`;
+   b-файла на 75 000 термов нет. Готовое письмо — в
+   [`submission/oeis-bfile.eml`](submission/oeis-bfile.eml).
 
-Анонс в SeqFan и обновление страницы MathWorld — необязательные, но полезные
-шаги; тексты лежат в [`submission/`](submission/).
+Упоминание на MathWorld уже опубликовано (2026-11-15), новая отправка не
+требуется. Факт зафиксирован в
+[`submission/MATHWORLD_MENTION.md`](submission/MATHWORLD_MENTION.md) с точными
+URL, формулировками, HTML, заголовками HTTP, скриншотами и PDF; черновик письма
+[`submission/mathworld-thanks.eml`](submission/mathworld-thanks.eml) **не
+отправлен**.
 
 
 ## Цитирование
 
 ```bibtex
 @misc{pozdnyakov2026golombdickman,
-  title        = {Golomb--Dickman constant: 50{,}000 certified decimal digits},
+  title        = {Golomb--Dickman constant: 75{,}000 certified decimal digits},
   author       = {Pozdnyakov, Konstantin},
   year         = {2026},
-  howpublished = {\url{https://github.com/fix27/golomb-dickman-constant/tree/main/50000}},
+  howpublished = {\url{https://github.com/fix27/golomb-dickman-constant/tree/main/75000}},
   note         = {Rigorous interval-arithmetic certificate using Arb;
-                  OEIS A084945 b-file with 50{,}000 terms}
+                  full Arb re-audit not run; Zenodo DOI pending}
 }
 ```
 
@@ -386,33 +412,36 @@ Zenodo/arXiv и анонс в SeqFan — в
 This repository contains rigorous interval-arithmetic certificates for decimal
 digits of the Golomb–Dickman constant
 $\lambda = \int_0^\infty e^{-u-E_1(u)}\,du = 0.6243299885\ldots$.
-The current result is **50,000 certified decimal digits** (`50000/`); the
-previous 40,000-digit package is kept in `40000/`, and a 30,000-digit result in
-`30000/` and `30000-v2/`.
+The current result is **75,000 certified decimal digits** (`75000/`, tag
+`v75000`); the previous 50,000- and 40,000-digit packages are kept in `50000/`
+and `40000/`, and a 30,000-digit result in `30000/` and `30000-v2/`.
+The full Arb re-audit of all 476,648 nodes was not run; this is an extension,
+not a record claim.
 
-The certificate in `50000/golomb_dickman_50000_certified.txt` gives integer
-bounds $[\Lambda_-,\Lambda_+]\ni\lambda$ with scale $S=166293$ and
-$\lfloor 10^{50000}\Lambda_-/2^S\rfloor
-=\lfloor 10^{50000}\Lambda_+/2^S\rfloor$,
+The certificate in `75000/golomb_dickman_75000_certified.txt` gives integer
+bounds $[\Lambda_-,\Lambda_+]\ni\lambda$ with scale $S=249341$ and
+$\lfloor 10^{75000}\Lambda_-/2^S\rfloor
+=\lfloor 10^{75000}\Lambda_+/2^S\rfloor$,
 so the digits are proven by truncation. The interval width is
-$4.390\times10^{-50043}$ (about $10^{-50042.36}$), leaving 42 guard digits.
-Its first 40,000 digits agree with the older certificate.
+$5.8206\times10^{-75043}$, leaving 42.235 guard digits. Its first 50,000 and
+40,000 digits agree with the earlier certificates.
 
 The computation uses the trapezoidal rule after the Takahashi–Mori substitution,
 explicit tail and discretization bounds (Trefethen–Weideman), Stieltjes continued
 fractions, and Arb balls via `python-flint`. Trust base: Arb correctness and the
-cited theorems. The current self-contained CLI is `golomb_dickman_26.py`;
-`40000/golomb_dickman.py` produced the 40,000-digit certificate.
+cited theorems. The current self-contained CLI is `golomb_dickman_27.py`;
+`golomb_dickman_26.py` produced the 50,000-digit certificate.
 
-`50000/b084945.txt` is a ready OEIS b-file for A084945 with terms
-$n=0\ldots49999$ (plain ASCII, LF, 50,001 lines). Run
-`python verification/verify_certificate.py --cert 50000/golomb_dickman_50000_certified.txt`
-for a dependency-free check of the certificate, digits, b-file and OEIS prefix,
-and `python verification/audit_chunks.py --ckpt 50000/gd_rigorous_ckpt_50000
---cert 50000/golomb_dickman_50000_certified.txt` to audit the 3,076 checkpoint
-chunks against the certificate. The full Arb re-audit of all nodes was **not**
-run (python-flint does not load on the build machine), and no independent
-50,000-digit recomputation was attempted; level C covers 1,000 digits.
+`75000/SHA256SUMS.txt` lists the canonical hashes. Run
+`python verification/verify_certificate.py --cert 75000/golomb_dickman_75000_certified.txt
+--digits-file golomb_dickman_75000_digits.txt --sha256-manifest 75000/SHA256SUMS.txt`
+for a dependency-free check of the certificate, digits and OEIS prefix, and
+`python verification/audit_chunks.py --ckpt 75000/gd_rigorous_ckpt_75000
+--cert 75000/golomb_dickman_75000_certified.txt` to audit the 4,767 checkpoint
+chunks. The full Arb re-audit of all 476,648 nodes was **not** run (2,000 nodes
+were checked); level C is an independent mpmath quadrature agreeing on 320
+digits. The OEIS b-file for A084945 in `50000/b084945.txt` has 50,000 terms;
+no 75,000-term b-file was created.
 
 `verification/reports/mathworld_50000.md` checks every statement on
 MathWorld's "Golomb-Dickman Constant Digits" page against the 50,000

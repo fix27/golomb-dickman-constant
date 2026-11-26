@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: >-
   If you use these data, code or the certified digits, please cite this
   repository and, when a DOI is available, the archived Zenodo release.
-title: "Golomb-Dickman constant: 50,000 certified decimal digits"
+title: "Golomb-Dickman constant: 75,000 certified decimal digits"
 type: software
 authors:
   - family-names: Pozdnyakov
@@ -10,11 +10,11 @@ authors:
     affiliation: "Surgut, Khanty-Mansi Autonomous Okrug - Yugra, Russia"
     email: fix@inbox.ru
     alias: fix27
-version: "50000"
-date-released: 2026-11-16
+version: "75000"
+date-released: 2026-11-26
 license: MIT
 repository-code: "https://github.com/fix27/golomb-dickman-constant"
-url: "https://github.com/fix27/golomb-dickman-constant/tree/main/50000"
+url: "https://github.com/fix27/golomb-dickman-constant/tree/main/75000"
 keywords:
   - Golomb-Dickman constant
   - interval arithmetic
@@ -23,24 +23,35 @@ keywords:
   - trapezoidal rule
   - Stieltjes continued fraction
   - OEIS A084945
+  - OEIS A225242
 abstract: >-
-  Rigorous interval-arithmetic certificate for the first 50,000 decimal
+  Rigorous interval-arithmetic certificate for the first 75,000 decimal
   digits of the Golomb-Dickman constant
   lambda = integral_0^infinity exp(-u - E_1(u)) du. The certificate gives
-  integers Lambda_- < Lambda_+ and a scale S = 166293 such that
-  lambda lies in [Lambda_-/2^S, Lambda_+/2^S] and
-  floor(10^50000 Lambda_-/2^S) = floor(10^50000 Lambda_+/2^S); the digits
+  integers Lambda_- < Lambda_+ and a scale S = 249341 such that lambda lies
+  in [Lambda_-/2^S, Lambda_+/2^S] and
+  floor(10^75000 Lambda_-/2^S) = floor(10^75000 Lambda_+/2^S); the digits
   are therefore proved by truncation. The interval width is
-  4.390 x 10^-50043, leaving 42 guard digits. The package also contains
-  the producing code and checkpoints, and an OEIS b-file for A084945 with
-  terms n = 0..49999. The previous 40,000-digit certificate is kept in
-  the same repository under 40000/.
+  5.8205594787 x 10^-75043, leaving about 42.235 guard digits. The package
+  also contains the producing code and 4,767 checkpoints. A full Arb
+  re-audit of all 476,648 nodes was not run; 2,000 nodes were checked.
+  Earlier 50,000- and 40,000-digit certificates are kept in the repository.
 references:
   - type: software
-    title: "Golomb-Dickman constant: 30,000 certified decimal digits"
+    title: "Golomb-Dickman constant: 50,000 certified decimal digits"
     authors:
       - family-names: Pozdnyakov
         given-names: Konstantin Nikolaevich
-    repository-code: "https://github.com/fix27/golomb_dickman_30000"
-    version: "30000"
-    date-released: 2026-11-15
+    repository-code: "https://github.com/fix27/golomb-dickman-constant"
+    version: "50000"
+    date-released: 2026-11-16
+  - type: webpage
+    title: "Golomb-Dickman Constant Digits (MathWorld)"
+    authors:
+      - family-names: Weisstein
+        given-names: Eric W.
+    url: "https://mathworld.wolfram.com/Golomb-DickmanConstantDigits.html"
+    date-accessed: 2026-11-26
+    notes: >-
+      Updated 2026-11-15; cites the 40,000-digit computation and a
+      GitHub commit of this project.
