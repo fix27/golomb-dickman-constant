@@ -76,6 +76,41 @@ truncation index into the "safe" parity:
 Under either convention (symmetric [−rem, +rem] or one-sided [0, rem])
 the returned ball contains the true value.
 
+Version note (v27).  This is the 40000-v2 production source.  No change to
+the mathematics or to the certificate: for the same D, G and cf_min_u the
+plan and every node ball are the same objects as in v26.  The changes are
+infrastructure, and they close the four audit gaps found in the review.
+
+  1. Line endings.  Every text artefact (certificate, meta_v13.json,
+     reports) is written with newline="\n" through _open_text_lf(); on
+     any platform the bytes are canonical LF.  verification/verify_40000.py
+     normalises CRLF to LF before hashing, so a Windows checkout with
+     core.autocrlf=true can no longer invalidate a pinned SHA-256.
+  2. Resume policy.  `certify` has --certify-mode {strict,audit}; strict
+     is the default and `certify --resume` is a hard SystemExit in that
+     mode.  The audit path is a separate `audit-resume` command that
+     prints CERTIFICATE: NONE (AUDIT ONLY) and never writes a certificate.
+     A strict run always recomputes every chunk in Arb; saved chunks are
+     never proof-bearing input.
+  3. Checkpoint schema.  CHECKPOINT_SCHEMA_VERSION / CHECKPOINT_FORMAT /
+     CHECKPOINT_META_NAME are constants (v13, meta_v13.json).  A directory
+     holding legacy meta.pkl (40000/golomb_dickman.py) or meta_v12.json
+     (v26) is detected and either migrated explicitly with
+     `migrate-checkpoints` or refused with an instruction; mixed schemas
+     in one directory are always refused.
+  4. Replay.  replay_certificate() and verification/full_arb_replay_40000.py
+     recompute all 1209 chunks (chunk=200) from the plan alone, ignoring
+     every saved checkpoint, and compare the assembled interval with the
+     published certificate (Level B).
+
+  Performance (Sprint 2) is confined to the evaluator: the big-integer
+  eps/threshold balls are cached per process instead of rebuilt at every
+  node, ProcessPoolExecutor gets a real initializer, checkpoints are
+  serialised on a writer thread, and far-tail chunks get a rigorous
+  precision ladder (declared per chunk, never below 64 guard bits).  The
+  final interval is always checked by certify(), so a ladder that is too
+  aggressive can only fail to prove digits, never certify a wrong one.
+
 Version note (v26).  No change to the mathematics, the plan, or the
 certificate: the same chunks and the same interval [Λ₋, Λ₊] are computed,
 so whenever the digits are proven the output is identical to v25.
@@ -578,8 +613,10 @@ import math
 import os
 import pickle
 import platform
+import queue
 import subprocess
 import sys
+import threading
 import time
 from concurrent.futures import FIRST_COMPLETED, ProcessPoolExecutor, wait
 from contextlib import contextmanager
@@ -623,8 +660,51 @@ KNOWN = (
 )  # OEIS A084945, first 100 digits after the decimal point
 
 ASYM_KMAX = 3000
-RS_M = 8
+# Rectangular-splitting block size for series_S.  v26 used 8; measured on
+# D = 4000 (u = 300..8000) 32 is ~27% faster and on D = 2000 it is ~20%
+# faster, because one full Arb multiplication per block amortises better at
+# 10^4--10^5 bit precision.  m must stay even (Kend = 1 + nblocks*m odd).
+RS_M = 32
 _EGC = {"bits": 0, "val": None}
+
+# ---------------------------------------------------------------------------
+# Release / checkpoint schema
+# ---------------------------------------------------------------------------
+VERSION = "27"
+CERTIFY_MODES = ("strict", "audit")
+
+# Single source of truth for the checkpoint format.  The meta file name is
+# derived from the version, so a v26 directory (meta_v12.json) or the old
+# 40000/golomb_dickman.py directory (meta.pkl) can never be mistaken for a
+# v27 directory.  Bump both the number and CHECKPOINT_FORMAT together.
+CHECKPOINT_SCHEMA_VERSION = 13
+CHECKPOINT_FORMAT = "gd-checkpoint-v%d" % CHECKPOINT_SCHEMA_VERSION
+CHECKPOINT_META_NAME = "meta_v%d.json" % CHECKPOINT_SCHEMA_VERSION
+LEGACY_META_NAMES = ("meta.pkl", "meta_v12.json")
+
+# Far-tail precision ladder.  A node's target radius is never looser than
+# 2^-Ebits for the core of the sum; outside a magnitude threshold it may be
+# relaxed by at most LADDER_MAX_RELAX_BITS bits, but always with at least
+# LADDER_MIN_GUARD_BITS of guard beyond the requested decimal precision.
+# certify() checks the assembled interval, so this can only cost digits.
+LADDER_MAX_RELAX_BITS = 48
+LADDER_MIN_GUARD_BITS = 64
+
+
+class CheckpointSchemaError(RuntimeError):
+    """A checkpoint directory cannot be used with this schema."""
+
+
+def _open_text_lf(path, mode="w"):
+    """Open a text file with canonical LF newlines on every platform."""
+    return open(path, mode, encoding="utf-8", newline="\n")
+
+
+def _write_text_lf(path, text):
+    """Write text with canonical LF newlines; return the path."""
+    with _open_text_lf(path) as f:
+        f.write(text)
+    return path
 
 
 # ============================================================================
@@ -713,7 +793,7 @@ def to_fixed(x, S):
     old = ctx.prec
     try:
         ctx.prec = max(old, S + 128)
-        sc = arb(1 << S)
+        sc = pow2_ball(S)
         Lv = (x.lower() * sc).floor().lower().unique_fmpz()
         Hv = (x.upper() * sc).floor().upper().unique_fmpz()
         if Lv is None or Hv is None:
@@ -825,6 +905,27 @@ def _heuristic_cf_min_u(D):
 # §6. Strict interval balls for G(kh) (Lemmas 6 and 7)
 # ============================================================================
 
+_POW2_CACHE = {}
+
+
+def pow2_ball(bits):
+    """Exact ball 2^bits (bits may be negative), cached per process.
+
+    Building 2^-Ebits as arb(1) / arb(1 << Ebits) used to allocate a fresh
+    2^Ebits integer at every node (Ebits ~ 133010 at D = 40000).  That was
+    pure overhead: the value is exact, independent of ctx.prec, and the same
+    few exponents recur across the whole run.
+    """
+    v = _POW2_CACHE.get(bits)
+    if v is None:
+        if bits >= 0:
+            v = arb(1 << bits)
+        else:
+            v = arb(1) / arb(1 << (-bits))
+        _POW2_CACHE[bits] = v
+    return v
+
+
 def get_EG(bits):
     """e^γ at ≥ bits precision, cached per process."""
     if _EGC["val"] is None or _EGC["bits"] < bits:
@@ -883,7 +984,7 @@ def series_S(u, uf, xf, thr_bits, m=None):
     m = m or RS_M
     if m % 2 != 0:
         raise ArithmeticError("series_S: block size m must be even, got %d" % m)
-    thr = arb(1) / arb(1 << thr_bits)
+    thr = pow2_ball(-thr_bits)
     ub = u.upper()
     K = _K_target(uf, xf, thr_bits)
     if K < 4 * m:
@@ -980,7 +1081,11 @@ def asym_K(xf, uf, lng, L_eps):
 
 
 def _mk_u(k, pl):
-    t = arb(pl["h"]) * k
+    hA = pl.get("_hA")
+    if hA is None:
+        hA = arb(pl["h"])
+        pl["_hA"] = hA
+    t = hA * k
     em = (-t).exp()
     return em, (t - em).exp()
 
@@ -1047,11 +1152,17 @@ def method_of(k, pl):
 
 
 def node_ball(k, pl, force=None):
-    """Strict ball for G(kh) with rad < 2^{-Ebits}."""
-    Eb = pl["Ebits"]
+    """Strict ball for G(kh) with rad < 2^{-Eb}.
+
+    Eb is pl["Ebits"] for the core of the sum.  compute_chunks() may lower it
+    for a far-tail chunk (pl["Eb_target"]); the returned ball is still a
+    strict enclosure, only its declared radius is larger, and the final
+    interval check in certify() remains the arbiter of the digit proof.
+    """
+    Eb = int(pl.get("Eb_target", pl["Ebits"]))
     xf, uf, lng = _est(k, pl)
     L_eps = Eb * LN2
-    eps = arb(1) / arb(1 << Eb)
+    eps = pow2_ball(-Eb)
     need_ln = L_eps + lng + 2.0
 
     if need_ln < 0:
@@ -1162,10 +1273,21 @@ def autotune_cf_min_u(pl, log=print):
 # §7. Parallel computation with checkpoints
 # ============================================================================
 
-def run_chunk(lo, hi, pl):
+def run_chunk(lo, hi, pl, ebits=None):
+    """One chunk: strict integer enclosure of the even and odd node sums.
+
+    ``ebits`` is the declared per-node radius exponent for this chunk.  It is
+    either pl["Ebits"] (the global plan value) or a slightly relaxed value
+    from the far-tail precision ladder.  Relaxation never weakens the
+    inclusion property of a node ball; it only enlarges its declared radius,
+    and certify() re-checks the assembled interval.
+    """
     S = pl["S"]
     get_EG(pl["EGbits"])
     ctx.prec = pl["Ebits"] + 256
+    if ebits is not None and int(ebits) != int(pl["Ebits"]):
+        pl = dict(pl)
+        pl["Eb_target"] = int(ebits)
     se, so = arb(0), arb(0)
     for k in range(lo, hi):
         g = node_ball(k, pl)
@@ -1176,6 +1298,24 @@ def run_chunk(lo, hi, pl):
             se = se + g
     return lo, hi, to_fixed(se, S), to_fixed(so, S)
 
+
+# --- worker process state (initializer instead of per-task setup) -----------
+
+_WORKER = {}
+
+
+def _worker_init(pw):
+    """Initialise Arb context and e^gamma once per worker process."""
+    _WORKER["pl"] = pw
+    get_EG(pw["EGbits"])
+    ctx.prec = pw["Ebits"] + 256
+
+
+def _run_chunk_worker(lo, hi, ebits):
+    return run_chunk(lo, hi, _WORKER["pl"], ebits)
+
+
+# --- checkpoint format, identity, schema migration --------------------------
 
 def _chunk_is_well_formed(c, lo, hi):
     """Format/consistency check only; does NOT prove mathematical origin."""
@@ -1197,48 +1337,381 @@ def _chunk_is_well_formed(c, lo, hi):
     return True
 
 
-def _checkpoint_identity(pl, chunk):
-    """Fingerprint to detect accidental mixing of different runs."""
+def _source_sha256():
     try:
         with open(__file__, "rb") as f:
-            src_sha = hashlib.sha256(f.read()).hexdigest()
+            return hashlib.sha256(f.read()).hexdigest()
     except Exception:
-        src_sha = "unavailable"
+        return "unavailable"
+
+
+def _checkpoint_identity(pl, chunk):
+    """Fingerprint to detect accidental mixing of different runs."""
     return {
-        "format": "gd-checkpoint-v12",
-        "source_sha256": src_sha,
+        "schema": CHECKPOINT_SCHEMA_VERSION,
+        "format": CHECKPOINT_FORMAT,
+        "program_version": VERSION,
+        "source_sha256": _source_sha256(),
         "python": sys.version,
         "platform": platform.platform(),
         "python_flint": getattr(flint, "__version__", "unknown"),
         "parameters": {k: str(pl[k]) for k in
                        ("D", "G", "h", "Ebits", "S", "EGbits",
                         "K_L", "K_R", "cf_min_u")},
+        "precision_ladder": bool(pl.get("precision_ladder", False)),
+        "ladder_max_relax_bits": int(pl.get("ladder_max_relax_bits",
+                                           LADDER_MAX_RELAX_BITS)),
         "chunk": int(chunk),
     }
 
 
+def _meta_path(ckpt):
+    return os.path.join(ckpt, CHECKPOINT_META_NAME)
+
+
+def chunk_from_meta(ckpt):
+    """Return the chunk size recorded in the current meta file, or None."""
+    mp = _meta_path(ckpt)
+    if not os.path.exists(mp):
+        return None
+    try:
+        with open(mp, encoding="utf-8") as f:
+            obj = json.load(f)
+        return int(obj["chunk"])
+    except Exception:
+        return None
+
+
+def _legacy_meta_files(ckpt):
+    return [n for n in LEGACY_META_NAMES
+            if os.path.exists(os.path.join(ckpt, n))]
+
+
+def scan_checkpoint_schema(ckpt):
+    """Classify a checkpoint directory: empty / current / legacy / unknown.
+
+    Raises CheckpointSchemaError when two formats coexist.  The caller must
+    never silently mix them: chunk pickles carry no schema tag of their own.
+    """
+    if not ckpt or not os.path.isdir(ckpt):
+        return "empty", []
+    current = os.path.exists(_meta_path(ckpt))
+    legacy = _legacy_meta_files(ckpt)
+    other = sorted(n for n in os.listdir(ckpt)
+                   if n.startswith("meta_") and n.endswith(".json")
+                   and n != CHECKPOINT_META_NAME)
+    if current and (legacy or other):
+        raise CheckpointSchemaError(
+            "%s: mixed checkpoint formats (%s and %s).  Keep one schema per "
+            "directory: move the old files out, or run migrate-checkpoints."
+            % (ckpt, CHECKPOINT_META_NAME, ", ".join(legacy + other)))
+    if legacy and other:
+        raise CheckpointSchemaError(
+            "%s: several legacy checkpoint formats coexist (%s); refused."
+            % (ckpt, ", ".join(legacy + other)))
+    if current:
+        return "current", []
+    if legacy:
+        return "legacy", legacy
+    if other:
+        return "unknown", other
+    return "empty", []
+
+
+def _read_legacy_identity(path):
+    """Return a normalised identity dict for meta.pkl / meta_v12.json."""
+    name = os.path.basename(path)
+    try:
+        if name.endswith(".pkl"):
+            with open(path, "rb") as f:
+                obj = pickle.load(f)
+            # 40000/golomb_dickman.py wrote
+            #   (D, G, h, Ebits, K_L, K_R, chunk, "v2")
+            if not (isinstance(obj, tuple) and len(obj) >= 7):
+                raise ValueError("unexpected meta.pkl payload")
+            D, G, h, Ebits, K_L, K_R, chunk = obj[:7]
+            return {"D": int(D), "G": int(G), "h": repr(float(h)),
+                    "Ebits": int(Ebits), "K_L": int(K_L), "K_R": int(K_R),
+                    "chunk": int(chunk), "format": "meta.pkl"}
+        with open(path, encoding="utf-8") as f:
+            obj = json.load(f)
+        if not isinstance(obj, dict):
+            raise ValueError("meta json is not an object")
+        params = obj.get("parameters")
+        if not isinstance(params, dict):
+            raise ValueError("meta json has no parameters object")
+        return {"D": int(params["D"]), "G": int(params["G"]),
+                "h": repr(float(params["h"])),
+                "Ebits": int(params["Ebits"]), "K_L": int(params["K_L"]),
+                "K_R": int(params["K_R"]), "chunk": int(obj["chunk"]),
+                "format": obj.get("format", name)}
+    except CheckpointSchemaError:
+        raise
+    except Exception as exc:
+        raise CheckpointSchemaError(
+            "%s: cannot read legacy checkpoint metadata (%s: %s)"
+            % (path, type(exc).__name__, exc))
+
+
+def _identity_matches_plan(ident, pl, chunk):
+    want = {"D": pl["D"], "G": pl["G"], "h": repr(float(pl["h"])),
+            "Ebits": pl["Ebits"], "K_L": pl["K_L"], "K_R": pl["K_R"],
+            "chunk": int(chunk)}
+    bad = [k for k, v in want.items() if ident.get(k) != v]
+    return bad
+
+
+def migrate_checkpoints(ckpt, pl, chunk, log=print):
+    """Explicitly convert meta.pkl / meta_v12.json to the current schema.
+
+    The conversion only renames metadata; the chunk pickles keep their
+    v12 layout, which v27 reads unchanged.  Every chunk file is checked for
+    presence and well-formed bounds before anything is renamed.  Migrated
+    directories are AUDIT-ONLY: the chunks were produced by an older program
+    and have not been recomputed, so `audit-resume` may use them but
+    `certify --certify-mode strict` never does.
+    """
+    if not os.path.isdir(ckpt):
+        raise CheckpointSchemaError("%s: no such checkpoint directory" % ckpt)
+    schema, legacy = scan_checkpoint_schema(ckpt)
+    if schema == "current":
+        log("%s: already %s; nothing to do" % (ckpt, CHECKPOINT_META_NAME))
+        return 0
+    if schema == "empty":
+        raise CheckpointSchemaError("%s: no checkpoint metadata found" % ckpt)
+    if schema == "unknown":
+        raise CheckpointSchemaError(
+            "%s: unknown checkpoint schema %s; current schema is %s"
+            % (ckpt, ", ".join(legacy), CHECKPOINT_META_NAME))
+    if len(legacy) != 1:
+        raise CheckpointSchemaError(
+            "%s: exactly one legacy metadata file is required, found %s"
+            % (ckpt, ", ".join(legacy)))
+
+    old_name = legacy[0]
+    old_path = os.path.join(ckpt, old_name)
+    ident = _read_legacy_identity(old_path)
+    bad = _identity_matches_plan(ident, pl, chunk)
+    if bad:
+        raise CheckpointSchemaError(
+            "%s: legacy metadata does not match this plan (%s).  Use the same "
+            "--digits/--guard/--chunk, or start a fresh directory."
+            % (old_path, ", ".join(bad)))
+
+    n0, n1 = -pl["K_L"], pl["K_R"] + 1
+    bounds = [(lo, min(lo + chunk, n1)) for lo in range(n0, n1, chunk)]
+    missing, broken = [], []
+    for lo, hi in bounds:
+        path = os.path.join(ckpt, "c_%d.pkl" % lo)
+        if not os.path.exists(path):
+            missing.append(os.path.basename(path))
+            continue
+        try:
+            with open(path, "rb") as f:
+                c = pickle.load(f)
+            if not _chunk_is_well_formed(c, lo, hi):
+                broken.append(os.path.basename(path))
+        except Exception:
+            broken.append(os.path.basename(path))
+    if missing or broken:
+        raise CheckpointSchemaError(
+            "%s: cannot migrate: %d missing and %d malformed chunk file(s) "
+            "(first: %s).  A partial legacy directory is not migrated; "
+            "delete it and recompute, or restore the missing files."
+            % (ckpt, len(missing), len(broken),
+               (missing + broken)[:3]))
+
+    identity = _checkpoint_identity(pl, chunk)
+    _write_text_lf(_meta_path(ckpt),
+                   json.dumps(identity, sort_keys=True, indent=2) + "\n")
+    os.replace(old_path, old_path + ".migrated")
+    provenance = {
+        "migrated_from": old_name,
+        "migrated_to": CHECKPOINT_META_NAME,
+        "schema": CHECKPOINT_SCHEMA_VERSION,
+        "chunks": len(bounds),
+        "certificate": "NONE - AUDIT ONLY",
+        "note": "chunks were produced by an older program and were not recomputed",
+    }
+    _write_text_lf(os.path.join(ckpt, "MIGRATION.json"),
+                   json.dumps(provenance, sort_keys=True, indent=2) + "\n")
+    log("%s: migrated %s -> %s (%d chunks, AUDIT ONLY)"
+        % (ckpt, old_name, CHECKPOINT_META_NAME, len(bounds)))
+    return len(bounds)
+
+
+def _identity_key(identity):
+    """Fields that define the plan; provenance fields are not compared.
+
+    source_sha256, python and platform are provenance.  A checkpoint
+    directory remains readable after a code edit or on another machine (in
+    audit mode), but a change of D/G/h/Ebits/K_L/K_R/chunk/ladder is refused:
+    those change which intervals the pickles mean.
+    """
+    return {
+        "schema": identity.get("schema"),
+        "format": identity.get("format"),
+        "parameters": identity.get("parameters"),
+        "precision_ladder": identity.get("precision_ladder"),
+        "ladder_max_relax_bits": identity.get("ladder_max_relax_bits"),
+        "chunk": identity.get("chunk"),
+    }
+
+
+def _load_checkpoint_meta(ckpt, identity, log=print):
+    """Validate/initialise the current meta file.  Returns nothing."""
+    mp = _meta_path(ckpt)
+    if os.path.exists(mp):
+        with open(mp, encoding="utf-8") as f:
+            old = json.load(f)
+        if _identity_key(old) != _identity_key(identity):
+            raise CheckpointSchemaError(
+                "%s: checkpoint fingerprint mismatch.  This directory holds a "
+                "different plan or ladder setting.  Use a fresh "
+                "--ckpt directory (or --digits/--guard/--chunk as before)."
+                % ckpt)
+        if old.get("source_sha256") != identity.get("source_sha256"):
+            log("  NOTE: checkpoint source hash differs from this build; "
+                "the plan matches, provenance is recorded but not trusted.")
+    else:
+        _write_text_lf(mp, json.dumps(identity, sort_keys=True, indent=2) + "\n")
+
+
+def _target_error_bits(D):
+    """Absolute error budget for one chunk, in bits.
+
+    The proof needs the total error below 10^-D.  We reserve 4 decimal
+    digits for the sum over chunks and split the rest evenly.  Keeping the
+    budget explicit is what makes the precision ladder auditable rather than
+    a guess.
+    """
+    return D * LOG2_10 + 4.0
+
+
+def _ladder_ebits_map(pl, bounds, enabled=True, max_relax=None):
+    """Per-chunk declared radius exponent for the far-tail precision ladder.
+
+    For each chunk we may lower the per-node target exponent from Ebits to
+    Ebits - r as long as the chunk's worst-case absolute error
+        (hi - lo) * 2^-(Ebits - r)
+    stays below a fixed share of the global 10^-D budget.  r is capped and
+    never eats into the last LADDER_MIN_GUARD_BITS bits above D.  Nothing
+    here affects inclusion: it only chooses how tightly each ball is asked
+    to be computed.
+    """
+    Eb = int(pl["Ebits"])
+    if not enabled:
+        return {lo: Eb for lo, hi in bounds}, 0
+    cap = LADDER_MAX_RELAX_BITS if max_relax is None else int(max_relax)
+    cap = max(0, min(int(cap), Eb))
+    budget = _target_error_bits(pl["D"]) + math.log2(max(1, len(bounds)))
+    floor_eb = int(pl["D"] * LOG2_10) + LADDER_MIN_GUARD_BITS + 8
+    out = {}
+    relaxed = 0
+    for lo, hi in bounds:
+        r = int(math.floor(Eb - budget - math.ceil(math.log2(max(1, hi - lo)))))
+        r = max(0, min(cap, r, Eb - floor_eb))
+        out[lo] = Eb - r
+        relaxed += 1 if r else 0
+    return out, relaxed
+
+
+class _AsyncCheckpointWriter:
+    """Serialise chunk pickles on a writer thread.
+
+    The compute workers never block on fsync.  Every write goes to a .tmp
+    file and is then atomically renamed, so a crash leaves either the old
+    chunk or the new one, never a half-written pickle.
+    """
+
+    def __init__(self, ckpt):
+        self.ckpt = ckpt
+        self.queue = queue.Queue()
+        self.error = None
+        self.written = 0
+        self.thread = threading.Thread(target=self._run, name="ckpt-writer",
+                                       daemon=True)
+        self.thread.start()
+
+    def _run(self):
+        while True:
+            c = self.queue.get()
+            try:
+                if c is None:
+                    return
+                path = os.path.join(self.ckpt, "c_%d.pkl" % c[0])
+                tmp = path + ".tmp"
+                with open(tmp, "wb") as f:
+                    pickle.dump(c, f, protocol=pickle.HIGHEST_PROTOCOL)
+                    f.flush()
+                    os.fsync(f.fileno())
+                os.replace(tmp, path)
+                self.written += 1
+            except BaseException as exc:  # noqa: BLE001 - propagated to main
+                if self.error is None:
+                    self.error = exc
+            finally:
+                self.queue.task_done()
+
+    def submit(self, c):
+        if self.error is not None:
+            raise self.error
+        self.queue.put(c)
+
+    def close(self):
+        if self.thread.is_alive():
+            self.queue.put(None)
+            self.thread.join()
+        self.queue.join()
+        if self.error is not None:
+            raise self.error
+
+
 def compute_chunks(pl, jobs, chunk, ckpt, deadline=None, log=print,
-                   trust_checkpoint=False):
-    """Compute chunks.  Bounded memory: at most 2·jobs in flight."""
+                   trust_checkpoint=False, precision_ladder=False,
+                   ladder_max_relax_bits=LADDER_MAX_RELAX_BITS):
+    """Compute chunks.  Bounded memory: at most 2?jobs in flight.
+
+    Jobs are submitted to processes initialised once (Arb context + e^gamma),
+    not re-initialised per task.  Checkpoints are written asynchronously.
+    """
     pw = {k: pl[k] for k in ("D", "G", "h", "Ebits", "S", "EGbits",
                              "K_L", "K_R", "cf_min_u")}
+    pw["precision_ladder"] = bool(precision_ladder)
+    pw["ladder_max_relax_bits"] = int(ladder_max_relax_bits)
     n0, n1 = -pl["K_L"], pl["K_R"] + 1
     bounds = [(lo, min(lo + chunk, n1)) for lo in range(n0, n1, chunk)]
     identity = _checkpoint_identity(pl, chunk)
     done = {}
 
+    pl_for_ladder = dict(pl)
+    pl_for_ladder["precision_ladder"] = bool(precision_ladder)
+    pl_for_ladder["ladder_max_relax_bits"] = int(ladder_max_relax_bits)
+    ebits_map, n_relaxed = _ladder_ebits_map(
+        pl_for_ladder, bounds, precision_ladder, ladder_max_relax_bits)
+    if precision_ladder:
+        log("  precision ladder: %d/%d chunks relaxed (max %d bits, "
+            "floor D+%d bits)"
+            % (n_relaxed, len(bounds), ladder_max_relax_bits,
+               LADDER_MIN_GUARD_BITS))
+
     if ckpt:
         os.makedirs(ckpt, exist_ok=True)
-        mp = os.path.join(ckpt, "meta_v12.json")
-        if os.path.exists(mp):
-            with open(mp, encoding="utf-8") as f:
-                if json.load(f) != identity:
-                    raise RuntimeError(
-                        ckpt + ": fingerprint mismatch; use a fresh directory")
-        else:
-            with open(mp, "w", encoding="utf-8", newline="\n") as f:
-                json.dump(identity, f, sort_keys=True, indent=2)
-                f.write("\n")
+        schema, legacy = scan_checkpoint_schema(ckpt)
+        if schema == "legacy":
+            raise CheckpointSchemaError(
+                "%s: legacy checkpoint metadata (%s).  This build writes %s.  "
+                "Nothing was read or overwritten.  Either run\n"
+                "  python golomb_dickman_27.py migrate-checkpoints --ckpt %s "
+                "--digits %d --chunk %d\n"
+                "to convert it for audit use, or choose a fresh --ckpt."
+                % (ckpt, ", ".join(legacy), CHECKPOINT_META_NAME,
+                   ckpt, pl["D"], chunk))
+        if schema == "unknown":
+            raise CheckpointSchemaError(
+                "%s: unknown metadata %s (current is %s); refusing to mix "
+                "formats" % (ckpt, ", ".join(legacy), CHECKPOINT_META_NAME))
+        _load_checkpoint_meta(ckpt, identity, log)
         if trust_checkpoint:
             for lo, hi in bounds:
                 path = os.path.join(ckpt, "c_%d.pkl" % lo)
@@ -1251,12 +1724,15 @@ def compute_chunks(pl, jobs, chunk, ckpt, deadline=None, log=print,
                         done[lo] = c
                 except Exception:
                     pass
+            if os.path.exists(os.path.join(ckpt, "MIGRATION.json")):
+                log("  NOTE: migrated legacy checkpoints; audit-only")
 
     todo = sorted([b for b in bounds if b[0] not in done], key=lambda b: -b[0])
     if done:
         log("WARNING: accepted %d/%d checkpoint chunks without recomputation; "
             "this is NOT a proof-bearing mode" % (len(done), len(bounds)))
 
+    writer = _AsyncCheckpointWriter(ckpt) if ckpt else None
     t0 = time.time()
     fin = 0
 
@@ -1266,14 +1742,8 @@ def compute_chunks(pl, jobs, chunk, ckpt, deadline=None, log=print,
         if not _chunk_is_well_formed(c, lo, hi):
             raise ArithmeticError("corrupted chunk result %r" % (lo,))
         done[lo] = c
-        if ckpt:
-            path = os.path.join(ckpt, "c_%d.pkl" % lo)
-            tmp = path + ".tmp"
-            with open(tmp, "wb") as f:
-                pickle.dump(c, f, protocol=pickle.HIGHEST_PROTOCOL)
-                f.flush()
-                os.fsync(f.fileno())
-            os.replace(tmp, path)
+        if writer is not None:
+            writer.submit(c)
         fin += 1
         elapsed = time.time() - t0
         print("\r  chunks %d/%d  elapsed %6.0fs  remaining ~%6.0fs   "
@@ -1282,45 +1752,51 @@ def compute_chunks(pl, jobs, chunk, ckpt, deadline=None, log=print,
               end="", flush=True)
 
     stopped = False
-    if jobs <= 1 or len(todo) <= 1:
-        for lo, hi in todo:
-            if deadline and time.time() > deadline:
-                stopped = True
-                break
-            accept(run_chunk(lo, hi, pw))
-    else:
-        max_in_flight = max(2, jobs * 2)
-        todo_iter = iter(todo)
-        pending = set()
-
-        def submit_next():
-            try:
-                lo, hi = next(todo_iter)
-            except StopIteration:
-                return False
-            pending.add(ex.submit(run_chunk, lo, hi, pw))
-            return True
-
-        with ProcessPoolExecutor(max_workers=jobs,
-                                 mp_context=_get_mp_context()) as ex:
-            while len(pending) < max_in_flight and submit_next():
-                pass
-            while pending:
-                tmo = None if not deadline else max(1.0, min(30.0, deadline - time.time()))
-                fin_set, pending = wait(pending, timeout=tmo,
-                                        return_when=FIRST_COMPLETED)
-                for f in fin_set:
-                    accept(f.result())
-                while len(pending) < max_in_flight:
-                    if not submit_next():
-                        break
-                if deadline and time.time() > deadline and pending:
+    try:
+        if jobs <= 1 or len(todo) <= 1:
+            for lo, hi in todo:
+                if deadline and time.time() > deadline:
                     stopped = True
-                    for f in pending:
-                        f.cancel()
-                    for f in [f for f in pending if not f.cancelled()]:
+                    break
+                accept(run_chunk(lo, hi, pw, ebits_map[lo]))
+        else:
+            max_in_flight = max(2, jobs * 2)
+            todo_iter = iter(todo)
+            pending = set()
+
+            def submit_next():
+                try:
+                    lo, hi = next(todo_iter)
+                except StopIteration:
+                    return False
+                pending.add(ex.submit(_run_chunk_worker, lo, hi, ebits_map[lo]))
+                return True
+
+            with ProcessPoolExecutor(
+                    max_workers=jobs, mp_context=_get_mp_context(),
+                    initializer=_worker_init, initargs=(pw,)) as ex:
+                while len(pending) < max_in_flight and submit_next():
+                    pass
+                while pending:
+                    tmo = None if not deadline else max(
+                        1.0, min(30.0, deadline - time.time()))
+                    fin_set, pending = wait(pending, timeout=tmo,
+                                            return_when=FIRST_COMPLETED)
+                    for f in fin_set:
                         accept(f.result())
-                    pending = set()
+                    while len(pending) < max_in_flight:
+                        if not submit_next():
+                            break
+                    if deadline and time.time() > deadline and pending:
+                        stopped = True
+                        for f in pending:
+                            f.cancel()
+                        for f in [f for f in pending if not f.cancelled()]:
+                            accept(f.result())
+                        pending = set()
+    finally:
+        if writer is not None:
+            writer.close()
 
     if todo:
         print()
@@ -1417,8 +1893,22 @@ def _common_prefix_len(a, b):
 
 def run_certificate(D, G=30, jobs=0, chunk=0, ckpt=None, out=None,
                     max_hours=0.0, cf_min_u=None, trust_checkpoint=False,
-                    autotune=False):
-    """Run certificate pipeline."""
+                    autotune=False, certify_mode="strict",
+                    precision_ladder=False,
+                    ladder_max_relax_bits=LADDER_MAX_RELAX_BITS):
+    """Run the certificate pipeline.
+
+    certify_mode:
+      "strict" (default) - every chunk is recomputed in Arb; a certificate
+          may be issued.  trust_checkpoint=True is refused.
+      "audit" - checkpoint chunks are accepted without recomputation; the
+          result is informational and CERTIFICATE: NONE is reported.
+    """
+    if certify_mode not in CERTIFY_MODES:
+        raise ValueError("certify_mode must be one of %s" % (CERTIFY_MODES,))
+    audit = certify_mode == "audit"
+    if audit and not trust_checkpoint:
+        raise ValueError("certify_mode='audit' requires trust_checkpoint=True")
     t0 = time.time()
     try:
         ncpu = len(os.sched_getaffinity(0))
@@ -1430,9 +1920,9 @@ def run_certificate(D, G=30, jobs=0, chunk=0, ckpt=None, out=None,
     if ckpt is None:
         ckpt = os.path.join(base, "gd_rigorous_ckpt_%d" % D)
 
-    if trust_checkpoint:
+    if audit:
         print("=" * 70)
-        print("AUDIT-ONLY MODE: trust_checkpoint=True")
+        print("CERTIFY MODE: AUDIT (trust_checkpoint=True)")
         print("Checkpoints are NOT recomputed; the result will NOT be")
         print("treated as a proof, and no certificate file will be written.")
         print("Pass --no-resume (the default) for a rigorous run.")
@@ -1475,7 +1965,9 @@ def run_certificate(D, G=30, jobs=0, chunk=0, ckpt=None, out=None,
         print("  soft deadline: %.1f hours (running tasks may exceed it; "
               "use `timeout` for a hard stop)" % max_hours)
     chunks = compute_chunks(pl, jobs, chunk, ckpt, deadline,
-                            trust_checkpoint=trust_checkpoint)
+                            trust_checkpoint=trust_checkpoint,
+                            precision_ladder=precision_ladder,
+                            ladder_max_relax_bits=ladder_max_relax_bits)
     if chunks is None:
         print("STOPPED by max_hours: checkpoints in", ckpt,
               "- re-run the cell to continue")
@@ -1484,7 +1976,7 @@ def run_certificate(D, G=30, jobs=0, chunk=0, ckpt=None, out=None,
     res = certify(pl, chunks)
     k = min(D, len(KNOWN))
 
-    if trust_checkpoint:
+    if audit:
         # Informational only: the chunks were not recomputed, so neither the
         # digits nor their comparison with OEIS carries any weight here.
         ok_known = res["digits_lo"][:k] == KNOWN[:k]
@@ -1493,6 +1985,8 @@ def run_certificate(D, G=30, jobs=0, chunk=0, ckpt=None, out=None,
               % (k, "OK" if ok_known else "MISMATCH"))
         res["proven"] = False
         res["audit_only"] = True
+        res["certificate"] = "NONE"
+        print("CERTIFICATE: NONE (AUDIT ONLY)")
         print("AUDIT ONLY: results were not verified; no certificate issued.")
         return res
 
@@ -1519,14 +2013,108 @@ def run_certificate(D, G=30, jobs=0, chunk=0, ckpt=None, out=None,
 
     path = out if out is not None else \
         os.path.join(base, "golomb_dickman_%d_certified.txt" % D)
-    with open(path, "w", encoding="utf-8", newline="\n") as f:
+    with _open_text_lf(path) as f:
         f.write("# Golomb-Dickman constant, %d decimals, CERTIFIED by "
                 "interval arithmetic (trapezoid rule + Arb balls)\n" % D)
         f.write("# S=%d lam_lo=%d\n# lam_hi=%d\n"
                 % (res["S"], res["lam_lo"], res["lam_hi"]))
         f.write("0." + res["digits"] + "\n")
+    res["certificate"] = path
     print("wrote", path, "| wall %.0f s" % (time.time() - t0))
     return res
+
+
+# ---------------------------------------------------------------------------
+# Level B: replay the published certificate from the plan alone
+# ---------------------------------------------------------------------------
+
+def parse_certificate(path):
+    """Read S, lam_lo, lam_hi and the digit string from a certificate."""
+    with open(path, encoding="utf-8") as f:
+        text = f.read()
+    lines = text.splitlines()
+    if len(lines) < 4:
+        raise ArithmeticError("%s: truncated certificate" % path)
+    import re
+    m_s = re.search(r"\bS=(\d+)\b", lines[1])
+    m_lo = re.search(r"\blam_lo=(\d+)\b", lines[1])
+    m_hi = re.search(r"\blam_hi=(\d+)\b", lines[2])
+    if not (m_s and m_lo and m_hi):
+        raise ArithmeticError("%s: cannot parse S/lam_lo/lam_hi" % path)
+    digits_line = lines[3].strip()
+    if not digits_line.startswith("0."):
+        raise ArithmeticError("%s: fourth line is not 0.<digits>" % path)
+    digits = digits_line[2:]
+    if not digits.isdigit():
+        raise ArithmeticError("%s: non-digit character in digit line" % path)
+    return {"path": path, "D": len(digits), "S": int(m_s.group(1)),
+            "lam_lo": int(m_lo.group(1)), "lam_hi": int(m_hi.group(1)),
+            "digits": digits}
+
+
+def replay_certificate(cert_path, jobs=0, chunk=200, G=30,
+                       precision_ladder=False, log=print):
+    """Recompute every chunk from the plan and compare with a certificate.
+
+    No checkpoint directory is read: the comparison is between the published
+    interval and an interval assembled from a fresh Arb run.  This is the
+    Level B test; it establishes that the published numbers are reproducible
+    from the source and the plan without trusting saved metadata.
+    """
+    cert = parse_certificate(cert_path)
+    D, S = cert["D"], cert["S"]
+    pl = make_plan(D, G)
+    if pl["S"] != S:
+        raise ArithmeticError(
+            "certificate S=%d but make_plan(D=%d, G=%d) gives S=%d; "
+            "use the --guard value that produced the certificate"
+            % (S, D, G, pl["S"]))
+    pl["cf_min_u"] = _heuristic_cf_min_u(D)
+    log("Level B replay: D=%d S=%d nodes=%d chunk=%d jobs=%s"
+        % (D, S, pl["nodes"], chunk, jobs or "auto"))
+    chunks = compute_chunks(pl, jobs, chunk, None,
+                            precision_ladder=precision_ladder)
+    if chunks is None:
+        raise ArithmeticError("replay interrupted")
+    res = certify(pl, chunks, verbose=False)
+
+    scale = 10 ** D
+    two_s = 1 << S
+
+    def agree_to_D(a, b):
+        return abs(a - b) * scale < two_s
+
+    checks = {
+        "digits_equal": res["digits"] == cert["digits"],
+        "lo_agrees_to_D": agree_to_D(res["lam_lo"], cert["lam_lo"]),
+        "hi_agrees_to_D": agree_to_D(res["lam_hi"], cert["lam_hi"]),
+        "intervals_overlap": (res["lam_lo"] < cert["lam_hi"]
+                              and cert["lam_lo"] < res["lam_hi"]),
+        "replay_proves_digits": bool(res["proven"]),
+    }
+    failed = [k for k, v in checks.items() if not v]
+    w_new = res["lam_hi"] - res["lam_lo"]
+    w_pub = cert["lam_hi"] - cert["lam_lo"]
+    report = {
+        "digits": D, "S": S, "chunk": chunk, "nodes": pl["nodes"],
+        "chunks": len(chunks), "checks": checks,
+        "width_new_bits": w_new.bit_length(),
+        "width_published_bits": w_pub.bit_length(),
+        "lam_lo_new": res["lam_lo"], "lam_hi_new": res["lam_hi"],
+        "lam_lo_published": cert["lam_lo"],
+        "lam_hi_published": cert["lam_hi"],
+        "verdict": "PASS" if not failed else "FAIL",
+        "failed": failed,
+    }
+    log("  replay width ~2^-%d, published width ~2^-%d"
+        % (S - w_new.bit_length(), S - w_pub.bit_length()))
+    log("  comparisons: %s"
+        % ", ".join("%s=%s" % (k, "OK" if v else "FAIL")
+                    for k, v in checks.items()))
+    log("Level B verdict: %s" % report["verdict"])
+    if failed:
+        raise ArithmeticError("Level B replay failed: %s" % ", ".join(failed))
+    return report
 
 
 # ============================================================================
@@ -2540,9 +3128,27 @@ def _cmd_test():
     return 0
 
 
+def _run_profile(fn, path):
+    """Run fn under cProfile; write .prof and a text report (LF)."""
+    import cProfile
+    import pstats
+    pr = cProfile.Profile()
+    pr.enable()
+    try:
+        return fn()
+    finally:
+        pr.disable()
+        pr.dump_stats(path)
+        with _open_text_lf(path + ".txt") as f:
+            pstats.Stats(pr, stream=f).sort_stats("cumulative").print_stats(40)
+        print("profile: wrote %s and %s.txt" % (path, path))
+
+
 def _cmd_smoke():
     try:
-        res = run_certificate(60, G=30, jobs=1, ckpt=None,
+        # ckpt="" disables checkpoint files: the smoke test must not leave a
+        # directory that a later 60-digit run could mistake for its own.
+        res = run_certificate(60, G=30, jobs=1, ckpt="",
                               out="smoke_60.txt", cf_min_u=20.0)
     except ArithmeticError as e:
         print("SMOKE TEST FAILED:", e, file=sys.stderr)
@@ -2554,23 +3160,110 @@ def _cmd_smoke():
     return 0
 
 
+def _certify_kwargs(args):
+    return dict(
+        D=args.digits, G=args.guard, jobs=args.jobs, chunk=args.chunk,
+        ckpt=args.ckpt, out=args.out, max_hours=args.max_hours,
+        cf_min_u=args.cf_min_u, autotune=args.autotune,
+        precision_ladder=args.precision_ladder,
+        ladder_max_relax_bits=args.ladder_max_relax_bits,
+    )
+
+
 def _cmd_certify(args):
+    if not args.chunk and args.ckpt:
+        args.chunk = chunk_from_meta(args.ckpt) or 0
+    mode = args.certify_mode
+    if mode == "strict" and args.resume:
+        print("ERROR: --resume is disabled in strict certificate mode.", file=sys.stderr)
+        print("A strict run recomputes every chunk in Arb; accepting saved "
+              "pickles cannot be proof-bearing.", file=sys.stderr)
+        print("Use the separate command:", file=sys.stderr)
+        print("  python golomb_dickman_27.py audit-resume --digits %d --ckpt %s"
+              % (args.digits, args.ckpt or "<dir>"), file=sys.stderr)
+        print("or pass --certify-mode audit explicitly (AUDIT ONLY, no certificate).",
+              file=sys.stderr)
+        raise SystemExit(2)
+    if mode == "audit" and not args.resume:
+        print("NOTE: --certify-mode audit implies --resume (saved chunks are "
+              "accepted without recomputation).")
     try:
-        res = run_certificate(
-            args.digits, G=args.guard, jobs=args.jobs, chunk=args.chunk,
-            ckpt=args.ckpt, out=args.out, max_hours=args.max_hours,
-            cf_min_u=args.cf_min_u, trust_checkpoint=args.resume,
-            autotune=args.autotune,
-        )
+        kwargs = _certify_kwargs(args)
+        kwargs["trust_checkpoint"] = (mode == "audit")
+        kwargs["certify_mode"] = mode
+        if args.profile:
+            res = _run_profile(lambda: run_certificate(**kwargs), args.profile)
+        else:
+            res = run_certificate(**kwargs)
+    except CheckpointSchemaError as e:
+        print("CHECKPOINT ERROR:", e, file=sys.stderr)
+        return 3
     except ArithmeticError as e:
         print("CERTIFICATE FAILED:", e, file=sys.stderr)
         return 1
     if res is None:
         return 2
-    if args.resume:
-        print("RESUME MODE: no certificate issued.")
+    if mode == "audit":
+        print("CERTIFICATE: NONE (AUDIT ONLY)")
         return 0
     return 0 if res.get("proven") else 1
+
+
+def _cmd_audit_resume(args):
+    """Dedicated audit-only mode; never writes a certificate."""
+    if not args.chunk and args.ckpt:
+        args.chunk = chunk_from_meta(args.ckpt) or 0
+    kwargs = _certify_kwargs(args)
+    kwargs["trust_checkpoint"] = True
+    kwargs["certify_mode"] = "audit"
+    try:
+        if args.profile:
+            res = _run_profile(lambda: run_certificate(**kwargs), args.profile)
+        else:
+            res = run_certificate(**kwargs)
+    except CheckpointSchemaError as e:
+        print("CHECKPOINT ERROR:", e, file=sys.stderr)
+        return 3
+    except ArithmeticError as e:
+        print("AUDIT FAILED:", e, file=sys.stderr)
+        return 1
+    return 0 if res is not None else 2
+
+
+def _cmd_migrate(args):
+    try:
+        pl = make_plan(args.digits, args.guard)
+        pl["cf_min_u"] = _heuristic_cf_min_u(args.digits)
+        chunk = args.chunk
+        if not chunk:
+            schema, legacy = scan_checkpoint_schema(args.ckpt)
+            if schema == "legacy":
+                chunk = _read_legacy_identity(
+                    os.path.join(args.ckpt, legacy[0]))["chunk"]
+            else:
+                chunk = 200
+        n = migrate_checkpoints(args.ckpt, pl, chunk)
+        print("migrated %d chunks; run audit-resume to inspect them" % n)
+        return 0
+    except CheckpointSchemaError as e:
+        print("MIGRATION FAILED:", e, file=sys.stderr)
+        return 3
+
+
+def _cmd_replay(args):
+    try:
+        report = replay_certificate(
+            args.cert, jobs=args.jobs, chunk=args.chunk, G=args.guard,
+            precision_ladder=args.ladder)
+    except ArithmeticError as e:
+        print("LEVEL B FAILED:", e, file=sys.stderr)
+        return 1
+    if args.json:
+        _write_text_lf(args.json, json.dumps(report, indent=2, sort_keys=True) + "\n")
+        print("wrote", args.json)
+    print("LEVEL B: PASS (%d chunks, %d digits)" % (report["chunks"],
+                                                    report["digits"]))
+    return 0
 
 
 def _cmd_crosscheck(args):
@@ -2617,11 +3310,37 @@ def _cmd_boundary_test():
     return 0
 
 
+def _add_cert_args(p):
+    p.add_argument("--digits", type=int, default=40000)
+    p.add_argument("--guard", type=int, default=30)
+    p.add_argument("--jobs", type=int, default=0)
+    p.add_argument("--chunk", type=int, default=0)
+    p.add_argument("--ckpt", type=str, default=None)
+    p.add_argument("--out", type=str, default=None)
+    p.add_argument("--max-hours", type=float, default=0.0,
+                   help="SOFT time limit (running tasks may exceed it)")
+    p.add_argument("--cf-min-u", type=float, default=None,
+                   help="pre-measured cf_min_u threshold")
+    p.add_argument("--autotune", action="store_true",
+                   help="run cf_min_u benchmark before the run (slow)")
+    p.add_argument("--precision-ladder", action="store_true",
+                   help="opt-in far-tail precision ladder (widens the "
+                        "certificate by up to the relaxation; off by default "
+                        "to preserve the published interval width)")
+    p.add_argument("--ladder-max-relax-bits", type=int,
+                   default=LADDER_MAX_RELAX_BITS,
+                   help="maximum radius relaxation for tail chunks")
+    p.add_argument("--profile", type=str, default=None, metavar="FILE",
+                   help="write a cProfile dump and FILE.txt report")
+    return p
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(
-        prog="golomb_dickman_cert",
+        prog="golomb_dickman_27",
         description="Rigorous interval-arithmetic certificate for the "
-                    "Golomb–Dickman constant."
+                    "Golomb\u2013Dickman constant (v%s, checkpoint schema v%d)."
+                    % (VERSION, CHECKPOINT_SCHEMA_VERSION),
     )
     sub = parser.add_subparsers(dest="command")
 
@@ -2629,24 +3348,41 @@ def main(argv=None):
     sub.add_parser("smoke", help="60-digit end-to-end smoke test")
     sub.add_parser("boundary-test", help="Lemma-7 boundary tests")
 
-    p_cert = sub.add_parser("certify", help="full certificate")
-    p_cert.add_argument("--digits", type=int, default=40000)
-    p_cert.add_argument("--guard", type=int, default=30)
-    p_cert.add_argument("--jobs", type=int, default=0)
-    p_cert.add_argument("--chunk", type=int, default=0)
-    p_cert.add_argument("--ckpt", type=str, default=None)
-    p_cert.add_argument("--out", type=str, default=None)
-    p_cert.add_argument("--max-hours", type=float, default=0.0,
-                        help="SOFT time limit (running tasks may exceed it)")
-    p_cert.add_argument("--cf-min-u", type=float, default=None,
-                        help="pre-measured cf_min_u threshold")
-    p_cert.add_argument("--autotune", action="store_true",
-                        help="run cf_min_u benchmark before the run (slow)")
+    p_cert = sub.add_parser("certify", help="strict full certificate")
+    _add_cert_args(p_cert)
+    p_cert.add_argument("--certify-mode", choices=CERTIFY_MODES,
+                        default="strict",
+                        help="strict (default, proof-bearing) or audit")
     p_cert.add_argument("--resume", dest="resume", action="store_true",
                         default=False,
-                        help="AUDIT-ONLY: accept checkpoints (no cert)")
+                        help="AUDIT-ONLY; refused in strict mode")
     p_cert.add_argument("--no-resume", dest="resume", action="store_false",
                         help="safe mode (default): recompute every chunk")
+
+    p_audit = sub.add_parser(
+        "audit-resume",
+        help="AUDIT ONLY: inspect saved checkpoints; never issues a certificate")
+    _add_cert_args(p_audit)
+
+    p_mig = sub.add_parser(
+        "migrate-checkpoints",
+        help="convert meta.pkl / meta_v12.json to the current schema")
+    p_mig.add_argument("--ckpt", type=str, required=True)
+    p_mig.add_argument("--digits", type=int, default=40000)
+    p_mig.add_argument("--guard", type=int, default=30)
+    p_mig.add_argument("--chunk", type=int, default=0,
+                       help="0 = take the chunk size from the legacy metadata")
+
+    p_rep = sub.add_parser(
+        "replay",
+        help="Level B: recompute every chunk and compare with a certificate")
+    p_rep.add_argument("--cert", type=str, required=True)
+    p_rep.add_argument("--jobs", type=int, default=0)
+    p_rep.add_argument("--chunk", type=int, default=200)
+    p_rep.add_argument("--guard", type=int, default=30)
+    p_rep.add_argument("--ladder", action="store_true",
+                       help="enable the precision ladder during replay")
+    p_rep.add_argument("--json", type=str, default=None)
 
     p_cross = sub.add_parser("crosscheck", help="independent cross-checks")
     p_cross.add_argument("--digits", type=int, default=200)
@@ -2658,8 +3394,9 @@ def main(argv=None):
 
     _env_check()
     print()
-    _run_all_rational_tests()
-    print()
+    if args.command not in ("migrate-checkpoints",):
+        _run_all_rational_tests()
+        print()
 
     if args.command == "test":
         print("All tests passed.")
@@ -2668,6 +3405,12 @@ def main(argv=None):
         return _cmd_smoke()
     if args.command == "certify":
         return _cmd_certify(args)
+    if args.command == "audit-resume":
+        return _cmd_audit_resume(args)
+    if args.command == "migrate-checkpoints":
+        return _cmd_migrate(args)
+    if args.command == "replay":
+        return _cmd_replay(args)
     if args.command == "crosscheck":
         return _cmd_crosscheck(args)
     if args.command == "boundary-test":

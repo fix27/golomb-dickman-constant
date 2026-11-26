@@ -1,8 +1,14 @@
 # arXiv preprint
 
-`main.tex` is a self-contained LaTeX article (no `.bib` file, no figures)
-describing the 50,000-digit certificate. It compiles with any standard
-TeX distribution:
+Two self-contained LaTeX articles are provided:
+
+- `main.tex` describes the earlier 50,000-digit certificate;
+- `main-75000.tex` describes the new 75,000-digit certificate, its
+  error budget and its audit status. Its exact-integer checks pass, while
+  the full independent Arb re-audit of all 476,648 nodes is reported as
+  `NOT_RUN` (a 20-chunk sample was contained).
+
+Both compile with any standard TeX distribution:
 
 ```bash
 pdflatex main.tex
@@ -38,7 +44,8 @@ tectonic main.tex
 
 | File | Purpose |
 |---|---|
-| `main.tex` | the article (single file, bibliography inline) |
+| `main.tex` | the article for the 50,000-digit result (bibliography inline) |
+| `main-75000.tex` | the article for the 75,000-digit result (bibliography inline) |
 | `ARXIV_SUBMISSION.md` | title, abstract, categories and metadata for arXiv |
 | `README.md` | this file |
 

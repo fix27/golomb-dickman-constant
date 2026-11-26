@@ -1,0 +1,15 @@
+# SHA-256 checksums for the root-level 75000-digit artefacts.
+# Canonical form: ASCII/UTF-8 text, LF line endings, no BOM (see .gitattributes).
+# These hashes are a reference, not a proof: verify them against an independent copy.
+# Verify with:  sha256sum -c SHA256SUMS.txt
+# The certificate checker should be run against the bundle manifest:
+#   python verification/verify_certificate.py \
+#       --cert 75000/golomb_dickman_75000_certified.txt \
+#       --digits-file golomb_dickman_75000_digits.txt \
+#       --sha256-manifest 75000/SHA256SUMS.txt
+# Reason: the legacy root b084945.txt is a 50,000-term CRLF b-file, and
+# verify_certificate.py auto-detects it next to a root-level certificate.
+b177fc551c8a9f950e037fdc92ed72fb9219eb11d81999410967f8013e6df534  golomb_dickman_75000_certified.txt
+0c5f2b212eb5fd25b1def672226f65f46b97d44c5e371c5db10ab1cef9b468aa  golomb_dickman_75000_digits.txt
+f5a02374d79b4ca6af889a9c4a63b53fe265bc3c861a1c20dc2683c696e781ea  golomb_dickman_27.py
+ee9dfe75ea130c15c8a3ade41d6994bcb734d413c1c49e2cd58b39ab31bbf8f9  75000/gd_rigorous_ckpt_75000/meta_v13.json
