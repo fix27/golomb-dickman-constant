@@ -134,7 +134,8 @@ Digits* under 2026-11-14 in its whatsnew log (the cited commit is dated
 2026-11-15 +04:00); the latter page says "Pozdnyakov (2026) provides digit data
 and computation code" and links to a commit-specific GitHub URL. Exact URLs,
 wording, date, HTTP headers, HTML, screenshots and PDF are archived in
-`submission/MATHWORLD_MENTION.md` and `submission/mathworld-evidence/`.
+`submission/MATHWORLD_MENTION.md` and `submission/mathworld-evidence/`,
+including a direct live-page PDF printed from the main page through Edge.
 A Wayback snapshot of the digits page was also requested on 2026-11-26:
 <https://web.archive.org/web/20261126160603/https://mathworld.wolfram.com/Golomb-DickmanConstantDigits.html>.
 No new submission to MathWorld was made or is required.

@@ -101,5 +101,8 @@ MathWorld 14 ноября 2026 г. (по дате сайта; подробнос
 Снимки, PDF, HTML и заголовки HTTP находятся в
 [`mathworld-evidence/`](mathworld-evidence/): `Constant.html/.pdf/-screenshot.png`
 и `ConstantDigits.html/.pdf/-screenshot.png`, заголовки — в `*-headers.txt`.
-Контрольные суммы — в `mathworld-evidence/SHA256SUMS.txt`; происхождение файлов
-объяснено в `mathworld-evidence/README.md`.
+Дополнительно `mathworld-golomb-dickman-2026-11-26.pdf` — прямая печать
+живой страницы через Edge в 21:19 (не из сохранённого HTML); `pdftotext`
+подтверждает наличие формулировки про 40 000 знаков и ссылки на коммит
+`87bdfe…`. Контрольные суммы — в `mathworld-evidence/SHA256SUMS.txt`;
+происхождение файлов объяснено в `mathworld-evidence/README.md`.
