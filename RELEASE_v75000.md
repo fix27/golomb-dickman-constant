@@ -8,8 +8,8 @@ dependency-free check available here; the full independent Arb re-audit of all
 
 - Repository: <https://github.com/fix27/golomb-dickman-constant>
 - Version / tag: `75000` / `v75000`
-- DOI: **pending** — minted by Zenodo when the tag is archived. Do not cite a
-  DOI until it appears here and in `CITATION.cff`.
+- DOI: [10.5281/zenodo.24567561](https://doi.org/10.5281/zenodo.24567561)
+  (version DOI; concept DOI `10.5281/zenodo.24567560`)
 - License: MIT (code and data), see `LICENSE`
 - Canonical manuscript: `paper/main-75000.tex`
 - MathWorld mention archived in `submission/MATHWORLD_MENTION.md`
@@ -142,7 +142,10 @@ No new submission to MathWorld was made or is required.
 
 ## Zenodo
 
-Enable this repository in Zenodo → Settings → GitHub, then create/publish the
-`v75000` tag here. Zenodo mints a version DOI; insert it in this file,
-`CITATION.cff` and `submission/mathworld-thanks.eml` before using it as a
-canonical citation.
+Published through the Zenodo GitHub integration on 2026-11-26 at 17:47 UTC as
+record [24567561](https://zenodo.org/records/24567561). Version DOI:
+<https://doi.org/10.5281/zenodo.24567561>; all-versions concept DOI:
+`10.5281/zenodo.24567560`. The archived source bundle is
+`fix27/golomb-dickman-constant-v75000.zip` (532,212,203 bytes). This is now the
+canonical citation for `v75000`; the same DOI is in `CITATION.cff` and in the
+(draft, unsent) `submission/mathworld-thanks.eml`.

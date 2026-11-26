@@ -368,8 +368,9 @@ Zenodo/arXiv и анонс в SeqFan — в
 
 1. **GitHub** — исходный репозиторий
    <https://github.com/fix27/golomb-dickman-constant>, релиз `v75000`;
-2. **Zenodo** — version DOI для тега `v75000` (после включения интеграции
-   GitHub в настройках Zenodo); метаданные — в [`.zenodo.json`](.zenodo.json),
+2. **Zenodo** — запись <https://zenodo.org/records/24567561>, version DOI
+   [10.5281/zenodo.24567561](https://doi.org/10.5281/zenodo.24567561)
+   (опубликован 2026-11-26); метаданные — в [`.zenodo.json`](.zenodo.json),
    текст релиза — в [`RELEASE_v75000.md`](RELEASE_v75000.md);
 3. **arXiv** — препринт [`paper/main-75000.tex`](paper/main-75000.tex)
    (75 000 знаков); [`paper/main.tex`](paper/main.tex) описывает предыдущий
@@ -394,9 +395,10 @@ URL, формулировками, HTML, заголовками HTTP, скрин
   title        = {Golomb--Dickman constant: 75{,}000 certified decimal digits},
   author       = {Pozdnyakov, Konstantin},
   year         = {2026},
+  doi          = {10.5281/zenodo.24567561},
   howpublished = {\url{https://github.com/fix27/golomb-dickman-constant/tree/main/75000}},
   note         = {Rigorous interval-arithmetic certificate using Arb;
-                  full Arb re-audit not run; Zenodo DOI pending}
+                  full Arb re-audit not run}
 }
 ```
 

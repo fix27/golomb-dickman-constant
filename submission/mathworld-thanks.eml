@@ -15,8 +15,8 @@ dated 15 November 2026 (+04:00).
 The work now has a versioned, archived release. If it is useful for readers,
 the canonical links are:
 
-  GitHub release: RELEASE_TAG_PLACEHOLDER
-  DOI (version):  DOI_PLACEHOLDER
+  GitHub release: https://github.com/fix27/golomb-dickman-constant/releases/tag/v75000
+  DOI (version):  https://doi.org/10.5281/zenodo.24567561
   Repository:     https://github.com/fix27/golomb-dickman-constant
 
 The repository also contains later certificates (50,000 and 75,000 digits)

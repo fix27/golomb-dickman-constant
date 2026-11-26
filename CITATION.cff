@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: >-
   If you use these data, code or the certified digits, please cite this
-  repository and, when a DOI is available, the archived Zenodo release.
+  repository and its archived Zenodo release.
 title: "Golomb-Dickman constant: 75,000 certified decimal digits"
 type: software
 authors:
@@ -11,6 +11,7 @@ authors:
     email: fix@inbox.ru
     alias: fix27
 version: "75000"
+doi: "10.5281/zenodo.24567561"
 date-released: 2026-11-26
 license: MIT
 repository-code: "https://github.com/fix27/golomb-dickman-constant"

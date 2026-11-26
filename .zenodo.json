@@ -45,5 +45,5 @@
       "resource_type": "software"
     }
   ],
-  "notes": "Computed by Konstantin Nikolaevich Pozdnyakov (Surgut, KhMAO - Yugra, Russia), fix@inbox.ru. The 75,000-digit certificate was produced by golomb_dickman_27.py (checkpoint format v13, plan in 75000/gd_rigorous_ckpt_75000/meta_v13.json). The previous 50,000-digit certificate was produced by golomb_dickman_26.py. The full Arb re-audit of all nodes was not run on the author machine; this is stated in audit/06-75000.md and RELEASE_v75000.md. MathWorld mention archived in submission/MATHWORLD_MENTION.md."
+  "notes": "Computed by Konstantin Nikolaevich Pozdnyakov (Surgut, KhMAO - Yugra, Russia), fix@inbox.ru. The 75,000-digit certificate was produced by golomb_dickman_27.py (checkpoint format v13, plan in 75000/gd_rigorous_ckpt_75000/meta_v13.json). The previous 50,000-digit certificate was produced by golomb_dickman_26.py. The full Arb re-audit of all nodes was not run on the author machine; this is stated in audit/06-75000.md and RELEASE_v75000.md. MathWorld mention archived in submission/MATHWORLD_MENTION.md. Archived as Zenodo record 24567561 (version DOI 10.5281/zenodo.24567561, concept DOI 10.5281/zenodo.24567560) on 2026-11-26."
 }
