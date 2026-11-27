@@ -66,13 +66,11 @@ $4.390\times10^{-50043}$, то есть в запасе остаётся ещё 
 |---|---|
 | Сертификат: границы интервала и 50 000 знаков | [`50000/golomb_dickman_50000_certified.txt`](50000/golomb_dickman_50000_certified.txt) |
 | Только цифры, одной строкой | [`50000/golomb_dickman_50000_digits.txt`](50000/golomb_dickman_50000_digits.txt) |
-| b-file для OEIS A084945, термы `n = 0..49999` | [`50000/b084945.txt`](50000/b084945.txt) |
 | Чекпоинты: 3076 блоков по 100 узлов | [`50000/gd_rigorous_ckpt_50000/`](50000/gd_rigorous_ckpt_50000/) |
 
 ```text
 76f4155981049003351409769505c3cec39e26dfc30624c46bd199e70ed6477a  golomb_dickman_50000_certified.txt
 8f017d45ee5108bb6b976882b079279f44f8a767ce62b44bd7c54e9167ad09a0  golomb_dickman_50000_digits.txt
-1e3d23e9ac3ce51990d83decd395d6bde96027f43811b94cebd5a6a4b7c19c43  b084945.txt
 ```
 
 Первые 40 000 знаков нового сертификата совпадают с сертификатом на
@@ -135,7 +133,6 @@ $$\left\lfloor 10^{40000}\Lambda_-\right\rfloor
 |---|---|
 | Сертификат: границы интервала и 40 000 знаков | [`40000/golomb_dickman_40000_certified.txt`](40000/golomb_dickman_40000_certified.txt) |
 | Только цифры, одной строкой | [`40000/golomb_dickman_40000_digits.txt`](40000/golomb_dickman_40000_digits.txt) |
-| b-file для OEIS A084945, термы `n = 0..39999` | [`40000/b084945.txt`](40000/b084945.txt) |
 | Автономная проверка без сторонних пакетов | [`40000/verify_40000.py`](40000/verify_40000.py) |
 
 Контрольные суммы:
@@ -143,7 +140,6 @@ $$\left\lfloor 10^{40000}\Lambda_-\right\rfloor
 ```text
 8892c0715f1afbb271c9f07cc9658cea0f3ca83c2dda3ec7d23b447dc908de9c  golomb_dickman_40000_certified.txt
 fbae757900983bd4fb6421c5f27bf9602af1a1bfc013e4c501bb9da2b5a65327  golomb_dickman_40000_digits.txt
-c73af643198da299d2e624e3c2f69d05439efcddbbefa7cec176ac63f993bed3  b084945.txt
 ```
 
 Полный список — в [`40000/SHA256SUMS.txt`](40000/SHA256SUMS.txt).
@@ -348,21 +344,7 @@ python golomb_dickman.py
 экспериментальную формализацию отдельных лемм и не заменяют сертификат.
 
 ## B-file для OEIS
-
-Текущий файл — [`50000/b084945.txt`](50000/b084945.txt):
-
-- 50 000 термов, `n = 0..49999`;
-- только данные, без комментариев;
-- ASCII, LF, без BOM и табов;
-- завершающая пустая строка;
-- 50 001 строка, 388 891 байт;
-- SHA-256: `1e3d23e9ac3ce51990d83decd395d6bde96027f43811b94cebd5a6a4b7c19c43`.
-
-Предыдущий файл — [`40000/b084945.txt`](40000/b084945.txt): 40 000 термов,
-`n = 0..39999`, 40 001 строка, 308 891 байт, SHA-256
-`c73af643198da299d2e624e3c2f69d05439efcddbbefa7cec176ac63f993bed3`.
-
-Подготовлен также черновик расширения до 75 000 термов —
+Текущий файл:
 [`submission/b084945.txt`](submission/b084945.txt) (75 000 термов,
 `n = 0..74999`, 588 891 байт, SHA-256
 `05584c9d3f0afccbfb9a1d8c8f28177a33a30be3ec880dc6ffe481a136b19241`), письмо —
@@ -375,13 +357,8 @@ python golomb_dickman.py
 Текст ссылки для текущего файла:
 
 ```text
-Konstantin Pozdnyakov, <a href="b084945.txt">Table of n, a(n) for n=0..49999</a>
+Konstantin Pozdnyakov, <a href="b084945.txt">Table of n, a(n) for n=0..74999</a>
 ```
-
-Пошаговая инструкция и письмо для редакторов — в
-[`40000/OEIS_SUBMISSION.md`](40000/OEIS_SUBMISSION.md). Публикация в
-Zenodo/arXiv и анонс в SeqFan — в
-[`40000/PUBLICATION_CHECKLIST.md`](40000/PUBLICATION_CHECKLIST.md).
 
 ## Документация
 
@@ -483,8 +460,7 @@ for a dependency-free check of the certificate, digits and OEIS prefix, and
 --cert 75000/golomb_dickman_75000_certified.txt` to audit the 4,767 checkpoint
 chunks. The full Arb re-audit of all 476,648 nodes was **not** run (2,000 nodes
 were checked); level C is an independent mpmath quadrature agreeing on 320
-digits. The OEIS b-file for A084945 in `50000/b084945.txt` has 50,000 terms;
-a 75,000-term draft is in `submission/b084945.txt` (not submitted).
+digits. The OEIS b-file for A084945 in `submission/b084945.txt` has 75,000 terms.
 
 `verification/reports/mathworld_50000.md` checks every statement on
 MathWorld's "Golomb-Dickman Constant Digits" page against the 50,000
