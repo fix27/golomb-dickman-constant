@@ -7,7 +7,7 @@ Historical 40,000-digit build; the current result and project overview are in
 This directory is the second, audited build of the 40,000-digit certificate for
 the Golomb–Dickman constant
 
-$$\lambda \;=\; \int_0^1 e^{\operatorname{Ei}(x)}\,\frac{dx}{x}
+$$\lambda \;=\; \int_0^1 e^{\mathrm{Ei}(x)}\,\frac{dx}{x}
 \;=\; 0.6243299885\ldots$$
 
 The mathematics, the plan and the certificate are unchanged from v26: for the
