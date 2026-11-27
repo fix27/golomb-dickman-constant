@@ -39,16 +39,6 @@ Zenodo — [`.zenodo.json`](.zenodo.json), препринт — [`paper/`](paper
 | Аудит | [`audit/06-75000.md`](audit/06-75000.md) |
 | Фиксация упоминания MathWorld | [`submission/MATHWORLD_MENTION.md`](submission/MATHWORLD_MENTION.md) |
 
-Быстрая проверка:
-
-```bash
-python verification/verify_certificate.py \
-    --cert 75000/golomb_dickman_75000_certified.txt \
-    --digits-file golomb_dickman_75000_digits.txt \
-    --sha256-manifest 75000/SHA256SUMS.txt \
-    --compare 50000/golomb_dickman_50000_digits.txt
-```
-
 =======
 ## Предыдущий результат: 50 000 знаков
 
