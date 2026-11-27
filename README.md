@@ -259,18 +259,12 @@ LF-файлы из репозитория.
 python -m pip install python-flint mpmath
 ```
 
-### CLI для результата 50 000 знаков (v26)
+### CLI для результата 75 000 знаков (v27)
 
 ```bash
-python 50000/golomb_dickman_26.py test
-python 50000/golomb_dickman_26.py smoke
-python 50000/golomb_dickman_26.py certify --digits 50000
-python 50000/golomb_dickman_26.py crosscheck --digits 200
-python 50000/golomb_dickman_26.py boundary-test
-=======
 python golomb_dickman_27.py test
 python golomb_dickman_27.py smoke
-python golomb_dickman_27.py certify --digits 50000
+python golomb_dickman_27.py certify --digits 75000
 python golomb_dickman_27.py crosscheck --digits 200
 python golomb_dickman_27.py boundary-test
 ```
