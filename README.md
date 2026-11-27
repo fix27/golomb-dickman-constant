@@ -65,7 +65,6 @@ $4.390\times10^{-50043}$, то есть в запасе остаётся ещё 
 | Артефакт | Файл |
 |---|---|
 | Сертификат: границы интервала и 50 000 знаков | [`50000/golomb_dickman_50000_certified.txt`](50000/golomb_dickman_50000_certified.txt) |
-| Только цифры, одной строкой | [`50000/golomb_dickman_50000_digits.txt`](50000/golomb_dickman_50000_digits.txt) |
 | Чекпоинты: 3076 блоков по 100 узлов | [`50000/gd_rigorous_ckpt_50000/`](50000/gd_rigorous_ckpt_50000/) |
 
 ```text
@@ -231,8 +230,6 @@ OK: 50000 digits certified
 | [`submission/`](submission/) | Готовые письма: OEIS, SeqFan, MathWorld; единственный b-file на 75 000 термов |
 | [`CITATION.cff`](CITATION.cff) | Машиночитаемая цитата (CFF 1.2.0) |
 | [`.zenodo.json`](.zenodo.json) | Метаданные релиза Zenodo (DOI) |
-| [`30000/`](30000/) | Первый сертифицированный результат: 30 000 знаков |
-| [`30000-v2/`](30000-v2/) | Вторая итерация пайплайна для 30 000 знаков (v23); сертификаты на 2 000 и 30 000 |
 | [`old_version/`](old_version/) | Архив ранних версий программы (v22–v25) и `archive/` |
 | [`coq/`](coq/), [`lean/`](lean/) | Экспериментальная формализация отдельных лемм (Coq/mathcomp, Lean/Mathlib) |
 | [`golomb_dickman_27.py`](golomb_dickman_27.py) | Текущий самодостаточный CLI (v27) |
@@ -368,7 +365,7 @@ Konstantin Pozdnyakov, <a href="b084945.txt">Table of n, a(n) for n=0..74999</a>
 | [`paper/README.md`](paper/README.md) | Препринт: сборка, содержание, ограничения |
 | [`paper/ARXIV_SUBMISSION.md`](paper/ARXIV_SUBMISSION.md) | Заголовок, abstract, категории и MSC для arXiv |
 | [`submission/EMAILS.md`](submission/EMAILS.md) | Куда отправлять и в каком порядке |
-| [`30000/README.md`](30000/README.md) | Детали результата на 30 000 знаков |
+
 
 ## Публикация
 
@@ -427,7 +424,7 @@ digits of the Golomb–Dickman constant
 $\lambda = \int_0^\infty e^{-u-E_1(u)}\,du = 0.6243299885\ldots$.
 The current result is **75,000 certified decimal digits** (`75000/`, tag
 `v75000`); the previous 50,000- and 40,000-digit packages are kept in `50000/`
-and `40000/`, and a 30,000-digit result in `30000/` and `30000-v2/`.
+and `40000/`.
 The full Arb re-audit of all 476,648 nodes was not run; this is an extension,
 not a record claim.
 
