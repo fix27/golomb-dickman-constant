@@ -39,7 +39,6 @@ Zenodo — [`.zenodo.json`](.zenodo.json), препринт — [`paper/`](paper
 | Аудит | [`audit/06-75000.md`](audit/06-75000.md) |
 | Фиксация упоминания MathWorld | [`submission/MATHWORLD_MENTION.md`](submission/MATHWORLD_MENTION.md) |
 
-=======
 ## Предыдущий результат: 50 000 знаков
 
 Сертификат
@@ -81,9 +80,8 @@ A174975/A174974 и заявленный поиск простых до 15 000 з
 
 | Что | Файл |
 |---|---|
-| Отчёт с разбором каждого пункта | [`verification/reports/mathworld_50000.md`](verification/reports/mathworld_50000.md) |
+| Фиксация цитаты и даты правки | [`submission/MATHWORLD_MENTION.md`](submission/MATHWORLD_MENTION.md) |
 | Воспроизводимый скрипт | [`verification/mathworld_checks.py`](verification/mathworld_checks.py) |
-| Машинный отчёт JSON | [`verification/reports/mathworld_50000.json`](verification/reports/mathworld_50000.json) |
 | Справочные b-файлы OEIS | [`verification/reports/oeis/`](verification/reports/oeis/) |
 
 Итог: 8 пунктов **PASS**, 2 исторические атрибуции **NOT_VERIFIABLE**
@@ -141,24 +139,31 @@ fbae757900983bd4fb6421c5f27bf9602af1a1bfc013e4c501bb9da2b5a65327  golomb_dickman
 git clone https://github.com/fix27/golomb-dickman-constant.git
 cd golomb-dickman-constant
 python verification/verify_certificate.py \
-    --cert 50000/golomb_dickman_50000_certified.txt \
-    --compare 40000/golomb_dickman_40000_digits.txt
+    --cert 75000/golomb_dickman_75000_certified.txt \
+    --digits-file golomb_dickman_75000_digits.txt \
+    --sha256-manifest 75000/SHA256SUMS.txt \
+    --bfile submission/b084945.txt \
+    --sha256 b084945.txt=05584c9d3f0afccbfb9a1d8c8f28177a33a30be3ec880dc6ffe481a136b19241
 ```
 
 Ожидаемый вывод:
 
 ```text
-OK: 50000 digits certified
-  scale: lam_lo/2^166293 .. lam_hi/2^166293
-  width: 4.390 x 10^-50043  (42 guard digits)
-  b-file: 50000 terms
+OK: 75000 digits certified (interval arithmetic)
+  certificate: 75000\golomb_dickman_75000_certified.txt
+  scale: lam_lo/2^249341 .. lam_hi/2^249341
+  width: 5.820 x 10^-75043  (42 guard digits)
+  b-file: 75000 terms
   OEIS prefix: checked
-  compared with 40000\golomb_dickman_40000_digits.txt: 40000 leading digits agree
-  SHA-256: OK
+  SHA-256:
+    b177fc551c8a9f950e037fdc92ed72fb9219eb11d81999410967f8013e6df534  golomb_dickman_75000_certified.txt  MATCH (manifest)
+    0c5f2b212eb5fd25b1def672226f65f46b97d44c5e371c5db10ab1cef9b468aa  golomb_dickman_75000_digits.txt  MATCH (manifest)
+    05584c9d3f0afccbfb9a1d8c8f28177a33a30be3ec880dc6ffe481a136b19241  b084945.txt  MATCH (--sha256)
 ```
 
-Для 40 000 знаков — `--cert 40000/golomb_dickman_40000_certified.txt`
-(без `--compare`).
+Для результата на 50 000 знаков —
+`--cert 50000/golomb_dickman_50000_certified.txt --compare 40000/golomb_dickman_40000_digits.txt`;
+для 40 000 — `--cert 40000/golomb_dickman_40000_certified.txt` (без `--compare`).
 
 Скрипт проверяет, что сертифицированный интервал не пересекает границу
 десятичной ячейки, что цифры равны $\lfloor 10^{D}\lambda\rfloor$, что
@@ -204,7 +209,7 @@ OK: 50000 digits certified
 
 Готовый архив для отправки по 40 000 знакам —
 `golomb_dickman_40000_verification.zip`. Пакет для 50 000 знаков — это
-каталог [`50000/`](50000/) (сертификат, цифры, b-file, чекпоинты) плюс
+каталог [`50000/`](50000/) (сертификат, чекпоинты) плюс
 отчёт [`verification/reports/50000_verification.txt`](verification/reports/50000_verification.txt).
 
 ## Структура репозитория
@@ -212,9 +217,9 @@ OK: 50000 digits certified
 | Путь | Назначение |
 |---|---|
 | [`75000/`](75000/) | **Текущий результат**: 75 000 знаков, сертификат, продюсер v27, чекпоинты, манифест SHA-256 |
-| [`50000/`](50000/) | Предыдущий результат: 50 000 знаков, сертификат, b-file, чекпоинты, проверки |
+| [`50000/`](50000/) | Предыдущий результат: 50 000 знаков, сертификат, чекпоинты, проверки |
 | [`audit/`](audit/) | Отчёты проверки сертификата (`06-75000.md`) и статистики цифр (`07-75000-statistics.md`) |
-| [`40000/`](40000/) | Предыдущий результат: 40 000 знаков, b-file, проверки, документация |
+| [`40000/`](40000/) | Предыдущий результат: 40 000 знаков, проверки, документация |
 | [`verification/`](verification/) | Трёхуровневая проверка для внешнего читателя: сертификат, аудит, независимый расчёт |
 | [`paper/`](paper/) | Препринт для arXiv (`main.tex`) и метаданные отправки |
 | [`submission/`](submission/) | Готовые письма: OEIS, SeqFan, MathWorld; единственный b-file на 75 000 термов |
@@ -331,7 +336,7 @@ python golomb_dickman.py
 `05584c9d3f0afccbfb9a1d8c8f28177a33a30be3ec880dc6ffe481a136b19241`), письмо —
 [`submission/oeis-bfile-75000.eml`](submission/oeis-bfile-75000.eml). Он **не
 отправлен**; в OEIS по-прежнему b-file `n = 0..101`. Первые 102 терма совпадают
-с ним, первые 50 000 — с файлом из `50000/`.
+с ним.
 
 На момент подготовки первого файла b-file в OEIS A084945 содержал только
 `n = 0..101` (он синтезирован из записи), поэтому новый файл его заменяет.
@@ -347,7 +352,6 @@ Konstantin Pozdnyakov, <a href="b084945.txt">Table of n, a(n) for n=0..74999</a>
 |---|---|
 | [`50000/README.md`](50000/README.md) | Подробное описание текущего результата на 50 000 знаков |
 | [`50000/SHA256SUMS.txt`](50000/SHA256SUMS.txt) | Контрольные суммы текущего пакета |
-| [`RELEASE_v50000.md`](RELEASE_v50000.md) | Release notes v50000: параметры, железо, время, проверки, DOI |
 | [`40000/README.md`](40000/README.md) | Подробное описание результата на 40 000 знаков |
 | [`40000/VERIFICATION.md`](40000/VERIFICATION.md) | Что и как проверяется, найденные дефекты, база доверия |
 | [`40000/OEIS_SUBMISSION.md`](40000/OEIS_SUBMISSION.md) | Отправка b-file в OEIS |
@@ -430,8 +434,7 @@ The computation uses the trapezoidal rule after the Takahashi–Mori substitutio
 explicit tail and discretization bounds (Trefethen–Weideman), Stieltjes continued
 fractions, and Arb balls via `python-flint`. Trust base: Arb correctness and the
 cited theorems. The current self-contained CLI is `golomb_dickman_27.py`;
-`golomb_dickman_26.py` produced the 50,000-digit certificate.
-=======
+`golomb_dickman_26.py` produced the 50,000-digit certificate, and
 `40000/golomb_dickman.py` produced the 40,000-digit certificate.
 `75000/SHA256SUMS.txt` lists the canonical hashes. Run
 `python verification/verify_certificate.py --cert 75000/golomb_dickman_75000_certified.txt

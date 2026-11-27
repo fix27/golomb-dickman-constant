@@ -18,7 +18,8 @@ $$\left\lfloor 10^{40000}\Lambda_-\right\rfloor
 $10^{-40042.2602491239}$, то есть остаётся около **42 запасных знаков**.
 
 - [`golomb_dickman_40000_digits.txt`](golomb_dickman_40000_digits.txt) — 40 000 цифр после запятой одной строкой.
-- [`b084945.txt`](b084945.txt) — готовый b-file для OEIS A084945, термы `n = 0..39999`.
+- `b084945.txt` — b-file на 40 000 термов удалён; актуальный черновик на
+  75 000 термов — [`../submission/b084945.txt`](../submission/b084945.txt).
 
 ## Выводы
 
@@ -214,7 +215,7 @@ python checks/verify_sequences.py --json seq.json
 
 ## Три уровня проверки
 
-Каталог [`verification/`](verification/) — отдельный набор для внешнего
+Каталог [`../verification/`](../verification/) — отдельный набор для внешнего
 проверяющего: он не импортирует вычислитель, не читает чекпоинты и не
 использует плавающую точку в решающих проверках.
 
@@ -372,7 +373,7 @@ python golomb_dickman.py
 5. точная целочисленная арифметика Python.
 
 Это не проверка в proof assistant. Подробности метода — в docstring
-`golomb_dickman.py` и в [`../30000/README.md`](../30000/README.md) для версии
+`golomb_dickman.py` и в [`../old_version/30000/README.md`](../old_version/30000/README.md) для версии
 на 30 000 знаков. Обзор репозитория — в [корневом README](../README.md).
 
 ## B-file для OEIS

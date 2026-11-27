@@ -41,9 +41,10 @@ $$\left\lfloor 10^{50000}\Lambda_-/2^S\right\rfloor
 | ширина по блокам против ширины сертификата | там же | $4.230$ против $4.390\times10^{-50043}$ |
 
 Дополнительно проверены все утверждения страницы MathWorld
-«Golomb-Dickman Constant Digits»: отчёт
-[`../verification/reports/mathworld_50000.md`](../verification/reports/mathworld_50000.md),
+«Golomb-Dickman Constant Digits»: фиксация цитаты
+[`../submission/MATHWORLD_MENTION.md`](../submission/MATHWORLD_MENTION.md),
 скрипт [`../verification/mathworld_checks.py`](../verification/mathworld_checks.py).
+Подробный отчёт и JSON удалены из репозитория.
 Итог: 8 PASS, 2 исторические атрибуции NOT_VERIFIABLE, нормальность OPEN,
 заявленный поиск простых до 15 000 знаков PARTIAL (140 выборочных длин).
 

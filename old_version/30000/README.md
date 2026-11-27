@@ -282,7 +282,7 @@ python golomb_dickman_digit.py --expect 1000
 
 ## Лицензия
 
-[MIT](LICENSE) © 2026 Поздняков Константин.
+[MIT](../../LICENSE) © 2026 Поздняков Константин.
 
 ---
 
