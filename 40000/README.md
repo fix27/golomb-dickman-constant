@@ -1,9 +1,9 @@
 # Постоянная Голомба–Дикмана: 40 000 доказанных знаков
 
-$$\lambda=\int_0^\infty F(u)\,du,\qquad F(u)=e^{-u-E_1(u)}
-=0.62432998854355087099\ldots$$
-
-Здесь $E_1$ — интегральная показательная функция.
+Исторический результат (текущий — 75 000 знаков). Определение $\lambda$,
+интегральные представления и ссылки на актуальные документы — в
+[`../README.md`](../README.md); здесь сохранены исторические детали,
+проверки и оговорки.
 
 ## Результат
 
@@ -493,7 +493,7 @@ $\tau_L=10^{-40045.67}$; they are not fitted. (4) The discretisation margin is
 about 1,249 orders of magnitude. (5) Twelve of the 1,209 chunks were recomputed
 from scratch to 100 decimals and agree. (6) The series, the Stieltjes continued
 fraction and the asymptotic expansion for $E_1$ agree to at least 69 and 30
-digits respectively. (7) All 14 statements of the MathWorld page
+digits respectively. (7) All 16 statements of the MathWorld page
 *Golomb-Dickman Constant Digits* are reproduced: 11 `PASS`, 4 historical or
 open `NOTE`s, 1 `SKIP` (the 15,000-digit prime search), 0 `FAIL`; in particular
 the digit tables for 10, 100, 1,000 and 10,000 digits, the first-occurrence

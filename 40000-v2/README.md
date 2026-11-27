@@ -1,5 +1,9 @@
 # 40000-v2 — Golomb–Dickman certificate, production build (v27)
 
+Historical 40,000-digit build; the current result and project overview are in
+[`../README.md`](../README.md). Technical runbook for 75k is
+[`../75000/README.md`](../75000/README.md).
+
 This directory is the second, audited build of the 40,000-digit certificate for
 the Golomb–Dickman constant
 

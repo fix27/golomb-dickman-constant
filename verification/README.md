@@ -7,8 +7,14 @@ Surgut, Khanty-Mansi Autonomous Okrug — Yugra, Russia — fix@inbox.ru
     lambda = 0.6243299885435508709929363831008372441796426201805292869735519024...
              (OEIS A084945)
 
-Certified results in this repository: **50,000 digits** (current, `50000/`)
-and 40,000 digits (previous, `40000/`, the subject of the exported archive).
+> **Current result:** 75,000 digits (`../75000/`, release `v75000`). The root
+> [`../README.md`](../README.md) is the primary project description. Everything
+> below describes the **historical 50,000/40,000-digit verification package**
+> and is kept as provenance; use `../verification/verify_certificate.py` and
+> `../verification/audit_chunks.py` for the current release.
+
+Historical certified results in this repository: **50,000 digits** (`50000/`)
+and 40,000 digits (`40000/`, the subject of the exported archive).
 
 The point of this directory is to make verification cheap and honest. Three
 levels answer three different questions, and none of them is allowed to
@@ -83,7 +89,7 @@ the full repository, not from this archive. The archive ships its report
 
 `mathworld_checks.py` checks every statement on
 [MathWorld's "Golomb-Dickman Constant Digits" page](https://mathworld.wolfram.com/Golomb-DickmanConstantDigits.html)
-against the 50,000-digit file: the opening digits, the Earls sequence
+against the digits file (at the time: 50,000 digits; default now 75,000): the opening digits, the Earls sequence
 (A225242), A229195, digit scanning, absence of `0123456789` and
 `9876543210`, the digit-count table, A174975/A174974, and the reported prime
 search through 15,000 digits.
@@ -142,7 +148,7 @@ containment test of two enclosures, not a tolerance.  There is no
 
 ## Certificate shape
 
-| quantity | 50,000 (current) | 40,000 (previous) |
+| quantity | 50,000 (historical) | 40,000 (historical) |
 |----------|------------------|-------------------|
 | decimal digits `D` | 50,000 | 40,000 |
 | working guard digits `G` in the plan | 30 | 30 |
@@ -152,9 +158,11 @@ containment test of two enclosures, not a tolerance.  There is no
 | width | `4.390 × 10^-50043` (below `10^-50042`) | `5.492 × 10^-40043` (below `10^-40042`) |
 | guard digits beyond the `D`-th place | 42 | 42 |
 
-## Honest status on the current checkout
+## Honest status at the historical 50,000-digit checkout
 
-The reports in `reports/` are historical artefacts from an LF-normalised
+The bullets below record the state at the time of the archived 50,000-digit
+reports. The CRLF issue mentioned there was later fixed; current status is in
+the root [`../README.md`](../README.md). The reports in `reports/` are historical artefacts from an LF-normalised
 packaging run; they are not the live status of this checkout.
 
 * The canonical artefacts in `50000/`, their root copies and `40000/` are

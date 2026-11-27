@@ -8,23 +8,24 @@ Two self-contained LaTeX articles are provided:
   the full independent Arb re-audit of all 476,648 nodes is reported as
   `NOT_RUN` (a 20-chunk sample was contained).
 
-Both compile with any standard TeX distribution:
+Compile the manuscript you need (replace `main.tex` with `main-75000.tex` for
+the current result); a second pass resolves the table of contents:
 
 ```bash
-pdflatex main.tex
-pdflatex main.tex        # second pass for the table of contents
+pdflatex main-75000.tex
+pdflatex main-75000.tex
+# or: tectonic main-75000.tex
 ```
 
-or, with Tectonic:
-
-```bash
-tectonic main.tex
-```
+No PDF is committed and no TeX engine was available on the packaging machine;
+compilation is `NOT_RUN` there.
 
 ## What the paper claims
 
 - the interval $[\Lambda_-,\Lambda_+]$ is a certificate for the first
-  50,000 decimal digits, with width $10^{-50042.3574}$;
+  50,000 decimal digits, with width $10^{-50042.3574}$ (historical result);
+  the current 75,000-digit claim and its parameters belong to
+  [`main-75000.tex`](main-75000.tex) and [`../75000/README.md`](../75000/README.md);
 - every number in the error budget is either an exact integer or an
   outward-rounded bound;
 - the verifier needs only exact integer arithmetic;
@@ -35,10 +36,13 @@ tectonic main.tex
 
 - it is not a formal proof in Coq/Lean; the trust base is Arb plus the
   cited theorems;
-- the independent Arb re-audit of all nodes
-  (`checks/verify_checkpoints_arb.py`) was not executed on the packaging
-  machine; see Section 6;
-- no claim about the normality of $\lambda$.
+- the independent Arb re-audit of all nodes was not executed on the
+  packaging machine; for 75k only 2,000 of 476,648 nodes were rechecked;
+- no claim about the normality of $\lambda$ or about priority/record.
+
+Full protocol semantics and the complete list of caveats are in
+[`../verification/README.md`](../verification/README.md) and
+[`../75000/README.md`](../75000/README.md), not duplicated here.
 
 ## Files
 
@@ -46,7 +50,7 @@ tectonic main.tex
 |---|---|
 | `main.tex` | the article for the 50,000-digit result (bibliography inline) |
 | `main-75000.tex` | the article for the 75,000-digit result (bibliography inline) |
-| `ARXIV_SUBMISSION.md` | title, abstract, categories and metadata for arXiv |
+| `ARXIV_SUBMISSION.md` | historical 50,000-digit arXiv form; not the 75k metadata |
 | `README.md` | this file |
 
 A PDF is not checked into the repository; build it from `main.tex`.

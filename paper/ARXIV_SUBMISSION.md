@@ -1,7 +1,12 @@
-# arXiv submission metadata
+# arXiv submission metadata (historical, 50 000 digits)
 
-Copy the fields below into the arXiv submission form. arXiv accepts a
-single `main.tex` for this paper.
+This is the historical 50,000-digit submission form; it is **not** metadata for
+the current 75,000-digit result, whose canonical manuscript is
+[`main-75000.tex`](main-75000.tex). See [`README.md`](README.md) for the current
+publication overview.
+
+Copy the fields below into the arXiv submission form. arXiv accepts a single
+`main.tex` for this paper.
 
 ## Title
 

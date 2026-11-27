@@ -4,7 +4,7 @@ Status: **release candidate**. The numerical certificate passes every
 dependency-free check available here; the full independent Arb re-audit of all
 476,648 nodes has **not** run (see *Verification status*). Overall verdict:
 `INCOMPLETE`, not `PASS`. This is an extension of a published computation,
-**not a world-record claim**.
+**not a world-record or priority claim**.
 
 - Repository: <https://github.com/fix27/golomb-dickman-constant>
 - Version / tag: `75000` / `v75000`
@@ -48,22 +48,13 @@ Trust base: Arb correctness, the cited theorems, the elementary lemmas in the
 source, and exact Python integer arithmetic. This is **not** a formalisation
 in a proof assistant.
 
-## Parameters (`75000/gd_rigorous_ckpt_75000/meta_v13.json`)
+## Parameters
 
-| Parameter | Value |
-|---|---|
-| certified digits $D$ | 75,000 |
-| guard digits $G$ | 30 |
-| scale $S$ | 249341 |
-| node radius exponent $E_{\text{bits}}$ | 249277 |
-| global radius exponent $EG_{\text{bits}}$ | 362151 |
-| $K_L,K_R$ | 231270 / 245377 |
-| nodes (full range) | 476,648 (`-231270 … 245377`) |
-| step $h$ | $54039302/2^{40}=4.9148458856507204\times10^{-5}$ |
-| chunks / chunk size | 4,767 / 100 |
-| $B$ | 1 |
-| $C$ | 34133488394318882 |
-| checkpoint format | `gd-checkpoint-v13` |
+Key figures: $D=75\,000$, $S=249341$, $h=54039302/2^{40}$,
+476,648 nodes in 4,767 chunks, $B=1$, $C=34133488394318882$; plan
+`gd-checkpoint-v13` from `75000/gd_rigorous_ckpt_75000/meta_v13.json`.
+The full parameter table (guard digits, radius exponents, $K_L,K_R$, $T_R,T_L$)
+is in [`75000/README.md`](75000/README.md); it is not repeated here.
 
 ## Platform and runtime
 
@@ -94,7 +85,7 @@ an unconditional `OK`.
 |---|---|
 | exact integer check of all 75,000 digits | PASS |
 | digit file equals certificate; OEIS A084945 prefix (102 digits) | PASS |
-| first 50,000 / 40,000 digits agree with earlier certificates | PASS |
+| first 50,000 / 40,000 digits agree with earlier certificates | PASS (historical run) |
 | `make_plan(75000)` vs `meta_v13.json` (8 parameters) | PASS |
 | 4,767 chunks, 476,648 nodes, no gaps or duplicates; $B$, $C$ | PASS |
 | independent mpmath quadrature (tanh–sinh + Gauss–Legendre), 320 digits | PASS |
@@ -108,38 +99,29 @@ Details: `audit/06-75000.md` and `75000/README.md`.
 
 ## Reproduce
 
+The quick certificate check is in [`README.md`](README.md); the chunk-audit
+command and the full runbook are in [`75000/README.md`](75000/README.md). They
+are not repeated here. Both checks use only the Python standard library and
+exact integer arithmetic.
+For the numerical cross-check of this release:
+
 ```bash
-python verification/verify_certificate.py \
-    --cert 75000/golomb_dickman_75000_certified.txt \
-    --digits-file golomb_dickman_75000_digits.txt \
-    --sha256-manifest 75000/SHA256SUMS.txt \
-    --bfile submission/b084945.txt \
-    --sha256 b084945.txt=05584c9d3f0afccbfb9a1d8c8f28177a33a30be3ec880dc6ffe481a136b19241
-
-python verification/audit_chunks.py \
-    --ckpt 75000/gd_rigorous_ckpt_75000 \
-    --cert 75000/golomb_dickman_75000_certified.txt
-
 python verification/independent_quadrature.py --digits 300 --jobs 2 \
     --certified golomb_dickman_75000_digits.txt
 ```
 
-The first two use only the Python standard library and exact integer
-arithmetic. Full production: `python golomb_dickman_27.py certify --digits
-75000` (hours, checkpointed; use an empty checkpoint directory).
+Full production: `python golomb_dickman_27.py certify --digits 75000` (hours,
+checkpointed; use an empty checkpoint directory).
 
 ## MathWorld fixation
 
-MathWorld listed both *Golomb-Dickman Constant* and *Golomb-Dickman Constant
-Digits* under 2026-11-14 in its whatsnew log (the cited commit is dated
-2026-11-15 +04:00); the latter page says "Pozdnyakov (2026) provides digit data
-and computation code" and links to a commit-specific GitHub URL. Exact URLs,
-wording, date, HTTP headers, HTML, screenshots and PDF are archived in
-`submission/MATHWORLD_MENTION.md` and `submission/mathworld-evidence/`,
-including a direct live-page PDF printed from the main page through Edge.
-A Wayback snapshot of the digits page was also requested on 2026-11-26:
-<https://web.archive.org/web/20261126160603/https://mathworld.wolfram.com/Golomb-DickmanConstantDigits.html>.
-No new submission to MathWorld was made or is required.
+MathWorld's 2026-11-14 whatsnew entry (commit dated 2026-11-15 +04:00) cites
+Pozdnyakov (2026) on the *Constant Digits* page. The mention referred to the
+**40,000-digit** result, not to 75,000 digits; it is a citation, not an
+independent verification. URLs, wording, HTTP headers, screenshots and the
+Wayback request are archived in [`submission/MATHWORLD_MENTION.md`](submission/MATHWORLD_MENTION.md);
+the evidence bundle is `submission/mathworld-evidence/`. No new submission to
+MathWorld was made or is required.
 
 ## Zenodo
 
