@@ -20,7 +20,6 @@ Russia. Машиночитаемая цитата — [`CITATION.cff`](CITATION.
 Zenodo — [`.zenodo.json`](.zenodo.json), препринт — [`paper/`](paper/),
 готовые письма для OEIS/SeqFan/MathWorld — [`submission/`](submission/).
 
-<<<<<<< Updated upstream
 ## Новый результат: 75 000 знаков (релиз v75000)
 
 Сертификат
@@ -51,7 +50,6 @@ python verification/verify_certificate.py \
 ```
 
 =======
->>>>>>> Stashed changes
 ## Предыдущий результат: 50 000 знаков
 
 Сертификат
@@ -268,7 +266,6 @@ python -m pip install python-flint mpmath
 ### CLI для результата 50 000 знаков (v26)
 
 ```bash
-<<<<<<< Updated upstream
 python 50000/golomb_dickman_26.py test
 python 50000/golomb_dickman_26.py smoke
 python 50000/golomb_dickman_26.py certify --digits 50000
@@ -280,7 +277,6 @@ python golomb_dickman_27.py smoke
 python golomb_dickman_27.py certify --digits 50000
 python golomb_dickman_27.py crosscheck --digits 200
 python golomb_dickman_27.py boundary-test
->>>>>>> Stashed changes
 ```
 
 Результат на 75 000 знаков получен CLI v27 (`golomb_dickman_27.py`); команды
@@ -476,12 +472,9 @@ The computation uses the trapezoidal rule after the Takahashi–Mori substitutio
 explicit tail and discretization bounds (Trefethen–Weideman), Stieltjes continued
 fractions, and Arb balls via `python-flint`. Trust base: Arb correctness and the
 cited theorems. The current self-contained CLI is `golomb_dickman_27.py`;
-<<<<<<< Updated upstream
 `golomb_dickman_26.py` produced the 50,000-digit certificate.
 =======
 `40000/golomb_dickman.py` produced the 40,000-digit certificate.
->>>>>>> Stashed changes
-
 `75000/SHA256SUMS.txt` lists the canonical hashes. Run
 `python verification/verify_certificate.py --cert 75000/golomb_dickman_75000_certified.txt
 --digits-file golomb_dickman_75000_digits.txt --sha256-manifest 75000/SHA256SUMS.txt`
