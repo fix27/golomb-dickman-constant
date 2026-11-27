@@ -213,22 +213,23 @@ OK: 50000 digits certified
 | [`40000/`](40000/) | Предыдущий результат: 40 000 знаков, b-file, проверки, документация |
 | [`verification/`](verification/) | Трёхуровневая проверка для внешнего читателя: сертификат, аудит, независимый расчёт |
 | [`paper/`](paper/) | Препринт для arXiv (`main.tex`) и метаданные отправки |
-| [`submission/`](submission/) | Готовые письма: OEIS, SeqFan, MathWorld; куда и как отправлять |
+| [`submission/`](submission/) | Готовые письма: OEIS, SeqFan, MathWorld; единственный b-file на 75 000 термов |
 | [`CITATION.cff`](CITATION.cff) | Машиночитаемая цитата (CFF 1.2.0) |
 | [`.zenodo.json`](.zenodo.json) | Метаданные релиза Zenodo (DOI) |
 | [`30000/`](30000/) | Первый сертифицированный результат: 30 000 знаков |
 | [`30000-v2/`](30000-v2/) | Вторая итерация пайплайна для 30 000 знаков (v23); сертификаты на 2 000 и 30 000 |
 | [`old_version/`](old_version/) | Архив ранних версий программы (v22–v25) и `archive/` |
 | [`coq/`](coq/), [`lean/`](lean/) | Экспериментальная формализация отдельных лемм (Coq/mathcomp, Lean/Mathlib) |
-| [`golomb_dickman_26.py`](golomb_dickman_26.py) | Текущий самодостаточный CLI (v26) |
+| [`golomb_dickman_27.py`](golomb_dickman_27.py) | Текущий самодостаточный CLI (v27) |
 
-В корне также лежат копии трёх артефактов 50 000 знаков: `b084945.txt`,
-`golomb_dickman_50000_certified.txt`, `golomb_dickman_50000_digits.txt`.
-Это точные дубликаты канонических файлов из `50000/`: они хранятся в LF и
-совпадают с ними байт в байт. При `core.autocrlf=true` рабочая копия на
-Windows может получить CRLF, поэтому для OEIS и проверок берите файлы из
-`50000/` (или из `40000/` для предыдущего результата) — **канонические
-файлы** там, и именно для них приведены SHA-256.
+В корне лежат сертификат и цифры результата на 75 000 знаков:
+`golomb_dickman_75000_certified.txt`, `golomb_dickman_75000_digits.txt`.
+Сертификат байт в байт совпадает с `75000/golomb_dickman_75000_certified.txt`.
+Единственный b-file результата — [`submission/b084945.txt`](submission/b084945.txt),
+75 000 термов. Канонические файлы предыдущих результатов остаются в `50000/`
+и `40000/`; именно для них приведены SHA-256. При `core.autocrlf=true` рабочая
+копия на Windows может получить CRLF, поэтому для OEIS и проверок берите
+LF-файлы из репозитория.
 
 ## Как воспроизвести
 
@@ -243,15 +244,18 @@ Windows может получить CRLF, поэтому для OEIS и пров
 python -m pip install python-flint mpmath
 ```
 
-### Текущий CLI
+### CLI для результата 50 000 знаков (v26)
 
 ```bash
-python golomb_dickman_26.py test
-python golomb_dickman_26.py smoke
-python golomb_dickman_26.py certify --digits 50000
-python golomb_dickman_26.py crosscheck --digits 200
-python golomb_dickman_26.py boundary-test
+python 50000/golomb_dickman_26.py test
+python 50000/golomb_dickman_26.py smoke
+python 50000/golomb_dickman_26.py certify --digits 50000
+python 50000/golomb_dickman_26.py crosscheck --digits 200
+python 50000/golomb_dickman_26.py boundary-test
 ```
+
+Результат на 75 000 знаков получен CLI v27 (`golomb_dickman_27.py`); команды
+воспроизведения и план `gd-checkpoint-v13` — в [`75000/README.md`](75000/README.md).
 
 - `test` — самопроверка окружения и точные рациональные проверки леммы 7;
 - `smoke` — сквозной прогон на 60 знаках;
@@ -333,6 +337,14 @@ python golomb_dickman.py
 `n = 0..39999`, 40 001 строка, 308 891 байт, SHA-256
 `c73af643198da299d2e624e3c2f69d05439efcddbbefa7cec176ac63f993bed3`.
 
+Подготовлен также черновик расширения до 75 000 термов —
+[`submission/b084945.txt`](submission/b084945.txt) (75 000 термов,
+`n = 0..74999`, 588 891 байт, SHA-256
+`05584c9d3f0afccbfb9a1d8c8f28177a33a30be3ec880dc6ffe481a136b19241`), письмо —
+[`submission/oeis-bfile-75000.eml`](submission/oeis-bfile-75000.eml). Он **не
+отправлен**; в OEIS по-прежнему b-file `n = 0..101`. Первые 102 терма совпадают
+с ним, первые 50 000 — с файлом из `50000/`.
+
 На момент подготовки первого файла b-file в OEIS A084945 содержал только
 `n = 0..101` (он синтезирован из записи), поэтому новый файл его заменяет.
 Текст ссылки для текущего файла:
@@ -376,9 +388,12 @@ Zenodo/arXiv и анонс в SeqFan — в
    (75 000 знаков); [`paper/main.tex`](paper/main.tex) описывает предыдущий
    результат на 50 000 знаков. Раздел math.NA, cross-list cs.MS; поля формы —
    в [`paper/ARXIV_SUBMISSION.md`](paper/ARXIV_SUBMISSION.md);
-4. **OEIS** — b-file для A084945 в `50000/b084945.txt`, `n = 0..49999`;
-   b-файла на 75 000 термов нет. Готовое письмо — в
-   [`submission/oeis-bfile.eml`](submission/oeis-bfile.eml).
+4. **OEIS** — черновик b-file для A084945 на 75 000 термов
+   (`n = 0..74999`) подготовлен, но **не отправлен**; в OEIS пока b-file
+   `n = 0..101`. Файл —
+   [`submission/b084945.txt`](submission/b084945.txt), письмо —
+   [`submission/oeis-bfile-75000.eml`](submission/oeis-bfile-75000.eml).
+   Ранее готовились файлы на 40 000 и 50 000 термов.
 
 Упоминание на MathWorld уже опубликовано (журнал обновлений: 2026-11-14;
 процитированный коммит: 2026-11-15 +04:00), новая отправка не требуется. Факт зафиксирован в
@@ -443,7 +458,7 @@ for a dependency-free check of the certificate, digits and OEIS prefix, and
 chunks. The full Arb re-audit of all 476,648 nodes was **not** run (2,000 nodes
 were checked); level C is an independent mpmath quadrature agreeing on 320
 digits. The OEIS b-file for A084945 in `50000/b084945.txt` has 50,000 terms;
-no 75,000-term b-file was created.
+a 75,000-term draft is in `submission/b084945.txt` (not submitted).
 
 `verification/reports/mathworld_50000.md` checks every statement on
 MathWorld's "Golomb-Dickman Constant Digits" page against the 50,000

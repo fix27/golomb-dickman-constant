@@ -1,0 +1,79 @@
+To: oeis@oeis.org
+Subject: A084945: certified b-file extension to 75000 terms (DOI 10.5281/zenodo.24567561)
+Date: Fri, 27 Nov 2026 12:00:00 +0500
+From: Konstantin N. Pozdnyakov <fix@inbox.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Dear OEIS editors,
+
+Please consider the attached b084945.txt as a replacement b-file for A084945
+(Decimal expansion of Golomb-Dickman constant). OEIS currently serves a
+synthesized b-file for n = 0..101; the attached file gives n = 0..74999.
+
+Suggested link text for the Links section:
+
+  Konstantin Pozdnyakov, <a href="b084945.txt">Table of n, a(n) for n=0..74999</a>
+  (terms 0..101 previously in OEIS; terms 102..74999 from this submission)
+
+Suggested comment:
+
+  Terms 0..74999 are the first 75,000 decimal digits of the Golomb-Dickman
+  constant, certified by interval arithmetic (Arb): the enclosing interval
+  cannot cross a decimal boundary, so the truncation is proved.
+
+The 75,000 digits come from a published, archived computation:
+
+  Version DOI:  https://doi.org/10.5281/zenodo.24567561
+  Zenodo record: https://zenodo.org/records/24567561
+  GitHub release: https://github.com/fix27/golomb-dickman-constant/releases/tag/v75000
+  Certificate/code/checkers: https://github.com/fix27/golomb-dickman-constant/tree/main/75000
+
+The certificate consists of integers Lambda_- < Lambda_+ and a scale S = 249341
+such that lambda is in [Lambda_-/2^S, Lambda_+/2^S] and
+
+    floor(10^75000 * Lambda_- / 2^S)
+  = floor(10^75000 * Lambda_+/2^S),
+
+so the first 75,000 digits are proved by truncation, not by floating-point
+rounding. The interval width is 5.8205594787 * 10^-75043, leaving about
+42.235 guard digits beyond the last certified place. The producing code,
+the 4,767 checkpoint chunks, the plan (meta_v13.json, format gd-checkpoint-v13)
+and a dependency-free verifier are in the 75000/ directory of the repository.
+The first 50,000 digits agree with the earlier certified 50,000-digit
+computation; the first 102 digits agree with the current OEIS b-file.
+
+Verification needs only Python 3.11+ and the standard library:
+
+  python verification/verify_certificate.py \
+      --cert 75000/golomb_dickman_75000_certified.txt \
+      --digits-file golomb_dickman_75000_digits.txt \
+      --sha256-manifest 75000/SHA256SUMS.txt \
+      --compare 50000/golomb_dickman_50000_digits.txt
+
+It prints "OK: 75000 digits certified (interval arithmetic)" and
+"SHA-256: MATCH (manifest)". An independent mpmath quadrature with tanh-sinh
+and Gauss-Legendre gave 320 matching digits. For transparency: a full
+independent Arb re-audit of all 476,648 nodes was NOT run (2,000 nodes were
+checked), and normality of lambda is open. This is an extension of a
+published computation, not a world-record or priority claim.
+
+SHA-256 (canonical LF bytes, no BOM):
+
+  05584c9d3f0afccbfb9a1d8c8f28177a33a30be3ec880dc6ffe481a136b19241  b084945.txt
+  b177fc551c8a9f950e037fdc92ed72fb9219eb11d81999410967f8013e6df534  golomb_dickman_75000_certified.txt
+  0c5f2b212eb5fd25b1def672226f65f46b97d44c5e371c5db10ab1cef9b468aa  golomb_dickman_75000_digits.txt
+
+The b-file is plain ASCII with LF line endings, 75,000 terms, indices
+0..74999, no comment lines, one trailing blank line, 588,891 bytes,
+75,001 lines in total. The data lines contain one decimal digit each, so they
+are well below any line-length limit, and the whole file is far below the
+10 MB upload limit. If 75,000 terms is considered too long,
+I can supply a truncated version (10,000 / 20,000 / 50,000 terms) with a new
+checksum on request; the prefix is unchanged.
+
+Thank you for your time,
+Konstantin N. Pozdnyakov
+Surgut, Khanty-Mansi Autonomous Okrug - Yugra, Russia
+fix@inbox.ru

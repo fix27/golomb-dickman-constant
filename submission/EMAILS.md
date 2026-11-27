@@ -4,7 +4,7 @@
 
 | Куда | Как | Файл | Нужен аккаунт |
 |---|---|---|---|
-| OEIS, A084945 | **Веб-форма** `edit` на https://oeis.org/A084945 (основной путь) или письмо редакторам `oeis@oeis.org` | `oeis-bfile.eml` | да (для формы) |
+| OEIS, A084945 | **Веб-форма** `edit` на https://oeis.org/A084945 (основной путь) или письмо редакторам `oeis@oeis.org` | `oeis-bfile.eml` (40 000), `oeis-bfile-75000.eml` (75 000) | да (для формы) |
 | SeqFan | письмо на `seqfan@googlegroups.com` | `seqfan-announcement.eml` | да (подписка/Google) |
 | MathWorld | веб-форма https://mathworld.wolfram.com/contact/ (публичного e-mail нет) | `mathworld-message.txt` | нет |
 | Zenodo | веб-интерфейс, DOI выдаётся по GitHub release | `../.zenodo.json` | да (GitHub) |
@@ -56,6 +56,18 @@ python verification/level_b.py
    достаточно.
 5. **MathWorld** — сообщить, что 15 000 знаков можно обновить до 40 000,
    и приложить ссылку на сертификат.
+
+## Черновик на 75 000 знаков
+
+- b-file: [`b084945.txt`](b084945.txt), 75 000 термов,
+  `n = 0..74999`, 588 891 байт, SHA-256
+  `05584c9d3f0afccbfb9a1d8c8f28177a33a30be3ec880dc6ffe481a136b19241`.
+- Письмо: [`oeis-bfile-75000.eml`](oeis-bfile-75000.eml) с version DOI
+  `10.5281/zenodo.24567561` и прямым указанием, что полный Arb-аудит
+  всех 476 648 узлов **не выполнялся**.
+- Статус: **не отправлено**. OEIS всё ещё отдаёт b-file `n = 0..101`.
+- Первые 102 терма сверены с живым b-файлом OEIS, первые 50 000 — с
+  [`../50000/b084945.txt`](../50000/b084945.txt).
 
 ## Чего не делать
 
