@@ -19,8 +19,8 @@ $$\left\lfloor 10^{50000}\Lambda_-/2^S\right\rfloor
 | Файл | Что это |
 |---|---|
 | `golomb_dickman_50000_certified.txt` | сертификат: $S$, $\Lambda_-$, $\Lambda_+$, 50 000 знаков |
-| `golomb_dickman_50000_digits.txt` | только цифры, одной строкой |
-| `b084945.txt` | b-file для OEIS A084945, термы `n = 0..49999` |
+| ~~`golomb_dickman_50000_digits.txt`~~ | удалён; цифры есть в сертификате |
+| ~~`b084945.txt`~~ | удалён; актуальный черновик — [`../submission/b084945.txt`](../submission/b084945.txt) |
 | `gd_rigorous_ckpt_50000/` | 3076 блоков по 100 узлов (кэш вычисления) |
 | `golomb_dickman_26.py` | версия CLI, которой выполнялся расчёт |
 | `SHA256SUMS.txt` | контрольные суммы файлов этого каталога |
@@ -64,8 +64,6 @@ $-149075\ldots158505$).
 
 ```text
 76f4155981049003351409769505c3cec39e26dfc30624c46bd199e70ed6477a  golomb_dickman_50000_certified.txt
-8f017d45ee5108bb6b976882b079279f44f8a767ce62b44bd7c54e9167ad09a0  golomb_dickman_50000_digits.txt
-1e3d23e9ac3ce51990d83decd395d6bde96027f43811b94cebd5a6a4b7c19c43  b084945.txt
 78783a09bae599298a07415056b0ca521717c9f7ecaa1fd15cb19b4d5ab6b0e0  gd_rigorous_ckpt_50000/meta_v12.json
 e2eb7d4ccca761c5c5e1f2b37075f9baea245dac86cbe962fd9dc92aa574ef71  golomb_dickman_26.py
 ```
