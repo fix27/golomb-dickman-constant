@@ -111,7 +111,8 @@ python ../verification/verify_certificate.py \
   40 000 знаков, опирается на исходный прогон вычислителя.
 - Независимое воспроизведение (уровень C) на 50 000 знаков не выполнялось.
   Прогон на 1 000 знаков (tanh-sinh и Gauss-Legendre, mpmath, без Arb)
-  выполнен 23.11.2026 против файла `golomb_dickman_50000_digits.txt`: обе
+  выполнен 23.11.2026 против файла `golomb_dickman_50000_digits.txt`
+  (позже удалён): обе
   квадратуры совпали между собой и с файлом на 1 020 знаках; отчёт —
   [`../verification/reports/independent_1000_vs_50000.txt`](../verification/reports/independent_1000_vs_50000.txt).
   Это численная проверка, а не доказательство.

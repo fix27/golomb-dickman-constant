@@ -99,11 +99,11 @@ Weisstein's 2013 computation depth), normality OPEN, and the 15,000-digit
 prime search PARTIAL (140 sampled lengths). Extra checks cover runs and
 their Monte Carlo p-values, palindromes, repeated and tandem substrings,
 periodic runs, k-gram coverage, chi-square tests including triples, and
-random prime substrings. See
-`reports/mathworld_50000.md` (Russian) and `reports/mathworld_50000.json`;
-reference b-files are in `reports/oeis/`. These are checks of the digit string
-and of the page's statements, not a proof of normality and not a world-record
-claim.
+random prime substrings. The citation and edit date are fixed in
+`../submission/MATHWORLD_MENTION.md`; the detailed report and JSON were removed
+from the repository. Reference b-files are in `reports/oeis/`. These are checks
+of the digit string and of the page's statements, not a proof of normality and
+not a world-record claim.
 
 In the exported bundle the layout is
 

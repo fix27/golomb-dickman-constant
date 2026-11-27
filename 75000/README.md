@@ -108,7 +108,8 @@ python verification/verify_certificate.py \
     --cert 75000/golomb_dickman_75000_certified.txt \
     --digits-file golomb_dickman_75000_digits.txt \
     --sha256-manifest 75000/SHA256SUMS.txt \
-    --compare 50000/golomb_dickman_50000_digits.txt
+    --bfile submission/b084945.txt \
+    --sha256 b084945.txt=05584c9d3f0afccbfb9a1d8c8f28177a33a30be3ec880dc6ffe481a136b19241
 
 python verification/audit_chunks.py \
     --ckpt 75000/gd_rigorous_ckpt_75000 \

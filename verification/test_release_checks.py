@@ -196,8 +196,6 @@ CANONICAL_TEXT = (
     ROOT / "50000" / "README.md",
     ROOT / "50000" / "golomb_dickman_26.py",
     ROOT / "50000" / "golomb_dickman_50000_certified.txt",
-    ROOT / "50000" / "golomb_dickman_50000_digits.txt",
-    ROOT / "50000" / "b084945.txt",
     ROOT / "50000" / "gd_rigorous_ckpt_50000" / "meta_v12.json",
 )
 

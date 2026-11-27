@@ -48,8 +48,9 @@ agreed with the certified file for the same 1,020 digits; see
 `independent_1000.txt`.
 
 The check was repeated on 2026-11-23 against the shipped
-`50000/golomb_dickman_50000_digits.txt` (the earlier run compared with the
-40,000-digit file). The two rules again agreed for 1,020 digits and matched
+`50000/golomb_dickman_50000_digits.txt` (since removed from the repository;
+this report is retained as a record). The earlier run compared with the
+40,000-digit file. The two rules again agreed for 1,020 digits and matched
 the 50,000-digit file for the same 1,020 digits, with no Arb and no
 Python-flint in the loop:
 
