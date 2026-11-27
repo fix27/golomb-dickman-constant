@@ -20,6 +20,7 @@ Russia. Машиночитаемая цитата — [`CITATION.cff`](CITATION.
 Zenodo — [`.zenodo.json`](.zenodo.json), препринт — [`paper/`](paper/),
 готовые письма для OEIS/SeqFan/MathWorld — [`submission/`](submission/).
 
+<<<<<<< Updated upstream
 ## Новый результат: 75 000 знаков (релиз v75000)
 
 Сертификат
@@ -49,6 +50,8 @@ python verification/verify_certificate.py \
     --compare 50000/golomb_dickman_50000_digits.txt
 ```
 
+=======
+>>>>>>> Stashed changes
 ## Предыдущий результат: 50 000 знаков
 
 Сертификат
@@ -181,6 +184,22 @@ OK: 50000 digits certified
 знаков описан в [`40000/VERIFICATION.md`](40000/VERIFICATION.md), а для
 50 000 знаков суммы 3076 блоков проверяет `verification/audit_chunks.py`.
 
+## Результат на 75 000 знаков
+
+Каталог [`75000/`](75000/) содержит сертификат, продюсер v27, чекпоинты и
+манифест SHA-256; канонические цифры продублированы в корне как
+`golomb_dickman_75000_digits.txt`. Проверка сертификата проходит с манифестом
+`75000/SHA256SUMS.txt` и даёт 42 гарантированных знака сверх 75 000.
+Статус полного Arb-аудита и все найденные ограничения описаны в
+[`audit/06-75000.md`](audit/06-75000.md).
+
+Статистический, структурный и сложностный анализ цифр (частоты, серии,
+энтропия, автокорреляция, шаблоны, сжатие, CF, next-digit baseline) описан в
+[`audit/07-75000-statistics.md`](audit/07-75000-statistics.md) и воспроизводится
+командой `python audit/75000_statistics.py --digits golomb_dickman_75000_digits.txt`.
+Все результаты носят численный, а не доказательный характер: нормальность λ
+остаётся открытой проблемой.
+
 ## Три уровня проверки
 
 Каталог [`verification/`](verification/) — отдельный набор для внешнего
@@ -209,7 +228,9 @@ OK: 50000 digits certified
 
 | Путь | Назначение |
 |---|---|
-| [`50000/`](50000/) | **Текущий результат**: 50 000 знаков, сертификат, b-file, чекпоинты, проверки |
+| [`75000/`](75000/) | **Текущий результат**: 75 000 знаков, сертификат, продюсер v27, чекпоинты, манифест SHA-256 |
+| [`50000/`](50000/) | Предыдущий результат: 50 000 знаков, сертификат, b-file, чекпоинты, проверки |
+| [`audit/`](audit/) | Отчёты проверки сертификата (`06-75000.md`) и статистики цифр (`07-75000-statistics.md`) |
 | [`40000/`](40000/) | Предыдущий результат: 40 000 знаков, b-file, проверки, документация |
 | [`verification/`](verification/) | Трёхуровневая проверка для внешнего читателя: сертификат, аудит, независимый расчёт |
 | [`paper/`](paper/) | Препринт для arXiv (`main.tex`) и метаданные отправки |
@@ -247,11 +268,19 @@ python -m pip install python-flint mpmath
 ### CLI для результата 50 000 знаков (v26)
 
 ```bash
+<<<<<<< Updated upstream
 python 50000/golomb_dickman_26.py test
 python 50000/golomb_dickman_26.py smoke
 python 50000/golomb_dickman_26.py certify --digits 50000
 python 50000/golomb_dickman_26.py crosscheck --digits 200
 python 50000/golomb_dickman_26.py boundary-test
+=======
+python golomb_dickman_27.py test
+python golomb_dickman_27.py smoke
+python golomb_dickman_27.py certify --digits 50000
+python golomb_dickman_27.py crosscheck --digits 200
+python golomb_dickman_27.py boundary-test
+>>>>>>> Stashed changes
 ```
 
 Результат на 75 000 знаков получен CLI v27 (`golomb_dickman_27.py`); команды
@@ -447,7 +476,11 @@ The computation uses the trapezoidal rule after the Takahashi–Mori substitutio
 explicit tail and discretization bounds (Trefethen–Weideman), Stieltjes continued
 fractions, and Arb balls via `python-flint`. Trust base: Arb correctness and the
 cited theorems. The current self-contained CLI is `golomb_dickman_27.py`;
+<<<<<<< Updated upstream
 `golomb_dickman_26.py` produced the 50,000-digit certificate.
+=======
+`40000/golomb_dickman.py` produced the 40,000-digit certificate.
+>>>>>>> Stashed changes
 
 `75000/SHA256SUMS.txt` lists the canonical hashes. Run
 `python verification/verify_certificate.py --cert 75000/golomb_dickman_75000_certified.txt
