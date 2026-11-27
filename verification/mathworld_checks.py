@@ -20,8 +20,7 @@ The script checks, claim by claim:
     the whole file);
   * the reported digit-count table for 10, 100, 1,000 and 10,000 digits;
   * the first Lambda-constant primes (A174975), the primality of the 1659- and
-    2508-digit prefixes, and the fact that the whole 50,000-digit number is
-    composite.
+    2508-digit prefixes, and simple divisors of the whole digit string.
 
 Extra long-sequence checks (not MathWorld claims):
 
@@ -43,6 +42,10 @@ Usage
     python verification/mathworld_checks.py
     python verification/mathworld_checks.py --primes
     python verification/mathworld_checks.py --primes --deep-primes --json out.json
+
+The built-in source is the root 75,000-digit file; every MathWorld claim is
+a prefix claim and stays applicable.  A separate 50,000-digit check was run
+historically against the older digits file, which is no longer shipped.
 
 Only the Python standard library is required.  sympy is optional and is used
 for an independent BPSW confirmation of large candidates; without sympy the
@@ -69,7 +72,7 @@ if hasattr(sys, "set_int_max_str_digits"):
     sys.set_int_max_str_digits(1_000_000)
 
 REPO = Path(__file__).resolve().parent.parent
-DEFAULT_DIGITS = REPO / "50000" / "golomb_dickman_50000_digits.txt"
+DEFAULT_DIGITS = REPO / "golomb_dickman_75000_digits.txt"
 DEFAULT_OEIS = REPO / "verification" / "reports" / "oeis"
 PAGE_URL = "https://mathworld.wolfram.com/Golomb-DickmanConstantDigits.html"
 PAGE_RETRIEVED = "2026-11-16"
@@ -1025,7 +1028,7 @@ def prime_checks(digits: str, deep: bool) -> dict[str, object]:
     result["strong_primes"] = strong
 
     total = sum(int(ch) for ch in digits)
-    result["whole_50000_digit_number"] = {
+    result["whole_digit_number"] = {
         "last_digit": digits[-1],
         "digit_sum": total,
         "divisible_by_10": digits[-1] == "0",
@@ -1208,7 +1211,7 @@ def main(argv: list[str] | None = None) -> int:
             print(
                 f"  sampled 2509..15000: {prime_result['sample_2509_15000']['prime_lengths']}"
             )
-        print(f"  whole number: {prime_result['whole_50000_digit_number']['conclusion']}")
+        print(f"  whole number: {prime_result['whole_digit_number']['conclusion']}")
 
     print(f"\ntotal: {elapsed:.1f}s")
     if args.json:
