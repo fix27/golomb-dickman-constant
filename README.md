@@ -58,8 +58,10 @@ $4.390\times10^{-50043}$, то есть в запасе остаётся ещё 
 
 ```text
 76f4155981049003351409769505c3cec39e26dfc30624c46bd199e70ed6477a  golomb_dickman_50000_certified.txt
-8f017d45ee5108bb6b976882b079279f44f8a767ce62b44bd7c54e9167ad09a0  golomb_dickman_50000_digits.txt
 ```
+
+Отдельный файл цифр и b-file на 50 000 знаков удалены из репозитория;
+все 50 000 знаков сохранены в сертификате.
 
 Первые 40 000 знаков нового сертификата совпадают с сертификатом на
 40 000 знаков (проверяется `verification/verify_certificate.py --compare`),
@@ -99,8 +101,7 @@ python verification/mathworld_checks.py
 # Полный отчёт: плюс исчерпывающий перебор длин 1..2508,
 # сильная проверка 1659/2508 и выборочный скан до 15 000
 # (около 12 минут, 698 с).
-python verification/mathworld_checks.py --primes --deep-primes \
-    --json verification/reports/mathworld_50000.json
+python verification/mathworld_checks.py --primes --deep-primes
 ```
 
 ## Предыдущий результат: 40 000 знаков
@@ -446,10 +447,11 @@ chunks. The full Arb re-audit of all 476,648 nodes was **not** run (2,000 nodes
 were checked); level C is an independent mpmath quadrature agreeing on 320
 digits. The OEIS b-file for A084945 in `submission/b084945.txt` has 75,000 terms.
 
-`verification/reports/mathworld_50000.md` checks every statement on
-MathWorld's "Golomb-Dickman Constant Digits" page against the 50,000
-digits: 8 PASS, two historical attributions NOT_VERIFIABLE, normality
-OPEN, and the reported prime search to 15,000 digits PARTIAL (140 sampled
-lengths). The script is `verification/mathworld_checks.py`.
+`verification/mathworld_checks.py` checks every statement on MathWorld's
+"Golomb-Dickman Constant Digits" page against the 50,000 digits: 8 PASS,
+two historical attributions NOT_VERIFIABLE, normality OPEN, and the reported
+prime search to 15,000 digits PARTIAL (140 sampled lengths). The citation and
+edit date are fixed in `submission/MATHWORLD_MENTION.md`; the detailed report
+and JSON were removed from the repository.
 
 </details>
