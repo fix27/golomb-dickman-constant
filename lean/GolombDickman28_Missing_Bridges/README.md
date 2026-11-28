@@ -1,6 +1,6 @@
 # Golomb–Dickman v28: formal bridges (Lean 4 / Mathlib)
 
-This package adds a bridge module to the previous `GolombDickman27.lean` formalization and includes the exact v28 Python source used for the audit.
+This package adds a bridge module to the previous `GolombDickman27.lean` formalization. Its Python file is based on the v28 source attached in this chat, with bounded checkpoint reads and certificate-parser hardening. It has not been rebased against the newer repository-root revision identified in the review by SHA-256 prefix `c7d58993`; that exact source was not attached here.
 
 ## Build
 
@@ -33,11 +33,11 @@ Also, this is not yet a fully closed formal proof of every analytic step in the 
 
 ## Additional v28 certificate-parser hardening
 
-The included `golomb_dickman_28.py` is a copy of the uploaded v28 source with one narrowly scoped change in `parse_certificate()`: after parsing, it recomputes both integer quotients
+The included `golomb_dickman_28.py` is based on the v28 source attached in this chat and includes two defensive changes: (a) `_safe_load()` reads at most `max_bytes + 1` from one open file descriptor before unpickling, avoiding the `getsize()`/`read()` race; and (b) `parse_certificate()` recomputes both integer quotients
 
 ```python
 a = (lam_lo * 10**D) >> S
 b = (lam_hi * 10**D) >> S
 ```
 
-and rejects the file unless `a == b` and the printed digit string equals `str(a).zfill(D)`. It also rejects malformed interval metadata. This checks consistency between the serialized decimal digits and the dyadic interval; it does **not** authenticate the interval's numerical origin. The original change is provided as `parse_certificate_hardening.patch`. `python -m py_compile` passed for this packaged Python copy.
+and rejects the file unless `a == b` and the printed digit string equals `str(a).zfill(D)`. It also rejects malformed interval metadata. This checks consistency between the serialized decimal digits and the dyadic interval; it does **not** authenticate the interval's numerical origin. The parser-only change is provided as `parse_certificate_hardening.patch`; the bounded-read change is included in the Python source. The byte cap limits serialized input size, but does not constitute a formal bound on unpickler memory amplification. `python -m py_compile` passed for this packaged Python copy.

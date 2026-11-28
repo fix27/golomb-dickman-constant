@@ -275,4 +275,4 @@ a\le10^D\lambda<a+1.
 
 Thus no decimal boundary `j/10^D` lies inside the certified interval, and the integer part `floor(10^D*lambda)` is unique. `nat_division_decimal_cell` proves the quotient/floor fact from Euclidean division; `dyadic_certificate_decimal_isolation` transports it through the dyadic enclosure to `InNatDecimalCell`; `nat_decimal_cell_unique` proves uniqueness of the nonnegative label.
 
-This theorem assumes the published endpoints really enclose `lambda`. It does not prove that the Python Arb values are sound, nor that the text file's `digits` field matches its integer bounds. The current v28 `parse_certificate()` parses the digits but does not recompute and validate the two floor quotients; that is a remaining certificate-format hardening item.
+This theorem assumes the published endpoints really enclose `lambda`. It does not prove that the Python Arb values are sound. The packaged hardened `parse_certificate()` does recompute both integer quotients and checks that the printed `digits` match the common decimal cell; this is a consistency check only, not authentication of the numerical origin of the endpoints.

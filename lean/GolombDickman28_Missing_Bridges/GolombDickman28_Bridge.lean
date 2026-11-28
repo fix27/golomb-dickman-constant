@@ -1,4 +1,4 @@
-/--
+/-
 Supplement to `GolombDickman27.lean` for the v28 Python implementation.
 
 This module is deliberately split into:
@@ -226,7 +226,7 @@ theorem tsum_discrete_sum_le_tail
     Summable sample ∧ 0 ≤ (∑' i, sample i) ∧ (∑' i, sample i) ≤ tail := by
   have hsample_summable : Summable sample :=
     Summable.of_nonneg_of_le hsample_nonneg hsample_le_cell hcell_summable
-  have htsum := Summable.tsum_le_tsum hsample_le_cell hsample_summable hcell_summable
+  have htsum := tsum_le_tsum hsample_le_cell hsample_summable hcell_summable
   exact ⟨hsample_summable, tsum_nonneg hsample_nonneg, le_trans htsum hcell_tail⟩
 
 /-- The exact real change of variables used in Lemma 3. -/

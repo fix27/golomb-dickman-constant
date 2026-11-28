@@ -645,6 +645,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import io
 import json
 import math
 import os
@@ -742,16 +743,21 @@ class _SafeUnpickler(pickle.Unpickler):
 
 
 def _safe_load(path, max_bytes=4 << 20):
-    """Load a checkpoint pickle without resolving any global.
+    """Load a checkpoint pickle with a bounded read and no global imports.
 
-    Blocks code execution, but not memory blow-up: max_bytes is the only
-    guard against oversized payloads.  All payloads written by this program
-    are builtins (int/str/float/tuple/list/dict), so no find_class is needed.
+    The byte limit is enforced on the bytes actually read from one open file
+    descriptor, avoiding a stat/read time-of-check-to-time-of-use race.
+    This bounds the serialized input, not the exact memory used by the
+    unpickler; checkpoints should still be treated as untrusted structured
+    data and the schema validator must run after deserialization.
     """
-    if os.path.getsize(path) > max_bytes:
-        raise CheckpointSchemaError("%s: oversized pickle" % path)
+    if not isinstance(max_bytes, int) or max_bytes < 0:
+        raise ValueError("max_bytes must be a non-negative integer")
     with open(path, "rb") as f:
-        return _SafeUnpickler(f).load()
+        payload = f.read(max_bytes + 1)
+    if len(payload) > max_bytes:
+        raise CheckpointSchemaError("%s: oversized pickle" % path)
+    return _SafeUnpickler(io.BytesIO(payload)).load()
 
 
 def _open_text_lf(path, mode="w"):
