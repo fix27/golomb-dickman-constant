@@ -107,6 +107,17 @@ Arb multiplication ~1.5 ms, division by a 500-bit integer ~0.09 ms; RS_M=48
 or 64 was ~15-20% faster than 32 on sampled series nodes, while values
 above ~96 got slower again.  Keep 32 for the canonical certificate.
 
+External audit disposition.  The 16-point checklist from the v28 audit review
+was checked against the function bodies in this file, not only its header:
+parity/tail safeguards, exact nmax, the skip postcondition, precision
+restoration, the plan's right-tail precondition, exact-integer assembly,
+cross-check modes/caveats, checkpoint safety, replay containment direction,
+and identical v27 chunk tuples at RS_M=32 (checked at D=100/200/400) all hold.
+No mathematical change was needed.  The only hardening is a bounded read in
+_safe_load: the 4 MiB cap now applies to bytes actually consumed, so a file
+that grows after stat is still refused.  This is NOT a full Arb replay: the
+remaining 476 648-node audit is still NOT_RUN.
+
 arb_ceil_int stays deliberately conservative (floor+1 even at an integer
 upper bound): tightening it would change Lint -> h -> make_plan() and
 invalidate every existing checkpoint and the published certificate.  For a
@@ -645,6 +656,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import io
 import json
 import math
 import os
@@ -744,14 +756,16 @@ class _SafeUnpickler(pickle.Unpickler):
 def _safe_load(path, max_bytes=4 << 20):
     """Load a checkpoint pickle without resolving any global.
 
-    Blocks code execution, but not memory blow-up: max_bytes is the only
-    guard against oversized payloads.  All payloads written by this program
-    are builtins (int/str/float/tuple/list/dict), so no find_class is needed.
+    Blocks code execution, and bounds the payload by the number of bytes
+    actually read (not just by stat): a file that grows between stat and
+    read is still refused.  All payloads written by this program are
+    builtins (int/str/float/tuple/list/dict), so no find_class is needed.
     """
-    if os.path.getsize(path) > max_bytes:
-        raise CheckpointSchemaError("%s: oversized pickle" % path)
     with open(path, "rb") as f:
-        return _SafeUnpickler(f).load()
+        data = f.read(max_bytes + 1)
+    if len(data) > max_bytes:
+        raise CheckpointSchemaError("%s: oversized pickle" % path)
+    return _SafeUnpickler(io.BytesIO(data)).load()
 
 
 def _open_text_lf(path, mode="w"):
