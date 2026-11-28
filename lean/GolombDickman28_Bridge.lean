@@ -16,6 +16,7 @@ fields must be filled by genuine proofs before they can be instantiated.
 -/
 
 import GolombDickman27
+import Lemma2
 
 open scoped BigOperators
 open Finset
@@ -245,11 +246,11 @@ theorem tsum_discrete_sum_le_tail
   have htsum := Summable.tsum_le_tsum hsample_le_cell hsample_summable hcell_summable
   exact ⟨hsample_summable, tsum_nonneg hsample_nonneg, le_trans htsum hcell_tail⟩
 
-/-- The exact real change of variables used in Lemma 3. -/
-def lemma3U (t : ℝ) : ℝ := Real.exp (t - Real.exp (-t))
+/-- The exact real change of variables used in Lemma 3.
+    Canonical definitions live in `Lemma2.lean`; these aliases avoid a second copy. -/
+abbrev lemma3U (t : ℝ) : ℝ := GolombDickman.u_fn t
 
-def lemma3RightEnvelope (t : ℝ) : ℝ :=
-  lemma3U t * Real.exp (-lemma3U t) * (1 + Real.exp (-t))
+abbrev lemma3RightEnvelope (t : ℝ) : ℝ := GolombDickman.gR t
 
 def lemma3LeftEnvelope (gamma t : ℝ) : ℝ :=
   Real.exp gamma * (lemma3U t) ^ 2 * (1 + Real.exp (-t))
@@ -557,15 +558,6 @@ theorem dyadic_certificate_decimal_isolation
     nlinarith [hhiScaled]
   exact ⟨le_trans hlow' hscaledLo,
     lt_of_le_of_lt hscaledHi hhigh'⟩
-
-theorem decimal_interval_all_values_same_cell
-    (scale lo hi value : ℚ) (n : ℤ)
-    (hscale : 0 ≤ scale)
-    (hlo : (n : ℚ) ≤ scale * lo)
-    (hhi : scale * hi < (n : ℚ) + 1)
-    (henc : lo ≤ value ∧ value ≤ hi) :
-    InDecimalCell scale value n := by
-  exact common_decimal_cell scale lo hi value n hscale hlo hhi henc
 
 /-! ## E. End-to-end conditional composition -/
 

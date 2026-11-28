@@ -1,0 +1,33 @@
+name = "golomb_dickman_28_formal"
+version = "0.3.0"
+defaultTargets = [
+  "Lemma1D",
+  "Lemma2",
+  "Lemma7Det",
+  "Lemma7S2J",
+  "GolombDickman27",
+  "GolombDickman28_Bridge",
+]
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+rev = "v4.36.0"
+
+[[lean_lib]]
+name = "Lemma1D"
+
+[[lean_lib]]
+name = "Lemma2"
+
+[[lean_lib]]
+name = "Lemma7Det"
+
+[[lean_lib]]
+name = "Lemma7S2J"
+
+[[lean_lib]]
+name = "GolombDickman27"
+
+[[lean_lib]]
+name = "GolombDickman28_Bridge"

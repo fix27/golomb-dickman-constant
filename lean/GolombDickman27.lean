@@ -350,12 +350,6 @@ theorem asymptoticRemainderBound_pos (K : Nat) (u : ℝ) (hu : 0 < u) :
   unfold asymptoticRemainderBound
   positivity
 
-theorem asymptotic_remainder_in_symmetric_ball
-    (partialVal remainder radius : ℝ) (hrem : |remainder| ≤ radius) :
-    partialVal - radius ≤ partialVal + remainder ∧
-      partialVal + remainder ≤ partialVal + radius :=
-  symmetric_remainder_inclusion partialVal remainder radius hrem
-
 /-! ## 6. Continued-fraction hull (Stieltjes theorem supplied as a premise) -/
 
 /-- If two consecutive convergents bracket the target and their distance is
@@ -510,18 +504,6 @@ theorem quadrature_assembly_sound
   have hlow := mul_le_mul_of_nonneg_left hfinite.1 hh
   have hhigh := mul_le_mul_of_nonneg_left hfinite.2 hh
   constructor <;> linarith
-
-/-- If the certified interval is contained in one decimal cell, the exact
-    decimal prefix follows for every value in that interval. -/
-theorem certified_prefix_sound
-    (scale lo hi lambda : ℚ) (digitsCell : Int)
-    (hscale : 0 ≤ scale)
-    (hlo : (digitsCell : ℚ) ≤ scale * lo)
-    (hhi : scale * hi < (digitsCell : ℚ) + 1)
-    (hcertificate : lo ≤ lambda ∧ lambda ≤ hi) :
-    (digitsCell : ℚ) ≤ scale * lambda ∧
-      scale * lambda < (digitsCell : ℚ) + 1 :=
-  common_decimal_cell scale lo hi lambda digitsCell hscale hlo hhi hcertificate
 
 /-! ## 11. Explicit analytic trust boundary -/
 
