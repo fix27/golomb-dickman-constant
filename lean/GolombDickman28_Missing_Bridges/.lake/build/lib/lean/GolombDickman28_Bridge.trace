@@ -1,0 +1,81 @@
+{"synthetic": false,
+ "schemaVersion": "2025-09-10",
+ "outputs":
+ {"o": ["06f1d1e247fc930f.olean"],
+  "m": false,
+  "i": "a2344b450dbd948f.ilean",
+  "c": "7559aadc20ad3798.c"},
+ "log":
+ [{"message":
+   ".> LEAN_PATH=C:\\Users\\fix12\\Documents\\GitHub\\golomb_dickman_30000\\lean\\GolombDickman28_Missing_Bridges\\.lake\\packages\\Cli\\.lake\\build\\lib\\lean;C:\\Users\\fix12\\Documents\\GitHub\\golomb_dickman_30000\\lean\\GolombDickman28_Missing_Bridges\\.lake\\packages\\batteries\\.lake\\build\\lib\\lean;C:\\Users\\fix12\\Documents\\GitHub\\golomb_dickman_30000\\lean\\GolombDickman28_Missing_Bridges\\.lake\\packages\\Qq\\.lake\\build\\lib\\lean;C:\\Users\\fix12\\Documents\\GitHub\\golomb_dickman_30000\\lean\\GolombDickman28_Missing_Bridges\\.lake\\packages\\aesop\\.lake\\build\\lib\\lean;C:\\Users\\fix12\\Documents\\GitHub\\golomb_dickman_30000\\lean\\GolombDickman28_Missing_Bridges\\.lake\\packages\\proofwidgets\\.lake\\build\\lib\\lean;C:\\Users\\fix12\\Documents\\GitHub\\golomb_dickman_30000\\lean\\GolombDickman28_Missing_Bridges\\.lake\\packages\\importGraph\\.lake\\build\\lib\\lean;C:\\Users\\fix12\\Documents\\GitHub\\golomb_dickman_30000\\lean\\GolombDickman28_Missing_Bridges\\.lake\\packages\\LeanSearchClient\\.lake\\build\\lib\\lean;C:\\Users\\fix12\\Documents\\GitHub\\golomb_dickman_30000\\lean\\GolombDickman28_Missing_Bridges\\.lake\\packages\\plausible\\.lake\\build\\lib\\lean;C:\\Users\\fix12\\Documents\\GitHub\\golomb_dickman_30000\\lean\\GolombDickman28_Missing_Bridges\\.lake\\packages\\mathlib\\.lake\\build\\lib\\lean;C:\\Users\\fix12\\Documents\\GitHub\\golomb_dickman_30000\\lean\\GolombDickman28_Missing_Bridges\\.lake\\build\\lib\\lean c:\\Users\\fix12\\.elan\\toolchains\\leanprover--lean4---v4.36.0\\bin\\lean.exe C:\\Users\\fix12\\Documents\\GitHub\\golomb_dickman_30000\\lean\\GolombDickman28_Missing_Bridges\\GolombDickman28_Bridge.lean -o C:\\Users\\fix12\\Documents\\GitHub\\golomb_dickman_30000\\lean\\GolombDickman28_Missing_Bridges\\.lake\\build\\lib\\lean\\GolombDickman28_Bridge.olean -i C:\\Users\\fix12\\Documents\\GitHub\\golomb_dickman_30000\\lean\\GolombDickman28_Missing_Bridges\\.lake\\build\\lib\\lean\\GolombDickman28_Bridge.ilean -c C:\\Users\\fix12\\Documents\\GitHub\\golomb_dickman_30000\\lean\\GolombDickman28_Missing_Bridges\\.lake\\build\\ir\\GolombDickman28_Bridge.c --setup C:\\Users\\fix12\\Documents\\GitHub\\golomb_dickman_30000\\lean\\GolombDickman28_Missing_Bridges\\.lake\\build\\ir\\GolombDickman28_Bridge.setup.json --json",
+   "level": "trace"},
+  {"message":
+   "GolombDickman28_Bridge.lean:57:52: This simp argument is unused:\n  Polynomial.eval_C\n\nHint: Omit it from the simp argument list.\n  [apply] simp [Polynomial.eval_add, Polynomial.eval_mul, Polynomial.eval_X] at hev\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "GolombDickman28_Bridge.lean:86:52: This simp argument is unused:\n  Polynomial.eval_C\n\nHint: Omit it from the simp argument list.\n  [apply] simp [Polynomial.eval_add, Polynomial.eval_mul, Polynomial.eval_X] at hev\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`",
+   "level": "warning"},
+  {"message":
+   "GolombDickman28_Bridge.lean:73:8: this tactic is never executed\n\nNote: This linter can be disabled with `set_option linter.unreachableTactic false`",
+   "level": "warning"},
+  {"message":
+   "GolombDickman28_Bridge.lean:69:66: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice\n\nNote: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`",
+   "level": "warning"},
+  {"message":
+   "GolombDickman28_Bridge.lean:96:4: Used `tac1 <;> tac2` where `(tac1; tac2)` would suffice\n\nNote: This linter can be disabled with `set_option linter.unnecessarySeqFocus false`",
+   "level": "warning"},
+  {"message":
+   "GolombDickman28_Bridge.lean:69:66: Unused tactic linter: `<;>` can be replaced with `;`.\n\nNote: This linter can be disabled with `set_option linter.unusedTactic false`",
+   "level": "warning"},
+  {"message":
+   "GolombDickman28_Bridge.lean:73:4: Unused tactic linter: `<;>` can be removed.\n\nNote: This linter can be disabled with `set_option linter.unusedTactic false`",
+   "level": "warning"},
+  {"message":
+   "GolombDickman28_Bridge.lean:73:8: Unused tactic linter: `ring` is never executed.\n\nNote: This linter can be disabled with `set_option linter.unusedTactic false`",
+   "level": "warning"},
+  {"message":
+   "GolombDickman28_Bridge.lean:96:4: Unused tactic linter: `<;>` can be replaced with `;`.\n\nNote: This linter can be disabled with `set_option linter.unusedTactic false`",
+   "level": "warning"},
+  {"message":
+   "GolombDickman28_Bridge.lean:135:18: this tactic is never executed\n\nNote: This linter can be disabled with `set_option linter.unreachableTactic false`",
+   "level": "warning"},
+  {"message":
+   "GolombDickman28_Bridge.lean:135:14: Unused tactic linter: `<;>` can be removed.\n\nNote: This linter can be disabled with `set_option linter.unusedTactic false`",
+   "level": "warning"},
+  {"message":
+   "GolombDickman28_Bridge.lean:135:18: Unused tactic linter: `ring` is never executed.\n\nNote: This linter can be disabled with `set_option linter.unusedTactic false`",
+   "level": "warning"},
+  {"message":
+   "GolombDickman28_Bridge.lean:198:5: Variable name `hden` is not explicitly referenced.\n\nHint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:\n  [apply] _hden\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`",
+   "level": "warning"},
+  {"message":
+   "GolombDickman28_Bridge.lean:207:6: this tactic is never executed\n\nNote: This linter can be disabled with `set_option linter.unreachableTactic false`",
+   "level": "warning"},
+  {"message":
+   "GolombDickman28_Bridge.lean:207:2: Unused tactic linter: `<;>` can be removed.\n\nNote: This linter can be disabled with `set_option linter.unusedTactic false`",
+   "level": "warning"},
+  {"message":
+   "GolombDickman28_Bridge.lean:207:6: Unused tactic linter: `ring` is never executed.\n\nNote: This linter can be disabled with `set_option linter.unusedTactic false`",
+   "level": "warning"}],
+ "inputs":
+ [["deps",
+   [["golomb_dickman_28_formal_bridges/GolombDickman28_Bridge:extraDep",
+     [["@golomb_dickman_28_formal_bridges:extraDep", "00000000000006bb"]]],
+    ["imports",
+     [["GolombDickman27 transitive imports (legacy)", "a8b1135816c0acce"],
+      ["GolombDickman27:importAllArts", "254be14f41a53142"]]]]],
+  ["libs",
+   [["import dynlibs", "00000000000006bb"],
+    ["package external libraries", "00000000000006bb"],
+    ["module dynlibs", "00000000000006bb"],
+    ["module plugins", "00000000000006bb"]]],
+  ["Lean 4.36.0, commit 611c117bfaf7b7ae1cfcf246ce6fba31e8f509e9",
+   "bd5dd4b1191d6a49"],
+  ["C:\\Users\\fix12\\Documents\\GitHub\\golomb_dickman_30000\\lean\\GolombDickman28_Missing_Bridges\\GolombDickman28_Bridge.lean",
+   "0d2fceaf7a7aa0f6"],
+  ["options", "00000000000006bb"],
+  ["isModule: false", "feefd2a0d3a1847e"],
+  ["Module.name: GolombDickman28_Bridge", "491d01578b220cd7"],
+  ["Package.id?: (some golomb_dickman_28_formal_bridges)", "d844329264f7ab44"],
+  ["Module.leanArgs: #[]", "00000000000006bb"]],
+ "depHash": "5a3a48099cff4bab"}

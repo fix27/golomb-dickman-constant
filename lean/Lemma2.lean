@@ -1,11 +1,4 @@
-import Mathlib.Analysis.SpecialFunctions.ExpDeriv
-import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
-import Mathlib.MeasureTheory.Integral.IntervalIntegral
-import Mathlib.MeasureTheory.Integral.IntegralEqImproper
-import Mathlib.Tactic.Linarith
-import Mathlib.Tactic.NormNum
-import Mathlib.Tactic.Positivity
-import Mathlib.Tactic.Ring
+import Mathlib
 
 /-!
 # Лемма 2: замена переменной и точные интегралы хвостов
@@ -28,11 +21,19 @@ noncomputable def u_fn (t : ℝ) : ℝ := exp (t - exp (-t))
 /-- Производная u'(t) = u(t) · (1 + e^{-t}). -/
 lemma hasDerivAt_u_fn (t : ℝ) :
     HasDerivAt u_fn (u_fn t * (1 + exp (-t))) t := by
+  have he : HasDerivAt (fun s : ℝ => exp (-s)) (-exp (-t)) t := by
+    simpa using (hasDerivAt_neg t).exp
   have h1 : HasDerivAt (fun s : ℝ => s - exp (-s)) (1 + exp (-t)) t := by
-    have he : HasDerivAt (fun s : ℝ => exp (-s)) (-exp (-t)) t := by
-      simpa using (hasDerivAt_neg t).exp
-    simpa [sub_eq_add_neg] using (hasDerivAt_id t).sub he
-  simpa [u_fn] using h1.exp
+    convert (hasDerivAt_id t).sub he using 1
+    · ext s; simp [id_eq]
+    · ring
+  change HasDerivAt (fun x : ℝ => exp (x - exp (-x)))
+    (exp (t - exp (-t)) * (1 + exp (-t))) t
+  simpa using h1.exp
+
+lemma differentiable_u_fn : Differentiable ℝ u_fn := by
+  unfold u_fn
+  fun_prop
 
 lemma u_fn_pos (t : ℝ) : 0 < u_fn t := exp_pos _
 
@@ -47,16 +48,24 @@ lemma strictMono_u_fn : StrictMono u_fn := by
 /-- Предел u(t) → +∞ при t → +∞. -/
 lemma tendsto_u_fn_atTop : Tendsto u_fn atTop atTop := by
   refine tendsto_exp_atTop.comp ?_
-  have h1 : Tendsto (fun t : ℝ => exp (-t)) atTop (nhds 0) :=
-    tendsto_exp_atBot.comp tendsto_neg_atTop_atBot
-  simpa using tendsto_id.sub h1
+  have hbase : Tendsto (fun t : ℝ => t + (-1 : ℝ)) atTop atTop :=
+    tendsto_id.atTop_add tendsto_const_nhds
+  refine tendsto_atTop_mono' atTop ?_ hbase
+  filter_upwards [eventually_ge_atTop (0 : ℝ)] with t ht
+  have hexp : exp (-t) ≤ 1 := by
+    rw [← exp_zero]
+    exact exp_le_exp.mpr (by linarith)
+  linarith
 
 /-- Предел u(t) → 0 при t → -∞. -/
 lemma tendsto_u_fn_atBot : Tendsto u_fn atBot (nhds 0) := by
   refine tendsto_exp_atBot.comp ?_
-  have h1 : Tendsto (fun t : ℝ => exp (-t)) atBot atTop :=
-    tendsto_exp_atTop.comp tendsto_neg_atBot_atTop
-  exact Tendsto.atBot_add tendsto_id (tendsto_neg_atTop_atBot.comp h1)
+  have hbase : Tendsto (fun t : ℝ => (2 : ℝ) * t) atBot atBot :=
+    (tendsto_id.const_mul_atBot (by norm_num))
+  refine tendsto_atBot_mono' atBot ?_ hbase
+  filter_upwards [] with t
+  have hexp : -t ≤ exp (-t) := by nlinarith [Real.add_one_le_exp (-t)]
+  linarith
 
 /-- Правая мажоранта g_R(t) = u(t) e^{-u(t)} (1 + e^{-t}). -/
 noncomputable def gR (t : ℝ) : ℝ := u_fn t * exp (-u_fn t) * (1 + exp (-t))
@@ -96,7 +105,9 @@ theorem lemma_2_right (t₀ : ℝ) :
     have h1 : Tendsto (fun t => exp (-u_fn t)) atTop (nhds 0) :=
       tendsto_exp_atBot.comp (tendsto_neg_atTop_atBot.comp tendsto_u_fn_atTop)
     simpa [F] using h1.neg
-  have hint := integral_Ioi_of_hasDerivAt_of_tendsto' hderiv (fun t _ => gR_nonneg t) htend
+  have hintg : IntegrableOn gR (Ioi t₀) :=
+    integrableOn_Ioi_deriv_of_nonneg' hderiv (fun t _ => gR_nonneg t) htend
+  have hint := integral_Ioi_of_hasDerivAt_of_tendsto' hderiv hintg htend
   simpa [F] using hint
 
 /-- Лемма 2 (левый хвост): ∫_{-∞}^{t₀} e^γ u² (1 + e^{-t}) dt = ½ e^γ u(t₀)². -/
@@ -115,7 +126,26 @@ theorem lemma_2_left (t₀ : ℝ) :
     have hpow : Tendsto (fun t => (u_fn t) ^ 2) atBot (nhds 0) := by
       simpa using tendsto_u_fn_atBot.pow 2
     simpa [F] using hpow.const_mul C
-  have hint := integral_Iic_of_hasDerivAt_of_tendsto' hderiv (fun t _ => gL_nonneg t) htend
+  have hderivG : ∀ x ∈ Ici (-t₀), HasDerivAt (fun y : ℝ => -F (-y)) (gL (-x)) x := by
+    intro x hx
+    change -t₀ ≤ x at hx
+    have hx' : -x ∈ Iic t₀ := by change -x ≤ t₀; linarith
+    have hFx := hderiv (-x) hx'
+    convert (hFx.scomp x (hasDerivAt_neg' x)).neg using 1
+    · ext y; rfl
+    · simp
+  have htendG : Tendsto (fun x : ℝ => -F (-x)) atTop (nhds 0) :=
+    (htend.comp tendsto_neg_atTop_atBot).neg
+  have hintg_pos : IntegrableOn (fun x : ℝ => gL (-x)) (Ioi (-t₀)) :=
+    integrableOn_Ioi_deriv_of_nonneg' hderivG (fun x _ => gL_nonneg (-x)) htendG
+  have hintg : IntegrableOn gL (Iic t₀) := by
+    have hpre : IntegrableOn (gL ∘ Neg.neg) (Neg.neg ⁻¹' Iic t₀) := by
+      have hIci : IntegrableOn (fun x : ℝ => gL (-x)) (Ici (-t₀)) :=
+        (integrableOn_Ici_iff_integrableOn_Ioi).2 hintg_pos
+      simpa [Function.comp_def] using hIci
+    exact (MeasurePreserving.integrableOn_comp_preimage
+      (Measure.measurePreserving_neg volume) (Homeomorph.neg ℝ).measurableEmbedding).1 hpre
+  have hint := integral_Iic_of_hasDerivAt_of_tendsto' hderiv hintg htend
   simpa [F, C] using hint
 
 
@@ -132,8 +162,10 @@ lemma antitoneOn_mul_exp_neg : AntitoneOn (fun x : ℝ => x * exp (-x)) (Ici 1) 
       have h1 : HasDerivAt (fun s : ℝ => exp (-s)) (-exp (-x)) x := by
         simpa using (hasDerivAt_neg x).exp
       convert (hasDerivAt_id x).mul h1 using 1
-      ring
+      · ext s; simp [id_eq]
+      · simp [id_eq]; ring
     rw [hd.deriv]
+    have hx1 : 1 < x := by simpa using hx
     have h1 : 1 - x ≤ 0 := by linarith
     have h2 : 0 ≤ exp (-x) := exp_nonneg _
     exact mul_nonpos_of_nonpos_of_nonneg h1 h2
@@ -156,7 +188,10 @@ lemma antitoneOn_gR : AntitoneOn gR {t : ℝ | 1 ≤ u_fn t} := by
 
 /-- Левая мажоранта g_L(t) возрастает на всей оси ℝ. -/
 lemma monotone_gL : Monotone gL := by
-  refine monotone_of_deriv_nonneg (fun t => ?_)
+  refine monotone_of_deriv_nonneg ?_ (fun t => ?_)
+  · exact ((differentiable_const (exp Real.eulerMascheroniConstant)).mul
+      (differentiable_u_fn.pow 2)).mul
+      ((differentiable_const (1 : ℝ)).add (differentiable_exp.comp differentiable_neg))
   have hu := hasDerivAt_u_fn t
   have he : HasDerivAt (fun s : ℝ => 1 + exp (-s)) (-exp (-t)) t := by
     simpa using ((hasDerivAt_neg t).exp).const_add 1
@@ -168,7 +203,11 @@ lemma monotone_gL : Monotone gL := by
       (exp Real.eulerMascheroniConstant *
        ((2 * u_fn t ^ 1 * (u_fn t * (1 + exp (-t)))) * (1 + exp (-t)) +
         (u_fn t) ^ 2 * (-exp (-t)))) t :=
-    hprod.const_mul _
+    by
+      convert hprod.const_mul (exp Real.eulerMascheroniConstant) using 1
+      ext s
+      simp [gL]
+      ring
   rw [hd.deriv]
   have hpos_g : 0 ≤ exp Real.eulerMascheroniConstant := exp_nonneg _
   have hpos_u : 0 ≤ (u_fn t) ^ 2 := sq_nonneg _

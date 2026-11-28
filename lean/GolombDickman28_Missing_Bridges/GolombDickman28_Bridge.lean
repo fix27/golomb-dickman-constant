@@ -19,6 +19,7 @@ import GolombDickman27
 
 open scoped BigOperators
 open Finset
+open MeasureTheory
 
 namespace GolombDickman28
 open GolombDickman27
@@ -56,12 +57,18 @@ lemma scaledS_step
     simp [Polynomial.eval_add, Polynomial.eval_mul, Polynomial.eval_C,
       Polynomial.eval_X] at hev
     dsimp [scaledS]
+    rw [show m + m = 2 * m by omega]
     rw [show (2 * m + 1) / 2 = m by omega,
       show (2 * m) / 2 = m by omega,
       show (2 * m - 1) / 2 = m - 1 by omega,
       hev]
     have hmod : (2 * m + 1) % 2 = 1 := by omega
     simp [cfBeta, cfAlpha_odd, hmod]
+    have hzpow : z ^ (m + shift) = z * z ^ (m - 1 + shift) := by
+      calc
+        z ^ (m + shift) = z ^ ((m - 1 + shift) + 1) := by congr 1 <;> omega
+        _ = z * z ^ (m - 1 + shift) := by rw [pow_succ]; ring
+    rw [hzpow]
     field_simp [hz]
     <;> ring
   · rcases ho with ⟨m, hm⟩
@@ -113,7 +120,7 @@ theorem cfRun_to_sContinuant
       (cfRun z n).Acur = scaledS z 1 (1 + xPoly) 1 n := by
   intro n
   induction n using Nat.strong_induction_on with
-  | h n ih =>
+  | ind n ih =>
     cases n with
     | zero =>
         constructor <;> simp [cfRun, scaledS, sContinuant]
@@ -170,10 +177,19 @@ theorem cfRun_odd_to_J
         z ^ (m + 1) * Polynomial.eval z⁻¹ (jDenominator m) := by
   have h := cfRun_to_sContinuant z hz (2 * m + 1)
   constructor
-  · simpa [scaledS, sNumerator, show (2 * m + 1) / 2 = m by omega,
-      sToJ_numerator] using h.1
-  · simpa [scaledS, sDenominator, show (2 * m + 1) / 2 + 1 = m + 1 by omega,
-      sToJ_denominator] using h.2
+  · calc
+      (cfRun z (2 * m + 1)).Bcur =
+          z ^ m * Polynomial.eval z⁻¹ (sNumerator (2 * m + 1)) := by
+            simpa [scaledS, sNumerator, show (2 * m + 1) / 2 = m by omega] using h.1
+      _ = z ^ m * Polynomial.eval z⁻¹ (jNumerator m) := by
+            rw [sToJ_numerator]
+  · calc
+      (cfRun z (2 * m + 1)).Acur =
+          z ^ (m + 1) * Polynomial.eval z⁻¹ (sDenominator (2 * m + 1)) := by
+            simpa [scaledS, sDenominator,
+              show (2 * m + 1) / 2 + 1 = m + 1 by omega] using h.2
+      _ = z ^ (m + 1) * Polynomial.eval z⁻¹ (jDenominator m) := by
+            rw [sToJ_denominator]
 
 /-- Ratio form used by `cf_f_hull`; the only extra condition is that the
     evaluated S-denominator is nonzero. -/
@@ -199,17 +215,17 @@ structure FiniteCellMajorant {ι : Type*} [DecidableEq ι]
     (I : Finset ι) (sample cell : ι → ℝ) (tail : ℝ) where
   sample_nonneg : ∀ i ∈ I, 0 ≤ sample i
   sample_le_cell : ∀ i ∈ I, sample i ≤ cell i
-  cell_sum_le_tail : (∑ i in I, cell i) ≤ tail
+  cell_sum_le_tail : (∑ i ∈ I, cell i) ≤ tail
 
 theorem finite_discrete_sum_le_tail
     {ι : Type*} [DecidableEq ι]
     (I : Finset ι) (sample cell : ι → ℝ) (tail : ℝ)
     (H : FiniteCellMajorant I sample cell tail) :
-    0 ≤ (∑ i in I, sample i) ∧ (∑ i in I, sample i) ≤ tail := by
+    0 ≤ (∑ i ∈ I, sample i) ∧ (∑ i ∈ I, sample i) ≤ tail := by
   constructor
   · exact Finset.sum_nonneg fun i hi => H.sample_nonneg i hi
   · calc
-      (∑ i in I, sample i) ≤ ∑ i in I, cell i :=
+      (∑ i ∈ I, sample i) ≤ ∑ i ∈ I, cell i :=
         Finset.sum_le_sum fun i hi => H.sample_le_cell i hi
       _ ≤ tail := H.cell_sum_le_tail
 
@@ -226,7 +242,7 @@ theorem tsum_discrete_sum_le_tail
     Summable sample ∧ 0 ≤ (∑' i, sample i) ∧ (∑' i, sample i) ≤ tail := by
   have hsample_summable : Summable sample :=
     Summable.of_nonneg_of_le hsample_nonneg hsample_le_cell hcell_summable
-  have htsum := tsum_le_tsum hsample_le_cell hsample_summable hcell_summable
+  have htsum := Summable.tsum_le_tsum hsample_le_cell hsample_summable hcell_summable
   exact ⟨hsample_summable, tsum_nonneg hsample_nonneg, le_trans htsum hcell_tail⟩
 
 /-- The exact real change of variables used in Lemma 3. -/
@@ -333,23 +349,29 @@ lemma strip_constants_positive (gamma : ℝ)
       0 < stripM1 gamma ∧ 0 < stripM2 gamma ∧ 0 < stripM3 ∧ 0 < stripM gamma := by
   have hkp : 0 < stripKappaPrime := by
     unfold stripKappaPrime
+    exact mul_pos hk (Real.exp_pos _)
+  have hc1 : 0 < stripC1 gamma := by
+    unfold stripC1
     positivity
-  constructor
-  · unfold stripC1
+  have hm1 : 0 < stripM1 gamma := by
+    unfold stripM1
+    have hsum : 0 < 1 / stripC + 1 / (4 * stripC ^ 2) := by
+      have h1c : 0 < 1 / stripC := one_div_pos.mpr hc
+      have h2c : 0 < 1 / (4 * stripC ^ 2) := one_div_pos.mpr (by positivity)
+      linarith
+    exact mul_pos (mul_pos hc1 (Real.exp_pos _)) hsum
+  have hm2 : 0 < stripM2 gamma := by
+    unfold stripM2
     positivity
-  constructor
-  · exact hkp
-  constructor
-  · unfold stripM1
-    positivity
-  constructor
-  · unfold stripM2
-    positivity
-  constructor
-  · unfold stripM3
-    positivity
-  · unfold stripM
-    positivity
+  have hm3 : 0 < stripM3 := by
+    unfold stripM3
+    have hfac : 0 < Real.exp (Real.exp (Real.exp (-2) - 2)) *
+        (1 + Real.exp (-2)) * Real.exp (-stripKappaPrime * Real.exp 2) := by positivity
+    exact div_pos hfac hkp
+  have hm : 0 < stripM gamma := by
+    unfold stripM
+    linarith
+  exact ⟨hc1, hkp, hm1, hm2, hm3, hm⟩
 
 /-- The three real envelopes appearing in the proof of Lemma 4.  The first
     applies on `t ≤ 0`, the second on `0 ≤ t ≤ 2`, and the third on `t ≥ 2`. -/
@@ -389,7 +411,7 @@ structure Lemma4StripWitness (G : ℂ → ℂ) (gamma : ℝ) where
     (∫ x : ℝ, if 0 < x ∧ x < 2 then ‖G ((x : ℂ) + (y : ℂ) * Complex.I)‖ else 0) ≤ stripM2 gamma
   right_integral_bound : ∀ y : ℝ, |y| < stripD →
     (∫ x : ℝ, if 2 ≤ x then ‖G ((x : ℂ) + (y : ℂ) * Complex.I)‖ else 0) ≤ stripM3
-  line_split_bound : ∀ y : ℝ, |y| < stripD,
+  line_split_bound : ∀ y : ℝ, |y| < stripD →
     (∫ x : ℝ, ‖G ((x : ℂ) + (y : ℂ) * Complex.I)‖) ≤
       (∫ x : ℝ, if x ≤ 0 then ‖G ((x : ℂ) + (y : ℂ) * Complex.I)‖ else 0) +
       (∫ x : ℝ, if 0 < x ∧ x < 2 then ‖G ((x : ℂ) + (y : ℂ) * Complex.I)‖ else 0) +

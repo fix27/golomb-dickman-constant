@@ -1,4 +1,4 @@
-/--
+/-
 Formal kernel for `golomb_dickman_27.py`.
 
 This file is intentionally explicit about the trust boundary.  It formalizes:
@@ -22,6 +22,8 @@ import Mathlib
 
 open scoped BigOperators
 open Finset
+
+noncomputable section
 
 namespace GolombDickman27
 
@@ -49,16 +51,19 @@ lemma cfAlpha_even_succ (m : Nat) : cfAlpha (2 * m + 2) = (m + 1 : Nat) := by
   exact_mod_cast h
 
 lemma cfAlpha_odd_two (m : Nat) : cfAlpha (2 * m + 3) = (m + 2 : Nat) := by
-  simpa [Nat.mul_add, Nat.add_assoc, Nat.add_left_comm, Nat.add_comm] using
-    cfAlpha_odd (m + 1)
+  have h : (2 * m + 3 + 1) / 2 = m + 2 := by omega
+  dsimp [cfAlpha]
+  exact_mod_cast h
 
 lemma cfAlpha_even_two (m : Nat) : cfAlpha (2 * m + 4) = (m + 2 : Nat) := by
-  simpa [Nat.mul_add, Nat.add_assoc, Nat.add_left_comm, Nat.add_comm] using
-    cfAlpha_even_succ (m + 1)
+  have h : (2 * m + 4 + 1) / 2 = m + 2 := by omega
+  dsimp [cfAlpha]
+  exact_mod_cast h
 
 lemma cfAlpha_odd_three (m : Nat) : cfAlpha (2 * m + 5) = (m + 3 : Nat) := by
-  simpa [Nat.mul_add, Nat.add_assoc, Nat.add_left_comm, Nat.add_comm] using
-    cfAlpha_odd (m + 2)
+  have h : (2 * m + 5 + 1) / 2 = m + 3 := by omega
+  dsimp [cfAlpha]
+  exact_mod_cast h
 
 /-- The odd/even coefficient in the production S-fraction recurrence. -/
 def cfBeta (z : ℚ) (n : Nat) : ℚ := if n % 2 = 1 then 1 else z
@@ -92,7 +97,7 @@ lemma cfDet_step (z : ℚ) (n : Nat) (s : CFState) :
 /-- Exact continuant determinant for the coefficients used by `cf_f_hull`. -/
 theorem cfDet_formula (z : ℚ) (n : Nat) :
     cfDet (cfRun z n) =
-      (-1 : ℚ) ^ (n + 1) * ∏ i in Finset.range n, cfAlpha (i + 1) := by
+      (-1 : ℚ) ^ (n + 1) * ∏ i ∈ Finset.range n, cfAlpha (i + 1) := by
   induction n with
   | zero =>
       simp [cfRun, cfDet]
@@ -155,6 +160,9 @@ theorem sContinuant_odd_step
   cases m with
   | zero =>
       simp [sOddPrevious, sContinuant, cfAlpha, jBeta, jAlpha, hinit]
+      have h2 : Polynomial.C (2 : ℚ) = (2 : Polynomial ℚ) := Polynomial.C_eq_natCast 2
+      have h3 : Polynomial.C (3 : ℚ) = (3 : Polynomial ℚ) := Polynomial.C_eq_natCast 3
+      rw [h2, h3]
       ring
   | succ m =>
       have h3raw := sContinuant_step x v0 v1 (2 * m + 1)
@@ -197,6 +205,9 @@ theorem sContinuant_odd_step
                 sContinuant x v0 v1 (2 * m + 1) := by
               rw [hsolve]
               simp [jBeta, jAlpha]
+              have h2 : Polynomial.C (2 : ℚ) = (2 : Polynomial ℚ) := Polynomial.C_eq_natCast 2
+              have h3 : Polynomial.C (3 : ℚ) = (3 : Polynomial ℚ) := Polynomial.C_eq_natCast 3
+              rw [h2, h3]
               ring
         _ = (1 + Polynomial.C (jBeta (m + 1)) * x) *
               sContinuant x v0 v1 (2 * (m + 1) + 1) -
@@ -245,7 +256,10 @@ theorem sToJ_numerator (m : Nat) :
 theorem sToJ_denominator (m : Nat) :
     sDenominator (2 * m + 1) = jDenominator m := by
   have hinit : (1 + xPoly : Polynomial ℚ) =
-      1 + Polynomial.C (1 : ℚ) * xPoly * 1 := by ring
+      1 + Polynomial.C (1 : ℚ) * xPoly * 1 := by
+    have h1 : Polynomial.C (1 : ℚ) = (1 : Polynomial ℚ) := Polynomial.C_eq_natCast 1
+    rw [h1]
+    ring
   exact (sToJ_pair xPoly 1 (1 + xPoly) 1 hinit m).1
 
 /-! ## 4. Positive coefficient and determinant consequences -/
@@ -311,9 +325,9 @@ theorem seriesTermRatio_le_half
     _ ≤ (1 : ℝ) / 2 := huratio
 
 theorem symmetric_remainder_inclusion
-    (partial remainder radius : ℝ) (hrem : |remainder| ≤ radius) :
-    partial - radius ≤ partial + remainder ∧
-      partial + remainder ≤ partial + radius := by
+    (partialVal remainder radius : ℝ) (hrem : |remainder| ≤ radius) :
+    partialVal - radius ≤ partialVal + remainder ∧
+      partialVal + remainder ≤ partialVal + radius := by
   have habs := abs_le.mp hrem
   constructor <;> linarith
 
@@ -337,10 +351,10 @@ theorem asymptoticRemainderBound_pos (K : Nat) (u : ℝ) (hu : 0 < u) :
   positivity
 
 theorem asymptotic_remainder_in_symmetric_ball
-    (partial remainder radius : ℝ) (hrem : |remainder| ≤ radius) :
-    partial - radius ≤ partial + remainder ∧
-      partial + remainder ≤ partial + radius :=
-  symmetric_remainder_inclusion partial remainder radius hrem
+    (partialVal remainder radius : ℝ) (hrem : |remainder| ≤ radius) :
+    partialVal - radius ≤ partialVal + remainder ∧
+      partialVal + remainder ≤ partialVal + radius :=
+  symmetric_remainder_inclusion partialVal remainder radius hrem
 
 /-! ## 6. Continued-fraction hull (Stieltjes theorem supplied as a premise) -/
 
@@ -382,7 +396,9 @@ def qAdd (I J : QInterval) : QInterval :=
 theorem qAdd_sound (I J : QInterval) (x y : ℚ)
     (hI : QContains I x) (hJ : QContains J y) :
     QContains (qAdd I J) (x + y) := by
-  constructor <;> dsimp [QContains, qAdd] <;> linarith
+  unfold QContains at hI hJ ⊢
+  dsimp [qAdd]
+  constructor <;> linarith [hI.1, hI.2, hJ.1, hJ.2]
 
 def qScale (a : ℚ) (I : QInterval) (ha : 0 ≤ a) : QInterval :=
   ⟨a * I.lo, a * I.hi, mul_le_mul_of_nonneg_left I.ordered ha⟩

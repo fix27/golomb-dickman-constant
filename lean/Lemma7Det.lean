@@ -1,9 +1,4 @@
-import Mathlib.Data.Int.Basic
-import Mathlib.RingTheory.Polynomial.Basic
-import Mathlib.Tactic.Ring
-import Mathlib.Tactic.NormNum
-import Mathlib.Tactic.Positivity
-import Mathlib.Tactic.IntervalCases
+import Mathlib
 
 /-!
 # Лемма 7, часть 1: детерминантное тождество для β-дроби
@@ -59,6 +54,8 @@ theorem Ddet_eq (n : ℕ) :
       rw [Ddet_succ, ih, aProd]
       push_cast
       have hpow : (-1 : ℤ) ^ (n + 2) = -((-1 : ℤ) ^ (n + 1)) := by ring
-      rw [hpow]; ring
+      rw [hpow]
+      simp only [map_mul, map_neg]
+      ring
 
 end GolombDickman

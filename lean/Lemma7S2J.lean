@@ -1,7 +1,4 @@
-import Mathlib.Data.Rat.Basic
-import Mathlib.RingTheory.Polynomial.Basic
-import Mathlib.Tactic.Ring
-import Mathlib.Tactic.NormNum
+import Mathlib
 
 /-!
 # Лемма 7, часть 2: стягивание S-дроби в J-дробь
@@ -91,7 +88,7 @@ lemma Qs_step3 (m : ℕ) :
 theorem S_to_J_contraction (m : ℕ) :
     Ps α (2 * m) = Rs α m ∧ Qs α (2 * m) = Ss α m := by
   induction m using Nat.strong_induction_on with
-  | h m ih =>
+  | ind m ih =>
     match m with
     | 0 =>
         simp [Ps, Qs, Rs, Ss]

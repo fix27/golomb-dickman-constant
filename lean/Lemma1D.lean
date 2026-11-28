@@ -1,12 +1,6 @@
-import Mathlib.Data.Real.Basic
-import Mathlib.Data.Int.Basic
-import Mathlib.Data.Rat.Basic
-import Mathlib.RingTheory.Polynomial.Basic
-import Mathlib.Topology.Algebra.InfiniteSum.Real
-import Mathlib.Tactic.Ring
-import Mathlib.Tactic.Linarith
-import Mathlib.Tactic.NormNum
-import Mathlib.Tactic.Positivity
+import Mathlib
+
+set_option maxHeartbeats 0
 
 /-!
 # Лемма 1(d): геометрическая оценка хвоста ряда
@@ -40,7 +34,7 @@ lemma tail_ratio {u : ℝ} (hu : 0 < u) {K k : ℕ}
       ≤ (((k : ℝ) / 2) * (k + 1)) / ((k + 1 : ℝ) ^ 2) := by
         apply div_le_div_of_nonneg_right _ (by positivity)
         linarith
-    _ = (k : ℝ) / (2 * (k + 1)) := by field_simp; ring
+    _ = (k : ℝ) / (2 * (k + 1)) := by field_simp
     _ ≤ 1 / 2 := by
         rw [div_le_div_iff₀ (by positivity) (by norm_num)]
         nlinarith
@@ -71,14 +65,14 @@ lemma tail_term_bound {u : ℝ} (hu : 0 < u) {K : ℕ} (hK : 2 * u ≤ K + 1) (r
         rw [hidx, pow_succ, Nat.factorial_succ]
         push_cast
         field_simp
-        ring
-      rw [hstep, pow_succ, ← mul_assoc]
+      rw [hstep]
       calc |(-u) ^ (K + 1 + r) / (((K + 1 + r : ℕ) : ℝ) * (K + 1 + r).factorial)|
               * (u * (K + 1 + r : ℕ) / (((K + 1 + r : ℕ) : ℝ) + 1) ^ 2)
           ≤ ((u ^ (K + 1) / (((K + 1 : ℕ) : ℝ) * (K + 1).factorial)) * (1 / 2 : ℝ) ^ r)
               * (1 / 2) := by
             apply mul_le_mul ih hratio (by positivity) (by positivity)
-        _ = (u ^ (K + 1) / (((K + 1 : ℕ) : ℝ) * (K + 1).factorial)) * ((1 / 2 : ℝ) ^ r * (1 / 2)) := by
+        _ = (u ^ (K + 1) / (((K + 1 : ℕ) : ℝ) * (K + 1).factorial)) * (1 / 2 : ℝ) ^ (r + 1) := by
+            rw [pow_succ]
             ring
 
 /-- Лемма 1(d): |Σ_{k>K} (-u)^k/(k·k!)| ≤ 2·u^{K+1}/((K+1)·(K+1)!). -/
@@ -96,9 +90,14 @@ theorem lemma_1_d {u : ℝ} (hu : 0 < u) {K : ℕ} (hK : 2 * u ≤ K + 1) :
     Summable.of_nonneg_of_le (fun _ => abs_nonneg _) (tail_term_bound hu hK) hsum_geom
   calc |∑' (r : ℕ), ((-u) ^ (K + 1 + r)) / (((K + 1 + r : ℕ) : ℝ) * (K + 1 + r).factorial)|
       ≤ ∑' (r : ℕ), |((-u) ^ (K + 1 + r)) / (((K + 1 + r : ℕ) : ℝ) * (K + 1 + r).factorial)| :=
-        abs_tsum_le_tsum_abs hsum_abs
+        by
+          have hsum_norm : Summable (fun r : ℕ =>
+              ‖((-u) ^ (K + 1 + r)) /
+                (((K + 1 + r : ℕ) : ℝ) * (K + 1 + r).factorial)‖) := by
+            simpa only [Real.norm_eq_abs] using hsum_abs
+          simpa only [Real.norm_eq_abs] using (norm_tsum_le_tsum_norm hsum_norm)
     _ ≤ ∑' (r : ℕ), C * (1 / 2 : ℝ) ^ r :=
-        tsum_le_tsum (tail_term_bound hu hK) hsum_abs hsum_geom
+        Summable.tsum_le_tsum (tail_term_bound hu hK) hsum_abs hsum_geom
     _ = C * ∑' (r : ℕ), (1 / 2 : ℝ) ^ r := tsum_mul_left
     _ = C * (1 - 1 / 2 : ℝ)⁻¹ := by rw [tsum_geometric_of_lt_one (by norm_num) (by norm_num)]
     _ = 2 * u ^ (K + 1) / (((K + 1 : ℕ) : ℝ) * (K + 1).factorial) := by
