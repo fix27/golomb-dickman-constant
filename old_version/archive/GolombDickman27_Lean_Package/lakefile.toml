@@ -1,0 +1,11 @@
+name = "golomb_dickman_27_formalization"
+version = "0.1.0"
+defaultTargets = ["GolombDickman27"]
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+rev = "v4.36.0"
+
+[[lean_lib]]
+name = "GolombDickman27"
