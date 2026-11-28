@@ -95,6 +95,17 @@ Version note (v28).  Minimal patch over v27:
   6. cf_f_hull respects nmax exactly (no overshoot of up to 31 steps).
   7. Arb precision is restored on exit from node_ball, the three _eval_*
      helpers and strip_constants; cross-checks no longer inherit it.
+  8. RS_M (series block size) is a run parameter (--rs-m) recorded in the
+     checkpoint identity; the canonical value stays 32, so no published
+     artefact changes.  A different value changes interval rounding and
+     requires a fresh from-scratch computation.
+  9. bench_nodes.py is folded in as the `bench` subcommand (profile / micro /
+     rsm); no external script is needed to tune this file.
+
+Measured here at D=75000 with the folded-in benchmark: exp ~57 ms, a full
+Arb multiplication ~1.5 ms, division by a 500-bit integer ~0.09 ms; RS_M=48
+or 64 was ~15-20% faster than 32 on sampled series nodes, while values
+above ~96 got slower again.  Keep 32 for the canonical certificate.
 
 arb_ceil_int stays deliberately conservative (floor+1 even at an integer
 upper bound): tightening it would change Lint -> h -> make_plan() and
@@ -1160,7 +1171,7 @@ def _eval_series(k, pl, P, thr_bits, uf, xf):
         Pv = P + (int(uf / LN2) + 16 if uf > 1 else 0)
         ctx.prec = Pv
         em, u = _mk_u(k, pl)
-        S, rem = series_S(u, uf, xf, thr_bits)
+        S, rem = series_S(u, uf, xf, thr_bits, m=pl.get("rs_m"))
         expo = -2 * u + S + arb(0, rem)
         return get_EG(Pv) * u * u * (1 + em) * expo.exp()
 
@@ -1431,6 +1442,7 @@ def _checkpoint_identity(pl, chunk):
         "precision_ladder": bool(pl.get("precision_ladder", False)),
         "ladder_max_relax_bits": int(pl.get("ladder_max_relax_bits",
                                            LADDER_MAX_RELAX_BITS)),
+        "rs_m": int(pl.get("rs_m", RS_M)),
         "chunk": int(chunk),
     }
 
@@ -1623,6 +1635,8 @@ def _identity_key(identity):
         "parameters": identity.get("parameters"),
         "precision_ladder": identity.get("precision_ladder"),
         "ladder_max_relax_bits": identity.get("ladder_max_relax_bits"),
+        # Older meta files have no rs_m: the canonical value was RS_M=32.
+        "rs_m": identity.get("rs_m", RS_M),
         "chunk": identity.get("chunk"),
     }
 
@@ -1742,7 +1756,7 @@ class FreshChunks(list):
 
 def compute_chunks(pl, jobs, chunk, ckpt, deadline=None, log=print,
                    trust_checkpoint=False, precision_ladder=False,
-                   ladder_max_relax_bits=LADDER_MAX_RELAX_BITS):
+                   ladder_max_relax_bits=LADDER_MAX_RELAX_BITS, rs_m=RS_M):
     """Compute chunks.  Bounded memory: at most 2?jobs in flight.
 
     Jobs are submitted to processes initialised once (Arb context + e^gamma),
@@ -1752,6 +1766,9 @@ def compute_chunks(pl, jobs, chunk, ckpt, deadline=None, log=print,
                              "K_L", "K_R", "cf_min_u")}
     pw["precision_ladder"] = bool(precision_ladder)
     pw["ladder_max_relax_bits"] = int(ladder_max_relax_bits)
+    pw["rs_m"] = int(rs_m)
+    if pw["rs_m"] % 2 != 0:
+        raise ValueError("rs_m must be even (rectangular splitting block size)")
     n0, n1 = -pl["K_L"], pl["K_R"] + 1
     bounds = [(lo, min(lo + chunk, n1)) for lo in range(n0, n1, chunk)]
     identity = _checkpoint_identity(pw, chunk)
@@ -1976,7 +1993,8 @@ def run_certificate(D, G=30, jobs=0, chunk=0, ckpt=None, out=None,
                     max_hours=0.0, cf_min_u=None, trust_checkpoint=False,
                     autotune=False, certify_mode="strict",
                     precision_ladder=False,
-                    ladder_max_relax_bits=LADDER_MAX_RELAX_BITS):
+                    ladder_max_relax_bits=LADDER_MAX_RELAX_BITS,
+                    rs_m=RS_M):
     """Run the certificate pipeline.
 
     certify_mode:
@@ -2048,7 +2066,8 @@ def run_certificate(D, G=30, jobs=0, chunk=0, ckpt=None, out=None,
     chunks = compute_chunks(pl, jobs, chunk, ckpt, deadline,
                             trust_checkpoint=trust_checkpoint,
                             precision_ladder=precision_ladder,
-                            ladder_max_relax_bits=ladder_max_relax_bits)
+                            ladder_max_relax_bits=ladder_max_relax_bits,
+                            rs_m=rs_m)
     if chunks is None:
         print("STOPPED by max_hours: checkpoints in", ckpt,
               "- re-run the cell to continue")
@@ -2135,7 +2154,7 @@ def parse_certificate(path):
 
 def replay_certificate(cert_path, jobs=0, chunk=200, G=30,
                        precision_ladder=False, require_containment=False,
-                       log=print):
+                       rs_m=RS_M, log=print):
     """Recompute every chunk from the plan and compare with a certificate.
 
     No checkpoint directory is read: the comparison is between the published
@@ -2159,7 +2178,7 @@ def replay_certificate(cert_path, jobs=0, chunk=200, G=30,
     log("Level B replay: D=%d S=%d nodes=%d chunk=%d jobs=%s"
         % (D, S, pl["nodes"], chunk, jobs or "auto"))
     chunks = compute_chunks(pl, jobs, chunk, None,
-                            precision_ladder=precision_ladder)
+                            precision_ladder=precision_ladder, rs_m=rs_m)
     if chunks is None:
         raise ArithmeticError("replay interrupted")
     res = certify(pl, chunks, verbose=False)
@@ -3262,6 +3281,123 @@ def _cmd_smoke():
     return 0
 
 
+# ---------------------------------------------------------------------------
+# Node benchmark.  Folded in from bench_nodes.py so that this file is the
+# single source: profiling and RS_M tuning need no external script.
+# It never writes certificates or changes the canonical RS_M default.
+# ---------------------------------------------------------------------------
+
+def _bench_plan(D, cf_min_u=None):
+    pl = make_plan(D, 30)
+    pl["cf_min_u"] = float(cf_min_u if cf_min_u is not None
+                           else _heuristic_cf_min_u(D))
+    return pl
+
+
+def _bench_timed(fn, *a, **kw):
+    t0 = time.perf_counter()
+    r = fn(*a, **kw)
+    return time.perf_counter() - t0, r
+
+
+def bench_profile(D=40000, samples=60, cf_min_u=None):
+    """Uniform-in-k sample of node cost, extrapolated to one CPU core."""
+    pl = _bench_plan(D, cf_min_u)
+    n0, n1 = -pl["K_L"], pl["K_R"] + 1
+    stride = max(1, (n1 - n0) // samples)
+    agg = {}
+    t_all = 0.0
+    print("D=%d nodes=%d h=%.4e Ebits=%d cf_min_u=%.0f"
+          % (D, pl["nodes"], pl["h"], pl["Ebits"], pl["cf_min_u"]))
+    for k in range(n0, n1, stride):
+        meth = method_of(k, pl)
+        xf, uf, _lng = _est(k, pl)
+        key = meth if meth in ("skip", "cf", "asym") else "series_L" if xf < 0 else "series_R"
+        dt, _ball = _bench_timed(node_ball, k, pl)
+        s = agg.setdefault(key, [0.0, 0])
+        s[0] += dt * stride
+        s[1] += stride
+        t_all += dt * stride
+        print("  k=%8d  u=%10.3g  %-9s %8.3f s"
+              % (k, uf if uf < 1e300 else float("inf"), key, dt), flush=True)
+    print("\nОценка полного прогона, CPU-секунды на одном ядре (jobs=1):")
+    print("%-10s %10s %12s %7s" % ("ветка", "узлов", "CPU-часы", "доля"))
+    for key, (tt, nn) in sorted(agg.items(), key=lambda x: -x[1][0]):
+        print("%-10s %10d %12.2f %6.1f%%"
+              % (key, nn, tt / 3600.0, 100 * tt / t_all if t_all else 0.0))
+    print("итого: %.2f CPU-часа  (≈ %.2f ч на 4 ядрах)"
+          % (t_all / 3600.0, t_all / 3600.0 / 4 if t_all else 0.0))
+
+
+def bench_micro(D=40000):
+    """Cost of the Arb primitives at the precision actually used."""
+    pl = _bench_plan(D)
+    prec = pl["Ebits"] + 256
+    with _prec(prec):
+        x = arb(2).sqrt()
+        y = arb(3).sqrt()
+        big1 = 1
+        for i in range(1, 6):
+            big1 *= (30000 + i)              # ~75 bits
+        big2 = 1
+        for i in range(1, 33):
+            big2 *= (30000 + i)              # ~500 bits, Dprod at m=32
+        print("точность %d бит (%d лимбов)" % (prec, prec // 64))
+
+        def bench(label, f, reps=200):
+            f()
+            t0 = time.perf_counter()
+            for _ in range(reps):
+                f()
+            dt = (time.perf_counter() - t0) / reps
+            print("  %-38s %9.1f us" % (label, dt * 1e6))
+            return dt
+
+        bench("x + y", lambda: x + y)
+        bench("x * 12345 (малое целое)", lambda: x * 12345)
+        bench("x / 12345 (1 лимб)", lambda: x / 12345)
+        bench("x / int(~75 бит)", lambda: x / big1)
+        bench("x / int(~500 бит, как Dprod при m=32)", lambda: x / big2)
+        bench("x * y (полное умножение)", lambda: x * y, 100)
+        bench("x / y (полное деление)", lambda: x / y, 50)
+        bench("exp(x)", lambda: x.exp(), 10)
+
+
+def bench_rsm(D=40000, values=None, cf_min_u=None):
+    """Series-node time at several RS_M values (even integers only)."""
+    pl = _bench_plan(D, cf_min_u)
+    targets = (30.0, 300.0, 3000.0)
+    ks = [int(round(solve_t(math.log(uu), 0.0, 40.0) / pl["h"]))
+          for uu in targets]
+    ks.append(-int(round(1.0 / pl["h"])))
+    print("D=%d RS_M sweep; узлы k: %s" % (D, ks))
+    print("Внимание: RS_M меняет округление блоков series_S, поэтому "
+          "сертификат нужно пересчитывать с нуля; канонический RS_M=%d." % RS_M)
+    for v in (values if values is not None else (16, 24, 32, 48, 64)):
+        v = int(v)
+        if v % 2:
+            print("  RS_M=%3d : пропущен (должно быть чётным)" % v)
+            continue
+        pl["rs_m"] = v
+        row = []
+        for k in ks:
+            dt, _ball = _bench_timed(node_ball, k, pl, force="series")
+            row.append(dt)
+        print("  RS_M=%3d : %s   сумма %.2f s"
+              % (v, "  ".join("%7.2f" % r for r in row), sum(row)))
+
+
+def _cmd_bench(args):
+    if args.micro:
+        bench_micro(args.digits)
+    elif args.rsm:
+        bench_rsm(args.digits, [int(v) for v in args.rsm.split(",")],
+                  cf_min_u=args.cf_min_u)
+    else:
+        bench_profile(args.digits, args.samples, cf_min_u=args.cf_min_u)
+    return 0
+
+
 def _certify_kwargs(args):
     return dict(
         D=args.digits, G=args.guard, jobs=args.jobs, chunk=args.chunk,
@@ -3269,6 +3405,7 @@ def _certify_kwargs(args):
         cf_min_u=args.cf_min_u, autotune=args.autotune,
         precision_ladder=args.precision_ladder,
         ladder_max_relax_bits=args.ladder_max_relax_bits,
+        rs_m=args.rs_m,
     )
 
 
@@ -3357,7 +3494,8 @@ def _cmd_replay(args):
         report = replay_certificate(
             args.cert, jobs=args.jobs, chunk=args.chunk, G=args.guard,
             precision_ladder=args.ladder,
-            require_containment=args.require_containment)
+            require_containment=args.require_containment,
+            rs_m=args.rs_m)
     except ArithmeticError as e:
         print("LEVEL B FAILED:", e, file=sys.stderr)
         return 1
@@ -3433,6 +3571,10 @@ def _add_cert_args(p):
     p.add_argument("--ladder-max-relax-bits", type=int,
                    default=LADDER_MAX_RELAX_BITS,
                    help="maximum radius relaxation for tail chunks")
+    p.add_argument("--rs-m", type=int, default=RS_M,
+                   help="series rectangular-splitting block size (even); "
+                        "the canonical 75000 certificate uses 32.  Other "
+                        "values change node balls: recompute from scratch")
     p.add_argument("--profile", type=str, default=None, metavar="FILE",
                    help="write a cProfile dump and FILE.txt report")
     return p
@@ -3440,7 +3582,7 @@ def _add_cert_args(p):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(
-        prog="golomb_dickman_27",
+        prog="golomb_dickman_28",
         description="Rigorous interval-arithmetic certificate for the "
                     "Golomb\u2013Dickman constant (v%s, checkpoint schema v%d)."
                     % (VERSION, CHECKPOINT_SCHEMA_VERSION),
@@ -3487,11 +3629,23 @@ def main(argv=None):
                        help="enable the precision ladder during replay")
     p_rep.add_argument("--require-containment", action="store_true",
                        help="fail unless the published interval contains the replay interval")
+    p_rep.add_argument("--rs-m", type=int, default=RS_M,
+                       help="must match the block size used for the certificate")
     p_rep.add_argument("--json", type=str, default=None)
 
     p_cross = sub.add_parser("crosscheck", help="independent cross-checks")
     p_cross.add_argument("--digits", type=int, default=200)
     p_cross.add_argument("--num-nodes", type=int, default=10)
+
+    p_bench = sub.add_parser(
+        "bench", help="node profiler / Arb micro-benchmark / RS_M sweep")
+    p_bench.add_argument("--digits", type=int, default=40000)
+    p_bench.add_argument("--samples", type=int, default=60)
+    p_bench.add_argument("--cf-min-u", type=float, default=None)
+    p_bench.add_argument("--micro", action="store_true",
+                         help="benchmark Arb primitives at working precision")
+    p_bench.add_argument("--rsm", type=str, default=None, metavar="LIST",
+                         help="comma-separated even block sizes, e.g. 32,48,64")
 
     args = parser.parse_args(argv)
     if args.command is None:
@@ -3520,6 +3674,8 @@ def main(argv=None):
         return _cmd_crosscheck(args)
     if args.command == "boundary-test":
         return _cmd_boundary_test()
+    if args.command == "bench":
+        return _cmd_bench(args)
     parser.error("unknown command: %s" % args.command)
     return 1
 
