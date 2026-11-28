@@ -1,0 +1,34 @@
+--- a/golomb_dickman_28.py
++++ b/golomb_dickman_28.py
+@@
+     digits_line = lines[3].strip()
+     if not digits_line.startswith("0."):
+         raise ArithmeticError("%s: fourth line is not 0.<digits>" % path)
+     digits = digits_line[2:]
+-    if not digits.isdigit():
+-        raise ArithmeticError("%s: non-digit character in digit line" % path)
+-    return {"path": path, "D": len(digits), "S": int(m_s.group(1)),
+-            "lam_lo": int(m_lo.group(1)), "lam_hi": int(m_hi.group(1)),
+-            "digits": digits}
++    if not digits or not digits.isdigit():
++        raise ArithmeticError("%s: digit line must contain at least one decimal digit" % path)
++
++    # Check that the printed digits equal the common cell of the dyadic
++    # endpoints. This does not establish the soundness of the endpoints.
++    S = int(m_s.group(1))
++    lam_lo = int(m_lo.group(1))
++    lam_hi = int(m_hi.group(1))
++    D = len(digits)
++    if S < 0 or lam_lo <= 0 or lam_hi <= lam_lo:
++        raise ArithmeticError("%s: invalid dyadic interval metadata" % path)
++    a = (lam_lo * (10 ** D)) >> S
++    b = (lam_hi * (10 ** D)) >> S
++    expected = str(a).zfill(D)
++    if a != b:
++        raise ArithmeticError("%s: interval endpoints do not isolate one decimal cell" % path)
++    if digits != expected:
++        raise ArithmeticError("%s: printed digits disagree with the dyadic interval" % path)
++
++    return {"path": path, "D": D, "S": S,
++            "lam_lo": lam_lo, "lam_hi": lam_hi,
++            "digits": digits}
